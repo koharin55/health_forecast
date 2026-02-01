@@ -20,6 +20,11 @@ class HealthRecord < ApplicationRecord
     only_integer: true,
     allow_nil: true
   }
+  validates :body_temperature, numericality: {
+    greater_than_or_equal_to: 34.0,
+    less_than_or_equal_to: 42.0,
+    allow_nil: true
+  }
 
   scope :recent, -> { order(recorded_at: :desc) }
   scope :for_user, ->(user) { where(user: user) }
