@@ -1,4 +1,4 @@
-<%= form_with(model: health_record, class: "card p-6") do |form| %>
+<%= form_with(model: health_record, class: "space-y-6 sm:space-y-8") do |form| %>
   <% if health_record.errors.any? %>
     <div id="error_explanation" class="alert alert-error mb-4">
       <h2 class="font-bold"><%= pluralize(health_record.errors.count, "件の") %>エラーがあります:</h2>
@@ -10,101 +10,98 @@
     </div>
   <% end %>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- 記録日 -->
+  <!-- 記録日 -->
+  <div>
+    <%= form.label :recorded_at, class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" do %>
+      記録日 <span class="text-red-500">*</span>
+    <% end %>
+    <%= form.date_field :recorded_at, required: true, class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 font-semibold mono" %>
+    <p class="mt-2 text-sm text-slate-500">必須項目です</p>
+  </div>
+
+  <!-- 体重 & 睡眠時間 -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
     <div>
-      <%= form.label :recorded_at, "記録日", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.date_field :recorded_at, class: "input-field" %>
+      <%= form.label :weight, "体重（kg）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :weight, step: 0.1, min: 0, placeholder: "65.5", inputmode: "decimal", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
     </div>
 
-    <!-- 体重 -->
     <div>
-      <%= form.label :weight, "体重 (kg)", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.number_field :weight, step: 0.1, placeholder: "例: 65.5", inputmode: "decimal", class: "input-field" %>
-    </div>
-
-    <!-- 睡眠時間 -->
-    <div>
-      <%= form.label :sleep_hours, "睡眠時間 (時間)", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.number_field :sleep_hours, step: 0.1, placeholder: "例: 7.5", inputmode: "decimal", class: "input-field" %>
-    </div>
-
-    <!-- 運動時間 -->
-    <div>
-      <%= form.label :exercise_minutes, "運動時間 (分)", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.number_field :exercise_minutes, placeholder: "例: 30", inputmode: "numeric", class: "input-field" %>
-    </div>
-
-    <!-- 歩数 -->
-    <div>
-      <%= form.label :steps, "歩数", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.number_field :steps, placeholder: "例: 8000", inputmode: "numeric", class: "input-field" %>
-      <p class="text-xs text-gray-500 mt-1">※将来的にHealthKitから自動取得予定</p>
-    </div>
-
-    <!-- 心拍数 -->
-    <div>
-      <%= form.label :heart_rate, "心拍数 (bpm)", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.number_field :heart_rate, placeholder: "例: 70", inputmode: "numeric", class: "input-field" %>
-      <p class="text-xs text-gray-500 mt-1">※将来的にHealthKitから自動取得予定</p>
+      <%= form.label :sleep_hours, "睡眠時間（時間）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :sleep_hours, step: 0.5, min: 0, placeholder: "7.5", inputmode: "decimal", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
     </div>
   </div>
 
-  <!-- 体調スコアセレクター -->
-  <div class="mt-6">
-    <%= form.label :mood, "体調スコア", class: "block text-sm font-medium text-gray-700 mb-3" %>
-    <div class="mood-selector">
-      <div class="mood-option">
-        <%= form.radio_button :mood, 1, id: "mood_1" %>
-        <%= form.label :mood, for: "mood_1" do %>
-          <span class="emoji">😞</span>
-          <span class="text">とても悪い</span>
-        <% end %>
-      </div>
+  <!-- 運動時間 & 歩数 -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div>
+      <%= form.label :exercise_minutes, "運動時間（分）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :exercise_minutes, min: 0, placeholder: "30", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+    </div>
 
-      <div class="mood-option">
-        <%= form.radio_button :mood, 2, id: "mood_2" %>
-        <%= form.label :mood, for: "mood_2" do %>
-          <span class="emoji">😕</span>
-          <span class="text">悪い</span>
-        <% end %>
-      </div>
+    <div>
+      <%= form.label :steps, "歩数", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :steps, min: 0, placeholder: "8500", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+    </div>
+  </div>
 
-      <div class="mood-option">
-        <%= form.radio_button :mood, 3, id: "mood_3" %>
-        <%= form.label :mood, for: "mood_3" do %>
-          <span class="emoji">😐</span>
-          <span class="text">普通</span>
-        <% end %>
-      </div>
+  <!-- 心拍数 -->
+  <div>
+    <%= form.label :heart_rate, "心拍数（bpm）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+    <%= form.number_field :heart_rate, min: 0, placeholder: "72", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+  </div>
 
-      <div class="mood-option">
-        <%= form.radio_button :mood, 4, id: "mood_4" %>
-        <%= form.label :mood, for: "mood_4" do %>
-          <span class="emoji">😊</span>
-          <span class="text">良い</span>
-        <% end %>
-      </div>
-
-      <div class="mood-option">
-        <%= form.radio_button :mood, 5, id: "mood_5" %>
-        <%= form.label :mood, for: "mood_5" do %>
-          <span class="emoji">😄</span>
-          <span class="text">とても良い</span>
-        <% end %>
-      </div>
+  <!-- 体調スコア -->
+  <div>
+    <%= form.label :mood, "体調スコア", class: "block text-base sm:text-sm font-bold text-slate-700 mb-4" %>
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-3">
+      <label class="mood-option">
+        <%= form.radio_button :mood, 1, class: "sr-only" %>
+        <div class="border-3 border-slate-200 rounded-2xl p-4 sm:p-4 text-center flex flex-col items-center justify-center">
+          <div class="text-4xl sm:text-3xl mb-2">😞</div>
+          <div class="text-sm sm:text-xs font-bold text-slate-700">とても悪い</div>
+        </div>
+      </label>
+      <label class="mood-option">
+        <%= form.radio_button :mood, 2, class: "sr-only" %>
+        <div class="border-3 border-slate-200 rounded-2xl p-4 sm:p-4 text-center flex flex-col items-center justify-center">
+          <div class="text-4xl sm:text-3xl mb-2">😕</div>
+          <div class="text-sm sm:text-xs font-bold text-slate-700">悪い</div>
+        </div>
+      </label>
+      <label class="mood-option">
+        <%= form.radio_button :mood, 3, class: "sr-only" %>
+        <div class="border-3 border-slate-200 rounded-2xl p-4 sm:p-4 text-center flex flex-col items-center justify-center">
+          <div class="text-4xl sm:text-3xl mb-2">😐</div>
+          <div class="text-sm sm:text-xs font-bold text-slate-700">普通</div>
+        </div>
+      </label>
+      <label class="mood-option">
+        <%= form.radio_button :mood, 4, class: "sr-only" %>
+        <div class="border-3 border-slate-200 rounded-2xl p-4 sm:p-4 text-center flex flex-col items-center justify-center">
+          <div class="text-4xl sm:text-3xl mb-2">😊</div>
+          <div class="text-sm sm:text-xs font-bold text-slate-700">良い</div>
+        </div>
+      </label>
+      <label class="mood-option col-span-2 sm:col-span-1">
+        <%= form.radio_button :mood, 5, class: "sr-only" %>
+        <div class="border-3 border-slate-200 rounded-2xl p-4 sm:p-4 text-center flex flex-col items-center justify-center">
+          <div class="text-4xl sm:text-3xl mb-2">😄</div>
+          <div class="text-sm sm:text-xs font-bold text-slate-700">とても良い</div>
+        </div>
+      </label>
     </div>
   </div>
 
   <!-- メモ -->
-  <div class="mt-6">
-    <%= form.label :notes, "メモ", class: "block text-sm font-medium text-gray-700 mb-2" %>
-    <%= form.text_area :notes, rows: 4, placeholder: "体調や気分、その日の出来事などを自由に記録できます", class: "input-field", style: "min-height: 120px;" %>
+  <div>
+    <%= form.label :notes, "メモ", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+    <%= form.text_area :notes, rows: 4, placeholder: "今日の調子や気になったことを記録...", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 text-base resize-none" %>
   </div>
 
-  <!-- ボタン -->
-  <div class="mt-6 flex flex-col md:flex-row gap-3">
-    <%= form.submit health_record.new_record? ? "記録を追加" : "記録を更新", class: "btn-primary order-1 md:order-2" %>
-    <%= link_to "キャンセル", health_records_path, class: "btn-secondary order-2 md:order-1" %>
+  <!-- アクションボタン -->
+  <div class="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-6 border-t border-slate-200">
+    <%= link_to "キャンセル", health_records_path, class: "w-full sm:w-auto text-center px-8 py-4 border-2 border-slate-300 rounded-2xl text-slate-700 hover:bg-slate-50 font-bold transition-colors order-2 sm:order-1" %>
+    <%= form.submit health_record.new_record? ? "記録を保存" : "記録を更新", class: "w-full sm:w-auto btn-primary px-8 py-4 text-white rounded-2xl font-bold text-lg order-1 sm:order-2" %>
   </div>
 <% end %>

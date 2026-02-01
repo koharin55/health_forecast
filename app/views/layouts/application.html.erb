@@ -23,6 +23,7 @@
         position: relative;
         min-height: 100vh;
         background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #fef3c7 100%);
+        background-attachment: fixed;
       }
 
       body::before {
@@ -32,7 +33,10 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: var(--gradient-mesh);
+        background-image:
+          radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+          radial-gradient(circle at 80% 70%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+          radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
         pointer-events: none;
         z-index: 0;
       }
@@ -41,83 +45,86 @@
         position: relative;
         z-index: 1;
       }
+
+      nav {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+      }
     </style>
   </head>
 
   <body>
     <% if user_signed_in? %>
-      <!-- Navigation Bar -->
-      <nav class="card mx-4 mt-4 relative z-10" data-controller="mobile-menu">
-        <div class="container mx-auto px-4 py-4">
-          <div class="flex justify-between items-center">
-            <!-- Logo -->
+      <!-- ナビゲーションバー -->
+      <nav class="sticky top-0 z-50" data-controller="mobile-menu">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center h-16">
+            <!-- ロゴ -->
             <div class="flex items-center">
-              <%= link_to root_path, class: "logo" do %>
+              <%= link_to root_path, class: "logo text-xl sm:text-2xl font-extrabold" do %>
                 HealthForecast
               <% end %>
             </div>
 
-            <!-- Desktop Navigation -->
+            <!-- デスクトップナビゲーション -->
             <div class="hidden md:flex items-center space-x-6">
-              <%= link_to "ダッシュボード", root_path, class: "text-gray-700 hover:text-emerald-600 font-semibold transition" %>
-              <%= link_to "健康記録", health_records_path, class: "text-gray-700 hover:text-emerald-600 font-semibold transition" %>
-              <span class="text-gray-500 text-sm"><%= current_user.email %></span>
-              <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn-primary" %>
+              <%= link_to "ダッシュボード", root_path, class: "text-slate-600 hover:text-emerald-600 font-medium transition-colors" %>
+              <%= link_to "記録一覧", health_records_path, class: "text-slate-600 hover:text-emerald-600 font-medium transition-colors" %>
+              <%= link_to new_health_record_path, class: "btn-primary text-white px-5 py-2.5 rounded-full font-semibold" do %>
+                新規記録
+              <% end %>
+              <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "text-slate-600 hover:text-slate-900 transition-colors bg-transparent border-0 cursor-pointer font-medium" %>
             </div>
 
-            <!-- Mobile Hamburger Button -->
-            <button class="md:hidden hamburger" data-action="click->mobile-menu#toggle" aria-label="メニュー">
-              <span></span>
-              <span></span>
-              <span></span>
+            <!-- モバイルメニューボタン -->
+            <button class="md:hidden btn-primary text-white p-3 rounded-xl" data-action="click->mobile-menu#toggle" aria-label="メニュー">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
             </button>
           </div>
-        </div>
 
-        <!-- Mobile Menu Overlay -->
-        <div class="mobile-menu-overlay" data-mobile-menu-target="overlay" data-action="click->mobile-menu#toggle"></div>
-
-        <!-- Mobile Menu -->
-        <div class="mobile-menu" data-mobile-menu-target="menu">
-          <div class="flex flex-col space-y-4">
-            <div class="text-sm text-gray-500 pb-4 border-b border-gray-200">
-              <%= current_user.email %>
-            </div>
-            <%= link_to "ダッシュボード", root_path, class: "text-gray-700 hover:text-emerald-600 font-semibold py-3 transition", data: { action: "click->mobile-menu#toggle" } %>
-            <%= link_to "健康記録", health_records_path, class: "text-gray-700 hover:text-emerald-600 font-semibold py-3 transition", data: { action: "click->mobile-menu#toggle" } %>
-            <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn-primary mt-4" %>
+          <!-- モバイルメニュー -->
+          <div class="mobile-menu md:hidden py-4 space-y-3" data-mobile-menu-target="menu" style="display: none;">
+            <%= link_to "ダッシュボード", root_path, class: "block py-3 px-4 rounded-xl text-slate-600 font-medium hover:bg-slate-50 transition-colors", data: { action: "click->mobile-menu#toggle" } %>
+            <%= link_to "記録一覧", health_records_path, class: "block py-3 px-4 rounded-xl text-slate-600 font-medium hover:bg-slate-50 transition-colors", data: { action: "click->mobile-menu#toggle" } %>
+            <%= link_to "新規記録", new_health_record_path, class: "block py-3 px-4 rounded-xl btn-primary text-white font-bold text-center", data: { action: "click->mobile-menu#toggle" } %>
+            <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "block w-full py-3 px-4 rounded-xl text-slate-600 font-medium hover:bg-slate-50 text-left transition-colors bg-transparent border-0" %>
           </div>
         </div>
       </nav>
     <% end %>
 
-    <!-- Alerts -->
+    <!-- アラート -->
     <% if notice.present? %>
-      <div class="container mx-auto px-4 mt-4 relative z-10">
-        <div class="alert alert-success" role="alert">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 relative z-10">
+        <div class="alert alert-success rounded-2xl" role="alert">
           <span class="block sm:inline"><%= notice %></span>
         </div>
       </div>
     <% end %>
 
     <% if alert.present? %>
-      <div class="container mx-auto px-4 mt-4 relative z-10">
-        <div class="alert alert-error" role="alert">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 relative z-10">
+        <div class="alert alert-error rounded-2xl" role="alert">
           <span class="block sm:inline"><%= alert %></span>
         </div>
       </div>
     <% end %>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
+    <!-- メインコンテンツ -->
+    <main class="<%= user_signed_in? ? 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12' : '' %>">
       <%= yield %>
     </main>
 
-    <!-- Footer -->
-    <footer class="card mx-4 mb-4 mt-12 relative z-10">
-      <div class="container mx-auto px-4 py-6 text-center text-gray-600">
-        <p>&copy; 2026 HealthForecast - あなたの健康管理パートナー</p>
-      </div>
-    </footer>
+    <% if user_signed_in? %>
+      <!-- フッター -->
+      <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 relative z-10">
+        <div class="card rounded-2xl px-4 py-6 text-center text-slate-600">
+          <p class="text-sm">&copy; 2026 HealthForecast. All rights reserved.</p>
+        </div>
+      </footer>
+    <% end %>
   </body>
 </html>

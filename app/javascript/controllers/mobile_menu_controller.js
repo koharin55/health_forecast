@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["menu", "overlay"]
+  static targets = ["menu"]
 
   connect() {
     // Close menu on Turbo navigation
@@ -9,12 +9,17 @@ export default class extends Controller {
   }
 
   toggle() {
-    this.menuTarget.classList.toggle("active")
-    this.overlayTarget.classList.toggle("active")
+    const menu = this.menuTarget
+    if (menu.style.display === "none" || menu.style.display === "") {
+      menu.style.display = "block"
+    } else {
+      menu.style.display = "none"
+    }
   }
 
   close() {
-    this.menuTarget.classList.remove("active")
-    this.overlayTarget.classList.remove("active")
+    if (this.hasMenuTarget) {
+      this.menuTarget.style.display = "none"
+    }
   }
 }

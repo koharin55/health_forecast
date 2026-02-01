@@ -1,12 +1,12 @@
 <div class="max-w-4xl mx-auto">
   <!-- Header -->
   <div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">📊 健康記録の詳細</h1>
-    <p class="text-gray-600 mt-2"><%= @health_record.recorded_at.strftime("%Y年%m月%d日 (%A)") %>の記録</p>
+    <h1 class="text-3xl font-bold text-slate-900">健康記録の詳細</h1>
+    <p class="text-slate-600 mt-2"><%= @health_record.recorded_at.strftime("%Y年%m月%d日 (%A)") %>の記録</p>
   </div>
 
   <!-- メインカード -->
-  <div class="card p-6 mb-6">
+  <div class="card rounded-3xl p-6 mb-6">
     <!-- メトリクスグリッド -->
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
       <!-- 体重 -->
@@ -14,11 +14,11 @@
         <div class="icon-gradient mb-3 w-12 h-12 text-xl">
           <span>⚖️</span>
         </div>
-        <h3 class="text-xs text-gray-500 mb-1">体重</h3>
-        <p class="text-2xl font-bold text-gray-800 mono">
+        <h3 class="text-xs text-slate-500 mb-1">体重</h3>
+        <p class="text-2xl font-bold text-slate-800 mono">
           <%= @health_record.weight.present? ? @health_record.weight.to_s : "➖" %>
           <% if @health_record.weight.present? %>
-            <span class="text-sm text-gray-500 font-normal">kg</span>
+            <span class="text-sm text-slate-500 font-normal">kg</span>
           <% end %>
         </p>
       </div>
@@ -28,11 +28,11 @@
         <div class="icon-gradient mb-3 w-12 h-12 text-xl">
           <span>😴</span>
         </div>
-        <h3 class="text-xs text-gray-500 mb-1">睡眠時間</h3>
-        <p class="text-2xl font-bold text-gray-800 mono">
+        <h3 class="text-xs text-slate-500 mb-1">睡眠時間</h3>
+        <p class="text-2xl font-bold text-slate-800 mono">
           <%= @health_record.sleep_hours.present? ? @health_record.sleep_hours.to_s : "➖" %>
           <% if @health_record.sleep_hours.present? %>
-            <span class="text-sm text-gray-500 font-normal">時間</span>
+            <span class="text-sm text-slate-500 font-normal">時間</span>
           <% end %>
         </p>
       </div>
@@ -42,11 +42,11 @@
         <div class="icon-gradient mb-3 w-12 h-12 text-xl">
           <span>🏃</span>
         </div>
-        <h3 class="text-xs text-gray-500 mb-1">運動時間</h3>
-        <p class="text-2xl font-bold text-gray-800 mono">
+        <h3 class="text-xs text-slate-500 mb-1">運動時間</h3>
+        <p class="text-2xl font-bold text-slate-800 mono">
           <%= @health_record.exercise_minutes.present? ? @health_record.exercise_minutes.to_s : "➖" %>
           <% if @health_record.exercise_minutes.present? %>
-            <span class="text-sm text-gray-500 font-normal">分</span>
+            <span class="text-sm text-slate-500 font-normal">分</span>
           <% end %>
         </p>
       </div>
@@ -56,8 +56,8 @@
         <div class="icon-gradient mb-3 w-12 h-12 text-xl">
           <span>👣</span>
         </div>
-        <h3 class="text-xs text-gray-500 mb-1">歩数</h3>
-        <p class="text-2xl font-bold text-gray-800 mono">
+        <h3 class="text-xs text-slate-500 mb-1">歩数</h3>
+        <p class="text-2xl font-bold text-slate-800 mono">
           <%= @health_record.steps.present? ? number_with_delimiter(@health_record.steps) : "➖" %>
         </p>
       </div>
@@ -67,11 +67,11 @@
         <div class="icon-gradient mb-3 w-12 h-12 text-xl">
           <span>💓</span>
         </div>
-        <h3 class="text-xs text-gray-500 mb-1">心拍数</h3>
-        <p class="text-2xl font-bold text-gray-800 mono">
+        <h3 class="text-xs text-slate-500 mb-1">心拍数</h3>
+        <p class="text-2xl font-bold text-slate-800 mono">
           <%= @health_record.heart_rate.present? ? @health_record.heart_rate.to_s : "➖" %>
           <% if @health_record.heart_rate.present? %>
-            <span class="text-sm text-gray-500 font-normal">bpm</span>
+            <span class="text-sm text-slate-500 font-normal">bpm</span>
           <% end %>
         </p>
       </div>
@@ -81,15 +81,15 @@
         <div class="icon-gradient mb-3 w-12 h-12 text-xl">
           <span><%= mood_emoji(@health_record.mood) %></span>
         </div>
-        <h3 class="text-xs text-gray-500 mb-1">体調スコア</h3>
+        <h3 class="text-xs text-slate-500 mb-1">体調スコア</h3>
         <% if @health_record.mood.present? %>
-          <p class="text-2xl font-bold text-gray-800 mono mb-2"><%= @health_record.mood %>/5</p>
+          <p class="text-2xl font-bold text-slate-800 mono mb-2"><%= @health_record.mood %>/5</p>
           <span class="<%= mood_badge_class(@health_record.mood) %>">
             <%= mood_emoji(@health_record.mood) %>
             <%= mood_text(@health_record.mood) %>
           </span>
         <% else %>
-          <p class="text-2xl font-bold text-gray-800 mono">➖</p>
+          <p class="text-2xl font-bold text-slate-800 mono">➖</p>
         <% end %>
       </div>
     </div>
@@ -97,8 +97,8 @@
     <!-- メモ -->
     <% if @health_record.notes.present? %>
       <div class="bg-white bg-opacity-50 rounded-xl p-4">
-        <h3 class="text-sm font-semibold text-gray-700 mb-2">📝 メモ</h3>
-        <p class="text-gray-900 whitespace-pre-wrap"><%= @health_record.notes %></p>
+        <h3 class="text-sm font-semibold text-slate-700 mb-2">📝 メモ</h3>
+        <p class="text-slate-900 whitespace-pre-wrap"><%= @health_record.notes %></p>
       </div>
     <% end %>
   </div>

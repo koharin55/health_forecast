@@ -210,59 +210,19 @@
    Mobile Menu
    ======================================== */
 .mobile-menu {
-  position: fixed;
-  top: 0;
-  right: -100%;
-  width: 80%;
-  max-width: 300px;
-  height: 100vh;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
-  transition: right 0.3s ease;
-  z-index: 1000;
-  padding: 2rem 1.5rem;
+  /* モバイルメニューはナビゲーション内にドロップダウン表示 */
+  animation: slideDown 0.3s ease-out;
 }
 
-.mobile-menu.active {
-  right: 0;
-}
-
-.mobile-menu-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 999;
-}
-
-.mobile-menu-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.hamburger {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.hamburger span {
-  width: 100%;
-  height: 2px;
-  background: var(--color-primary);
-  transition: all 0.3s ease;
-  border-radius: 2px;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ========================================
@@ -288,79 +248,37 @@
 /* ========================================
    Mood Selector Grid
    ======================================== */
-.mood-selector {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-}
-
-@media (min-width: 768px) {
-  .mood-selector {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
 .mood-option {
-  position: relative;
-}
-
-.mood-option input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.mood-option label {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100px;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.7);
-  border: 2px solid rgba(16, 185, 129, 0.2);
-  border-radius: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-height: 80px;
 }
 
-.mood-option label:hover {
-  background: rgba(255, 255, 255, 0.9);
+.mood-option input:checked + div {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.15));
   border-color: var(--color-primary);
-}
-
-.mood-option input[type="radio"]:checked + label {
-  background: var(--gradient-primary);
-  border-color: var(--color-primary);
-  color: white;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
   transform: scale(1.05);
 }
 
-.mood-option .emoji {
-  font-size: 2.5rem;
-  line-height: 1;
-  margin-bottom: 0.5rem;
+.mood-option:hover div {
+  border-color: var(--color-primary);
+  transform: scale(1.02);
 }
 
-.mood-option .text {
-  font-size: 0.875rem;
-  font-weight: 600;
+/* モバイル専用スタイル */
+@media (max-width: 768px) {
+  .mood-option {
+    min-height: 100px;
+  }
 }
 
 /* ========================================
    Gradient Icon Background
    ======================================== */
 .icon-gradient {
-  background: var(--gradient-primary);
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
 }
 
 /* ========================================
@@ -383,6 +301,19 @@
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #991b1b;
+}
+
+/* ========================================
+   Links
+   ======================================== */
+.link {
+  color: var(--color-primary);
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: var(--color-secondary);
 }
 
 /* ========================================

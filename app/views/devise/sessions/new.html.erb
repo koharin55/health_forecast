@@ -1,46 +1,62 @@
 <div class="min-h-screen flex items-center justify-center px-4 py-12">
   <div class="max-w-md w-full">
-    <!-- ロゴ -->
-    <div class="text-center mb-8">
-      <h1 class="logo text-5xl mb-2">HealthForecast</h1>
-      <p class="text-gray-600">あなたの健康管理パートナー</p>
+    <!-- ロゴエリア -->
+    <div class="text-center mb-10">
+      <h1 class="logo text-5xl mb-3">HealthForecast</h1>
+      <p class="text-slate-600 text-lg">健康データを記録して、未来を予測</p>
     </div>
 
     <!-- ログインカード -->
-    <div class="card p-8">
-      <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">ログイン</h2>
+    <div class="card rounded-3xl p-10">
+      <h2 class="text-3xl font-bold text-slate-900 mb-8">ログイン</h2>
 
-      <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "space-y-6" }) do |f| %>
         <!-- メールアドレス -->
-        <div class="mb-4">
-          <%= f.label :email, "メールアドレス", class: "block text-sm font-medium text-gray-700 mb-2" %>
-          <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "your@email.com", class: "input-field" %>
+        <div>
+          <%= f.label :email, "メールアドレス", class: "block text-sm font-semibold text-slate-700 mb-2" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "your@email.com", class: "input-field w-full px-4 py-3.5 rounded-xl text-slate-900" %>
         </div>
 
         <!-- パスワード -->
-        <div class="mb-6">
-          <%= f.label :password, "パスワード", class: "block text-sm font-medium text-gray-700 mb-2" %>
-          <%= f.password_field :password, autocomplete: "current-password", placeholder: "••••••••", class: "input-field" %>
+        <div>
+          <%= f.label :password, "パスワード", class: "block text-sm font-semibold text-slate-700 mb-2" %>
+          <%= f.password_field :password, autocomplete: "current-password", placeholder: "••••••••", class: "input-field w-full px-4 py-3.5 rounded-xl text-slate-900" %>
         </div>
 
-        <!-- Remember me -->
-        <% if devise_mapping.rememberable? %>
-          <div class="flex items-center mb-6">
-            <%= f.check_box :remember_me, class: "w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500" %>
-            <%= f.label :remember_me, "ログイン状態を保持", class: "ml-2 text-sm text-gray-700" %>
-          </div>
-        <% end %>
-
-        <!-- 送信ボタン -->
-        <div class="mb-4">
-          <%= f.submit "ログイン", class: "btn-primary w-full" %>
+        <!-- Remember me & パスワード忘れ -->
+        <div class="flex items-center justify-between">
+          <% if devise_mapping.rememberable? %>
+            <label class="flex items-center cursor-pointer">
+              <%= f.check_box :remember_me, class: "w-4 h-4 text-emerald-600 border-emerald-300 rounded focus:ring-emerald-500" %>
+              <span class="ml-2.5 text-sm text-slate-600 font-medium">ログイン状態を保持</span>
+            </label>
+          <% end %>
+          <%= link_to "パスワードを忘れた", new_password_path(resource_name), class: "text-sm link" if devise_mapping.recoverable? %>
         </div>
+
+        <!-- ログインボタン -->
+        <%= f.submit "ログイン", class: "btn-primary w-full text-white py-4 rounded-xl font-bold text-lg" %>
       <% end %>
 
-      <!-- リンク -->
-      <div class="text-center text-sm text-gray-600 space-y-2">
-        <%= render "devise/shared/links" %>
+      <!-- 区切り線 -->
+      <div class="my-8 flex items-center">
+        <div class="flex-1 border-t border-slate-300"></div>
+        <span class="px-4 text-sm text-slate-500 font-medium">または</span>
+        <div class="flex-1 border-t border-slate-300"></div>
       </div>
+
+      <!-- 新規登録リンク -->
+      <div class="text-center">
+        <p class="text-slate-600">
+          アカウントをお持ちでない方
+          <%= link_to "新規登録", new_registration_path(resource_name), class: "link ml-1" %>
+        </p>
+      </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="text-center mt-8 text-sm text-slate-600">
+      <p>&copy; 2026 HealthForecast. All rights reserved.</p>
     </div>
   </div>
 </div>

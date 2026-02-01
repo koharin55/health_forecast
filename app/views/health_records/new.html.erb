@@ -1,8 +1,44 @@
-<div class="max-w-4xl mx-auto">
-  <div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">✨ 新しい健康記録</h1>
-    <p class="text-gray-600 mt-2">日々の健康データを記録しましょう</p>
+<div class="max-w-3xl mx-auto">
+  <div class="card rounded-3xl">
+    <!-- ヘッダー -->
+    <div class="px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-200">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">新規記録</h2>
+      <p class="text-slate-600 mt-2 text-sm sm:text-base">健康データを記録しましょう</p>
+    </div>
+
+    <!-- フォーム -->
+    <div class="px-4 sm:px-8 py-6 sm:py-8">
+      <%= render "form", health_record: @health_record %>
+    </div>
   </div>
 
-  <%= render "form", health_record: @health_record %>
+  <!-- ヒント -->
+  <div class="mt-6 sm:mt-8 card rounded-2xl p-4 sm:p-6" style="animation-delay: 0.2s;">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="ml-3 sm:ml-4">
+        <p class="font-bold text-slate-900 mb-2 text-sm sm:text-base">記録のヒント</p>
+        <ul class="space-y-1.5 text-sm text-slate-600">
+          <li class="flex items-start">
+            <span class="text-emerald-500 mr-2 text-lg">•</span>
+            <span>記録日のみ必須項目です</span>
+          </li>
+          <li class="flex items-start">
+            <span class="text-emerald-500 mr-2 text-lg">•</span>
+            <span>空欄の項目は記録されません</span>
+          </li>
+          <li class="flex items-start">
+            <span class="text-emerald-500 mr-2 text-lg">•</span>
+            <span>定期的に記録することで、より正確なトレンド分析が可能になります</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </div>

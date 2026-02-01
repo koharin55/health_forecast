@@ -1,49 +1,68 @@
 <div class="min-h-screen flex items-center justify-center px-4 py-12">
   <div class="max-w-md w-full">
-    <!-- ロゴ -->
-    <div class="text-center mb-8">
-      <h1 class="logo text-5xl mb-2">HealthForecast</h1>
-      <p class="text-gray-600">あなたの健康管理パートナー</p>
+    <!-- ロゴエリア -->
+    <div class="text-center mb-10">
+      <h1 class="logo text-5xl mb-3">HealthForecast</h1>
+      <p class="text-slate-600 text-lg">健康データを記録して、未来を予測</p>
     </div>
 
     <!-- 新規登録カード -->
-    <div class="card p-8">
-      <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">新規登録</h2>
+    <div class="card rounded-3xl p-10">
+      <h2 class="text-3xl font-bold text-slate-900 mb-8">新規登録</h2>
 
-      <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+      <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "space-y-6" }) do |f| %>
         <%= render "devise/shared/error_messages", resource: resource %>
 
         <!-- メールアドレス -->
-        <div class="mb-4">
-          <%= f.label :email, "メールアドレス", class: "block text-sm font-medium text-gray-700 mb-2" %>
-          <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "your@email.com", class: "input-field" %>
+        <div>
+          <%= f.label :email, class: "block text-sm font-semibold text-slate-700 mb-2" do %>
+            メールアドレス <span class="text-red-500">*</span>
+          <% end %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "your@email.com", class: "input-field w-full px-4 py-3.5 rounded-xl text-slate-900" %>
         </div>
 
         <!-- パスワード -->
-        <div class="mb-4">
-          <%= f.label :password, "パスワード", class: "block text-sm font-medium text-gray-700 mb-2" %>
-          <% if @minimum_password_length %>
-            <p class="text-xs text-gray-500 mb-2">※<%= @minimum_password_length %>文字以上</p>
+        <div>
+          <%= f.label :password, class: "block text-sm font-semibold text-slate-700 mb-2" do %>
+            パスワード <span class="text-red-500">*</span>
           <% end %>
-          <%= f.password_field :password, autocomplete: "new-password", placeholder: "••••••••", class: "input-field" %>
+          <% if @minimum_password_length %>
+            <p class="text-xs text-slate-500 mb-2">※<%= @minimum_password_length %>文字以上</p>
+          <% end %>
+          <%= f.password_field :password, autocomplete: "new-password", placeholder: "6文字以上", class: "input-field w-full px-4 py-3.5 rounded-xl text-slate-900" %>
         </div>
 
         <!-- パスワード確認 -->
-        <div class="mb-6">
-          <%= f.label :password_confirmation, "パスワード（確認）", class: "block text-sm font-medium text-gray-700 mb-2" %>
-          <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "••••••••", class: "input-field" %>
+        <div>
+          <%= f.label :password_confirmation, class: "block text-sm font-semibold text-slate-700 mb-2" do %>
+            パスワード（確認） <span class="text-red-500">*</span>
+          <% end %>
+          <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "確認のため再入力", class: "input-field w-full px-4 py-3.5 rounded-xl text-slate-900" %>
         </div>
 
-        <!-- 送信ボタン -->
-        <div class="mb-4">
-          <%= f.submit "登録", class: "btn-primary w-full" %>
-        </div>
+        <!-- 登録ボタン -->
+        <%= f.submit "アカウントを作成", class: "btn-primary w-full text-white py-4 rounded-xl font-bold text-lg" %>
       <% end %>
 
-      <!-- リンク -->
-      <div class="text-center text-sm text-gray-600 space-y-2">
-        <%= render "devise/shared/links" %>
+      <!-- 区切り線 -->
+      <div class="my-8 flex items-center">
+        <div class="flex-1 border-t border-slate-300"></div>
+        <span class="px-4 text-sm text-slate-500 font-medium">または</span>
+        <div class="flex-1 border-t border-slate-300"></div>
       </div>
+
+      <!-- ログインリンク -->
+      <div class="text-center">
+        <p class="text-slate-600">
+          すでにアカウントをお持ちの方
+          <%= link_to "ログイン", new_session_path(resource_name), class: "link ml-1" %>
+        </p>
+      </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="text-center mt-8 text-sm text-slate-600">
+      <p>&copy; 2026 HealthForecast. All rights reserved.</p>
     </div>
   </div>
 </div>
