@@ -8,7 +8,7 @@
   <!-- メインカード -->
   <div class="card rounded-3xl p-6 mb-6">
     <!-- メトリクスグリッド -->
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <!-- 体重 -->
       <div class="bg-white bg-opacity-50 rounded-xl p-4">
         <div class="icon-gradient mb-3 w-12 h-12 text-xl">
@@ -72,6 +72,34 @@
           <%= @health_record.heart_rate.present? ? @health_record.heart_rate.to_s : "➖" %>
           <% if @health_record.heart_rate.present? %>
             <span class="text-sm text-slate-500 font-normal">bpm</span>
+          <% end %>
+        </p>
+      </div>
+
+      <!-- 最高血圧 -->
+      <div class="bg-white bg-opacity-50 rounded-xl p-4">
+        <div class="icon-gradient mb-3 w-12 h-12 text-xl">
+          <span>🩸</span>
+        </div>
+        <h3 class="text-xs text-slate-500 mb-1">最高血圧</h3>
+        <p class="text-2xl font-bold text-slate-800 mono">
+          <%= @health_record.systolic_pressure.present? ? @health_record.systolic_pressure.to_s : "➖" %>
+          <% if @health_record.systolic_pressure.present? %>
+            <span class="text-sm text-slate-500 font-normal">mmHg</span>
+          <% end %>
+        </p>
+      </div>
+
+      <!-- 最低血圧 -->
+      <div class="bg-white bg-opacity-50 rounded-xl p-4">
+        <div class="icon-gradient mb-3 w-12 h-12 text-xl">
+          <span>💉</span>
+        </div>
+        <h3 class="text-xs text-slate-500 mb-1">最低血圧</h3>
+        <p class="text-2xl font-bold text-slate-800 mono">
+          <%= @health_record.diastolic_pressure.present? ? @health_record.diastolic_pressure.to_s : "➖" %>
+          <% if @health_record.diastolic_pressure.present? %>
+            <span class="text-sm text-slate-500 font-normal">mmHg</span>
           <% end %>
         </p>
       </div>
