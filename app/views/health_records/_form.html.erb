@@ -19,38 +19,6 @@
     <p class="mt-2 text-sm text-slate-500">必須項目です</p>
   </div>
 
-  <!-- 体重 & 睡眠時間 -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-    <div>
-      <%= form.label :weight, "体重（kg）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
-      <%= form.number_field :weight, step: 0.1, min: 0, placeholder: "65.5", inputmode: "decimal", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
-    </div>
-
-    <div>
-      <%= form.label :sleep_hours, "睡眠時間（時間）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
-      <%= form.number_field :sleep_hours, step: 0.5, min: 0, placeholder: "7.5", inputmode: "decimal", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
-    </div>
-  </div>
-
-  <!-- 運動時間 & 歩数 -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-    <div>
-      <%= form.label :exercise_minutes, "運動時間（分）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
-      <%= form.number_field :exercise_minutes, min: 0, placeholder: "30", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
-    </div>
-
-    <div>
-      <%= form.label :steps, "歩数", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
-      <%= form.number_field :steps, min: 0, placeholder: "8500", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
-    </div>
-  </div>
-
-  <!-- 心拍数 -->
-  <div>
-    <%= form.label :heart_rate, "心拍数（bpm）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
-    <%= form.number_field :heart_rate, min: 0, placeholder: "72", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
-  </div>
-
   <!-- 血圧（最高血圧 & 最低血圧） -->
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
     <div>
@@ -66,11 +34,44 @@
     </div>
   </div>
 
-  <!-- 体温 -->
-  <div>
-    <%= form.label :body_temperature, "体温（℃）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
-    <%= form.number_field :body_temperature, step: 0.1, min: 34.0, max: 42.0, placeholder: "36.4", inputmode: "decimal", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
-    <p class="mt-2 text-xs text-slate-500">正常範囲: 36.0-37.5℃</p>
+  <!-- 心拍数 & 体温 -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div>
+      <%= form.label :heart_rate, "心拍数（bpm）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :heart_rate, min: 0, placeholder: "72", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+    </div>
+
+    <div>
+      <%= form.label :body_temperature, "体温（℃）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :body_temperature, step: 0.1, min: 34.0, max: 42.0, placeholder: "36.4", inputmode: "decimal", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+      <p class="mt-2 text-xs text-slate-500">正常範囲: 36.0-37.5℃</p>
+    </div>
+  </div>
+
+  <!-- 睡眠時間 & 体重 -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div>
+      <%= form.label :sleep_hours, "睡眠時間（時間）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :sleep_hours, step: 0.5, min: 0, placeholder: "7.5", inputmode: "decimal", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+    </div>
+
+    <div>
+      <%= form.label :weight, "体重（kg）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :weight, step: 0.1, min: 0, placeholder: "65.5", inputmode: "decimal", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+    </div>
+  </div>
+
+  <!-- 運動時間 & 歩数 -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div>
+      <%= form.label :exercise_minutes, "運動時間（分）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :exercise_minutes, min: 0, placeholder: "30", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+    </div>
+
+    <div>
+      <%= form.label :steps, "歩数", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :steps, min: 0, placeholder: "8500", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+    </div>
   </div>
 
   <!-- 体調スコア -->

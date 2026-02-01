@@ -34,11 +34,33 @@
 
           <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="bg-white bg-opacity-50 rounded-lg p-3">
-              <div class="text-xs text-slate-500 mb-1">体重</div>
+              <div class="text-xs text-slate-500 mb-1">血圧</div>
               <div class="text-lg font-bold text-slate-800 mono">
-                <%= record.weight.present? ? "#{record.weight}" : "➖" %>
-                <% if record.weight.present? %>
-                  <span class="text-xs text-slate-500 font-normal">kg</span>
+                <% if record.systolic_pressure.present? && record.diastolic_pressure.present? %>
+                  <%= "#{record.systolic_pressure}/#{record.diastolic_pressure}" %>
+                  <span class="text-xs text-slate-500 font-normal">mmHg</span>
+                <% else %>
+                  ➖
+                <% end %>
+              </div>
+            </div>
+
+            <div class="bg-white bg-opacity-50 rounded-lg p-3">
+              <div class="text-xs text-slate-500 mb-1">心拍数</div>
+              <div class="text-lg font-bold text-slate-800 mono">
+                <%= record.heart_rate.present? ? "#{record.heart_rate}" : "➖" %>
+                <% if record.heart_rate.present? %>
+                  <span class="text-xs text-slate-500 font-normal">bpm</span>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="bg-white bg-opacity-50 rounded-lg p-3">
+              <div class="text-xs text-slate-500 mb-1">体温</div>
+              <div class="text-lg font-bold text-slate-800 mono">
+                <%= record.body_temperature.present? ? "#{record.body_temperature}" : "➖" %>
+                <% if record.body_temperature.present? %>
+                  <span class="text-xs text-slate-500 font-normal">℃</span>
                 <% end %>
               </div>
             </div>
@@ -49,6 +71,16 @@
                 <%= record.sleep_hours.present? ? "#{record.sleep_hours}" : "➖" %>
                 <% if record.sleep_hours.present? %>
                   <span class="text-xs text-slate-500 font-normal">h</span>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="bg-white bg-opacity-50 rounded-lg p-3">
+              <div class="text-xs text-slate-500 mb-1">体重</div>
+              <div class="text-lg font-bold text-slate-800 mono">
+                <%= record.weight.present? ? "#{record.weight}" : "➖" %>
+                <% if record.weight.present? %>
+                  <span class="text-xs text-slate-500 font-normal">kg</span>
                 <% end %>
               </div>
             </div>
@@ -67,28 +99,6 @@
               <div class="text-xs text-slate-500 mb-1">歩数</div>
               <div class="text-lg font-bold text-slate-800 mono">
                 <%= record.steps.present? ? number_with_delimiter(record.steps) : "➖" %>
-              </div>
-            </div>
-
-            <div class="bg-white bg-opacity-50 rounded-lg p-3">
-              <div class="text-xs text-slate-500 mb-1">血圧</div>
-              <div class="text-lg font-bold text-slate-800 mono">
-                <% if record.systolic_pressure.present? && record.diastolic_pressure.present? %>
-                  <%= "#{record.systolic_pressure}/#{record.diastolic_pressure}" %>
-                  <span class="text-xs text-slate-500 font-normal">mmHg</span>
-                <% else %>
-                  ➖
-                <% end %>
-              </div>
-            </div>
-
-            <div class="bg-white bg-opacity-50 rounded-lg p-3">
-              <div class="text-xs text-slate-500 mb-1">体温</div>
-              <div class="text-lg font-bold text-slate-800 mono">
-                <%= record.body_temperature.present? ? "#{record.body_temperature}" : "➖" %>
-                <% if record.body_temperature.present? %>
-                  <span class="text-xs text-slate-500 font-normal">℃</span>
-                <% end %>
               </div>
             </div>
           </div>
@@ -112,13 +122,13 @@
           <thead class="bg-gray-50 bg-opacity-50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">日付</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体重</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">血圧</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">心拍数</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体温</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">睡眠</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体重</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">運動</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">歩数</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">心拍数</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">血圧</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体温</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体調</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">操作</th>
             </tr>
@@ -130,21 +140,6 @@
                   <%= record.recorded_at.strftime("%Y-%m-%d") %>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
-                  <%= record.weight.present? ? "#{record.weight} kg" : "➖" %>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
-                  <%= record.sleep_hours.present? ? "#{record.sleep_hours}h" : "➖" %>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
-                  <%= record.exercise_minutes.present? ? "#{record.exercise_minutes}分" : "➖" %>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
-                  <%= record.steps.present? ? number_with_delimiter(record.steps) : "➖" %>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
-                  <%= record.heart_rate.present? ? "#{record.heart_rate} bpm" : "➖" %>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
                   <% if record.systolic_pressure.present? && record.diastolic_pressure.present? %>
                     <%= "#{record.systolic_pressure}/#{record.diastolic_pressure} mmHg" %>
                   <% else %>
@@ -152,7 +147,22 @@
                   <% end %>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
+                  <%= record.heart_rate.present? ? "#{record.heart_rate} bpm" : "➖" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
                   <%= record.body_temperature.present? ? "#{record.body_temperature}℃" : "➖" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
+                  <%= record.sleep_hours.present? ? "#{record.sleep_hours}h" : "➖" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
+                  <%= record.weight.present? ? "#{record.weight} kg" : "➖" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
+                  <%= record.exercise_minutes.present? ? "#{record.exercise_minutes}分" : "➖" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
+                  <%= record.steps.present? ? number_with_delimiter(record.steps) : "➖" %>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                   <% if record.mood.present? %>
