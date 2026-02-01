@@ -11,7 +11,7 @@
   </div>
 
   <!-- 統計サマリーカード -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-12">
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mb-8 sm:mb-12">
     <!-- 総記録数 -->
     <div class="card rounded-2xl p-4 sm:p-6 animate-fade-in-up delay-100">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -83,6 +83,28 @@
           </div>
         </div>
       </div>
+
+      <!-- 最新血圧 -->
+      <div class="card rounded-2xl p-4 sm:p-6 animate-fade-in-up delay-500">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div class="mb-3 sm:mb-0">
+            <p class="text-xs sm:text-sm text-slate-600 font-medium mb-1">最新血圧</p>
+            <p class="text-2xl sm:text-4xl font-bold text-slate-900 mono">
+              <% if @latest_record.systolic_pressure.present? && @latest_record.diastolic_pressure.present? %>
+                <%= "#{@latest_record.systolic_pressure}/#{@latest_record.diastolic_pressure}" %>
+                <span class="text-base sm:text-xl text-slate-600">mmHg</span>
+              <% else %>
+                ➖
+              <% end %>
+            </p>
+          </div>
+          <div class="icon-gradient w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center">
+            <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
     <% else %>
       <!-- 記録がない場合 -->
       <div class="card rounded-2xl p-6 col-span-2 lg:col-span-3 animate-fade-in-up delay-200">
@@ -138,6 +160,17 @@
           <canvas id="exerciseChart"></canvas>
         </div>
       </div>
+
+      <!-- 血圧グラフ -->
+      <div class="card rounded-2xl p-4 sm:p-6">
+        <h3 class="text-base sm:text-xl font-bold mb-4 sm:mb-6 text-slate-900">
+          血圧の推移
+          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2">最近7日間</span>
+        </h3>
+        <div style="height: 200px;">
+          <canvas id="bloodPressureChart"></canvas>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -147,9 +180,10 @@
         const sleepData = <%= raw @recent_records.where.not(sleep_hours: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.sleep_hours } }.to_json %>;
         const moodData = <%= raw @recent_records.where.not(mood: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.mood } }.to_json %>;
         const exerciseData = <%= raw @recent_records.where.not(exercise_minutes: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.exercise_minutes } }.to_json %>;
+        const bloodPressureData = <%= raw @recent_records.where.not(systolic_pressure: nil, diastolic_pressure: nil).reverse.map { |r| { x: r.recorded_at.to_s, systolic: r.systolic_pressure, diastolic: r.diastolic_pressure } }.to_json %>;
 
         // 既存のチャートを破棄
-        ['weightChart', 'sleepChart', 'moodChart', 'exerciseChart'].forEach(id => {
+        ['weightChart', 'sleepChart', 'moodChart', 'exerciseChart', 'bloodPressureChart'].forEach(id => {
           const canvas = document.getElementById(id);
           if (canvas && Chart.getChart(canvas)) {
             Chart.getChart(canvas).destroy();
@@ -288,6 +322,73 @@
             }
           });
         }
+
+        // 血圧グラフ（最高血圧・最低血圧の2本線）
+        const bloodPressureCtx = document.getElementById('bloodPressureChart');
+        if (bloodPressureCtx && bloodPressureData.length > 0) {
+          // 最高血圧用グラデーション
+          const systolicGradient = bloodPressureCtx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+          systolicGradient.addColorStop(0, 'rgba(244, 63, 94, 0.5)');
+          systolicGradient.addColorStop(1, 'rgba(244, 63, 94, 0.0)');
+
+          // 最低血圧用グラデーション
+          const diastolicGradient = bloodPressureCtx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+          diastolicGradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)');
+          diastolicGradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+          new Chart(bloodPressureCtx, {
+            type: 'line',
+            data: {
+              datasets: [
+                {
+                  label: '最高血圧 (mmHg)',
+                  data: bloodPressureData.map(d => ({ x: d.x, y: d.systolic })),
+                  borderColor: '#f43f5e',
+                  backgroundColor: systolicGradient,
+                  fill: true,
+                  tension: 0.4,
+                  pointRadius: 4,
+                  pointBackgroundColor: '#f43f5e'
+                },
+                {
+                  label: '最低血圧 (mmHg)',
+                  data: bloodPressureData.map(d => ({ x: d.x, y: d.diastolic })),
+                  borderColor: '#6366f1',
+                  backgroundColor: diastolicGradient,
+                  fill: true,
+                  tension: 0.4,
+                  pointRadius: 4,
+                  pointBackgroundColor: '#6366f1'
+                }
+              ]
+            },
+            options: {
+              animation: { duration: 0 },
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: { type: 'time', time: { unit: 'day' } },
+                y: {
+                  beginAtZero: false,
+                  min: 40,
+                  max: 180,
+                  ticks: { stepSize: 20 }
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  labels: {
+                    boxWidth: 12,
+                    padding: 10,
+                    font: { size: 11 }
+                  }
+                }
+              }
+            }
+          });
+        }
       });
     </script>
   <% end %>
@@ -336,6 +437,16 @@
                 <span class="text-slate-500">運動:</span>
                 <span class="font-semibold"><%= record.exercise_minutes.present? ? "#{record.exercise_minutes}分" : "➖" %></span>
               </div>
+              <div>
+                <span class="text-slate-500">血圧:</span>
+                <span class="font-semibold">
+                  <% if record.systolic_pressure.present? && record.diastolic_pressure.present? %>
+                    <%= "#{record.systolic_pressure}/#{record.diastolic_pressure} mmHg" %>
+                  <% else %>
+                    ➖
+                  <% end %>
+                </span>
+              </div>
             </div>
             <div class="flex gap-2">
               <%= link_to "詳細", record, class: "btn-secondary flex-1 text-center text-sm py-2" %>
@@ -354,6 +465,7 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体重</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">睡眠</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">運動</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">血圧</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体調</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">操作</th>
             </tr>
@@ -372,6 +484,13 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
                   <%= record.exercise_minutes.present? ? "#{record.exercise_minutes}分" : "➖" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
+                  <% if record.systolic_pressure.present? && record.diastolic_pressure.present? %>
+                    <%= "#{record.systolic_pressure}/#{record.diastolic_pressure} mmHg" %>
+                  <% else %>
+                    ➖
+                  <% end %>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                   <% if record.mood.present? %>
