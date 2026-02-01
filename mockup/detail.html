@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>記録詳細 - HealthForecast</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <!-- ナビゲーションバー -->
+  <nav class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-2xl font-bold text-blue-600">HealthForecast</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="dashboard.html" class="text-gray-600 hover:text-gray-900">ダッシュボード</a>
+          <a href="health_records.html" class="text-gray-600 hover:text-gray-900">記録一覧</a>
+          <a href="new_record.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">新規記録</a>
+          <a href="login.html" class="text-gray-600 hover:text-gray-900">ログアウト</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- メインコンテンツ -->
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- パンくずリスト -->
+    <nav class="mb-6 flex items-center text-sm text-gray-500">
+      <a href="dashboard.html" class="hover:text-gray-700">ダッシュボード</a>
+      <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+      <a href="health_records.html" class="hover:text-gray-700">記録一覧</a>
+      <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+      <span class="text-gray-900 font-medium">2026年2月1日の記録</span>
+    </nav>
+
+    <div class="bg-white rounded-lg shadow">
+      <!-- ヘッダー -->
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900">記録詳細</h2>
+          <p class="text-sm text-gray-600 mt-1">2026年2月1日（土）</p>
+        </div>
+        <div class="flex space-x-3">
+          <a href="edit.html" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium">
+            編集
+          </a>
+          <button class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
+            削除
+          </button>
+        </div>
+      </div>
+
+      <!-- 詳細情報 -->
+      <div class="px-6 py-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- 体重 -->
+          <div class="bg-gray-50 rounded-lg p-5">
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-medium text-gray-600">体重</h3>
+            </div>
+            <p class="text-3xl font-bold text-gray-900">65.5 <span class="text-lg text-gray-600">kg</span></p>
+          </div>
+
+          <!-- 睡眠時間 -->
+          <div class="bg-gray-50 rounded-lg p-5">
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-medium text-gray-600">睡眠時間</h3>
+            </div>
+            <p class="text-3xl font-bold text-gray-900">7.5 <span class="text-lg text-gray-600">時間</span></p>
+          </div>
+
+          <!-- 運動時間 -->
+          <div class="bg-gray-50 rounded-lg p-5">
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-medium text-gray-600">運動時間</h3>
+            </div>
+            <p class="text-3xl font-bold text-gray-900">30 <span class="text-lg text-gray-600">分</span></p>
+          </div>
+
+          <!-- 歩数 -->
+          <div class="bg-gray-50 rounded-lg p-5">
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 17l-4 4m0 0l-4-4m4 4V3"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-medium text-gray-600">歩数</h3>
+            </div>
+            <p class="text-3xl font-bold text-gray-900">8,500 <span class="text-lg text-gray-600">歩</span></p>
+          </div>
+
+          <!-- 心拍数 -->
+          <div class="bg-gray-50 rounded-lg p-5">
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-medium text-gray-600">心拍数</h3>
+            </div>
+            <p class="text-3xl font-bold text-gray-900">72 <span class="text-lg text-gray-600">bpm</span></p>
+          </div>
+
+          <!-- 体調スコア -->
+          <div class="bg-gray-50 rounded-lg p-5">
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-medium text-gray-600">体調スコア</h3>
+            </div>
+            <div class="flex items-center">
+              <span class="text-3xl mr-3">😊</span>
+              <span class="px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">良い (4/5)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- メモ -->
+        <div class="mt-6 bg-gray-50 rounded-lg p-5">
+          <div class="flex items-start mb-3">
+            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </div>
+            <h3 class="text-sm font-medium text-gray-600 mt-2">メモ</h3>
+          </div>
+          <p class="text-gray-700 leading-relaxed">
+            朝のジョギング30分。天気が良くて気持ちよく運動できた。夜はしっかり眠れそう。食事も野菜中心で健康的。明日も続けたい。
+          </p>
+        </div>
+
+        <!-- タイムスタンプ -->
+        <div class="mt-6 pt-6 border-t border-gray-200 flex items-center text-sm text-gray-500">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>作成: 2026-02-01 20:30</span>
+          <span class="mx-2">•</span>
+          <span>更新: 2026-02-01 20:30</span>
+        </div>
+      </div>
+
+      <!-- フッターアクション -->
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
+        <a href="health_records.html" class="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center">
+          <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          一覧に戻る
+        </a>
+        <div class="flex space-x-3">
+          <a href="edit.html" class="text-gray-600 hover:text-gray-900 font-medium">編集</a>
+          <button class="text-red-600 hover:text-red-700 font-medium">削除</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

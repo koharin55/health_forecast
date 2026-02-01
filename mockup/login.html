@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン - HealthForecast</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
+  <div class="max-w-md w-full mx-4">
+    <!-- ロゴエリア -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-blue-600 mb-2">HealthForecast</h1>
+      <p class="text-gray-600">健康データを記録して、未来を予測</p>
+    </div>
+
+    <!-- ログインフォーム -->
+    <div class="bg-white rounded-lg shadow-lg p-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">ログイン</h2>
+
+      <form class="space-y-5">
+        <!-- メールアドレス -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+            メールアドレス
+          </label>
+          <input type="email" id="email" name="email" required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="your@email.com">
+        </div>
+
+        <!-- パスワード -->
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+            パスワード
+          </label>
+          <input type="password" id="password" name="password" required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="••••••••">
+        </div>
+
+        <!-- Remember me & パスワード忘れ -->
+        <div class="flex items-center justify-between">
+          <label class="flex items-center">
+            <input type="checkbox" name="remember_me" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+            <span class="ml-2 text-sm text-gray-600">ログイン状態を保持</span>
+          </label>
+          <a href="#" class="text-sm text-blue-600 hover:text-blue-700">パスワードを忘れた</a>
+        </div>
+
+        <!-- ログインボタン -->
+        <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium transition">
+          ログイン
+        </button>
+      </form>
+
+      <!-- 区切り線 -->
+      <div class="my-6 flex items-center">
+        <div class="flex-1 border-t border-gray-300"></div>
+        <span class="px-4 text-sm text-gray-500">または</span>
+        <div class="flex-1 border-t border-gray-300"></div>
+      </div>
+
+      <!-- 新規登録リンク -->
+      <div class="text-center">
+        <p class="text-sm text-gray-600">
+          アカウントをお持ちでない方
+          <a href="signup.html" class="text-blue-600 hover:text-blue-700 font-medium">新規登録</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="text-center mt-6 text-sm text-gray-600">
+      <p>&copy; 2026 HealthForecast. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

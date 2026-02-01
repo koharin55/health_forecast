@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新規登録 - HealthForecast</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
+  <div class="max-w-md w-full mx-4">
+    <!-- ロゴエリア -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-blue-600 mb-2">HealthForecast</h1>
+      <p class="text-gray-600">健康データを記録して、未来を予測</p>
+    </div>
+
+    <!-- 新規登録フォーム -->
+    <div class="bg-white rounded-lg shadow-lg p-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">新規登録</h2>
+
+      <form class="space-y-5">
+        <!-- メールアドレス -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+            メールアドレス <span class="text-red-600">*</span>
+          </label>
+          <input type="email" id="email" name="email" required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="your@email.com">
+        </div>
+
+        <!-- パスワード -->
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+            パスワード <span class="text-red-600">*</span>
+          </label>
+          <input type="password" id="password" name="password" required minlength="6"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="6文字以上">
+          <p class="mt-1 text-xs text-gray-500">6文字以上で入力してください</p>
+        </div>
+
+        <!-- パスワード確認 -->
+        <div>
+          <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
+            パスワード（確認） <span class="text-red-600">*</span>
+          </label>
+          <input type="password" id="password_confirmation" name="password_confirmation" required minlength="6"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="確認のため再入力">
+        </div>
+
+        <!-- 利用規約 -->
+        <div>
+          <label class="flex items-start">
+            <input type="checkbox" name="terms" required class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1">
+            <span class="ml-2 text-sm text-gray-600">
+              <a href="#" class="text-blue-600 hover:text-blue-700">利用規約</a>と<a href="#" class="text-blue-600 hover:text-blue-700">プライバシーポリシー</a>に同意します
+            </span>
+          </label>
+        </div>
+
+        <!-- 登録ボタン -->
+        <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium transition">
+          アカウントを作成
+        </button>
+      </form>
+
+      <!-- 区切り線 -->
+      <div class="my-6 flex items-center">
+        <div class="flex-1 border-t border-gray-300"></div>
+        <span class="px-4 text-sm text-gray-500">または</span>
+        <div class="flex-1 border-t border-gray-300"></div>
+      </div>
+
+      <!-- ログインリンク -->
+      <div class="text-center">
+        <p class="text-sm text-gray-600">
+          すでにアカウントをお持ちの方
+          <a href="login.html" class="text-blue-600 hover:text-blue-700 font-medium">ログイン</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="text-center mt-6 text-sm text-gray-600">
+      <p>&copy; 2026 HealthForecast. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

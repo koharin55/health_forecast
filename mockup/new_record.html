@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新規記録 - HealthForecast</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <!-- ナビゲーションバー -->
+  <nav class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-2xl font-bold text-blue-600">HealthForecast</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="dashboard.html" class="text-gray-600 hover:text-gray-900">ダッシュボード</a>
+          <a href="health_records.html" class="text-gray-600 hover:text-gray-900">記録一覧</a>
+          <a href="new_record.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">新規記録</a>
+          <a href="login.html" class="text-gray-600 hover:text-gray-900">ログアウト</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- メインコンテンツ -->
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-lg shadow">
+      <!-- ヘッダー -->
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-900">新規記録</h2>
+        <p class="text-sm text-gray-600 mt-1">健康データを記録しましょう</p>
+      </div>
+
+      <!-- フォーム -->
+      <form class="px-6 py-6 space-y-6">
+        <!-- 記録日 -->
+        <div>
+          <label for="recorded_at" class="block text-sm font-medium text-gray-700 mb-2">
+            記録日 <span class="text-red-600">*</span>
+          </label>
+          <input type="date" id="recorded_at" name="recorded_at" value="2026-02-01" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <p class="mt-1 text-sm text-gray-500">必須項目です</p>
+        </div>
+
+        <!-- 体重 -->
+        <div>
+          <label for="weight" class="block text-sm font-medium text-gray-700 mb-2">
+            体重（kg）
+          </label>
+          <input type="number" id="weight" name="weight" step="0.1" min="0" placeholder="65.5"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <p class="mt-1 text-sm text-gray-500">小数点第1位まで入力可能</p>
+        </div>
+
+        <!-- 睡眠時間 -->
+        <div>
+          <label for="sleep_hours" class="block text-sm font-medium text-gray-700 mb-2">
+            睡眠時間（時間）
+          </label>
+          <input type="number" id="sleep_hours" name="sleep_hours" step="0.5" min="0" placeholder="7.5"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <p class="mt-1 text-sm text-gray-500">0.5時間単位で入力</p>
+        </div>
+
+        <!-- 運動時間 -->
+        <div>
+          <label for="exercise_minutes" class="block text-sm font-medium text-gray-700 mb-2">
+            運動時間（分）
+          </label>
+          <input type="number" id="exercise_minutes" name="exercise_minutes" min="0" placeholder="30"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+
+        <!-- 歩数 -->
+        <div>
+          <label for="steps" class="block text-sm font-medium text-gray-700 mb-2">
+            歩数
+          </label>
+          <input type="number" id="steps" name="steps" min="0" placeholder="8500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+
+        <!-- 心拍数 -->
+        <div>
+          <label for="heart_rate" class="block text-sm font-medium text-gray-700 mb-2">
+            心拍数（bpm）
+          </label>
+          <input type="number" id="heart_rate" name="heart_rate" min="0" placeholder="72"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+
+        <!-- 体調スコア -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-3">
+            体調スコア
+          </label>
+          <div class="grid grid-cols-5 gap-3">
+            <label class="cursor-pointer">
+              <input type="radio" name="mood" value="1" class="peer sr-only">
+              <div class="peer-checked:ring-2 peer-checked:ring-red-500 peer-checked:bg-red-50 border-2 border-gray-200 rounded-lg p-4 text-center hover:border-red-300 transition">
+                <div class="text-3xl mb-1">😞</div>
+                <div class="text-xs font-medium text-gray-700">とても悪い</div>
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="mood" value="2" class="peer sr-only">
+              <div class="peer-checked:ring-2 peer-checked:ring-orange-500 peer-checked:bg-orange-50 border-2 border-gray-200 rounded-lg p-4 text-center hover:border-orange-300 transition">
+                <div class="text-3xl mb-1">😕</div>
+                <div class="text-xs font-medium text-gray-700">悪い</div>
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="mood" value="3" class="peer sr-only">
+              <div class="peer-checked:ring-2 peer-checked:ring-yellow-500 peer-checked:bg-yellow-50 border-2 border-gray-200 rounded-lg p-4 text-center hover:border-yellow-300 transition">
+                <div class="text-3xl mb-1">😐</div>
+                <div class="text-xs font-medium text-gray-700">普通</div>
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="mood" value="4" class="peer sr-only" checked>
+              <div class="peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:bg-blue-50 border-2 border-gray-200 rounded-lg p-4 text-center hover:border-blue-300 transition">
+                <div class="text-3xl mb-1">😊</div>
+                <div class="text-xs font-medium text-gray-700">良い</div>
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="mood" value="5" class="peer sr-only">
+              <div class="peer-checked:ring-2 peer-checked:ring-green-500 peer-checked:bg-green-50 border-2 border-gray-200 rounded-lg p-4 text-center hover:border-green-300 transition">
+                <div class="text-3xl mb-1">😄</div>
+                <div class="text-xs font-medium text-gray-700">とても良い</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- メモ -->
+        <div>
+          <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+            メモ
+          </label>
+          <textarea id="notes" name="notes" rows="4" placeholder="今日の調子や気になったことを記録..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+        </div>
+
+        <!-- アクションボタン -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <a href="health_records.html" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+            キャンセル
+          </a>
+          <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+            記録を保存
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ヒント -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div class="flex">
+        <svg class="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div class="text-sm text-blue-800">
+          <p class="font-medium mb-1">記録のヒント</p>
+          <ul class="list-disc list-inside space-y-1 text-blue-700">
+            <li>記録日のみ必須項目です</li>
+            <li>空欄の項目は記録されません</li>
+            <li>定期的に記録することで、より正確なトレンド分析が可能になります</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

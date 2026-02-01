@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>HealthForecast</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+
+  <body class="bg-gray-50">
+    <% if user_signed_in? %>
+      <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+              <%= link_to "HealthForecast", root_path, class: "text-2xl font-bold text-blue-600" %>
+              <%= link_to "ダッシュボード", root_path, class: "text-gray-700 hover:text-blue-600" %>
+              <%= link_to "健康記録", health_records_path, class: "text-gray-700 hover:text-blue-600" %>
+            </div>
+            <div class="flex items-center space-x-4">
+              <span class="text-gray-700"><%= current_user.email %></span>
+              <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded" %>
+            </div>
+          </div>
+        </div>
+      </nav>
+    <% end %>
+
+    <% if notice.present? %>
+      <div class="container mx-auto px-4 mt-4">
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+          <span class="block sm:inline"><%= notice %></span>
+        </div>
+      </div>
+    <% end %>
+
+    <% if alert.present? %>
+      <div class="container mx-auto px-4 mt-4">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <span class="block sm:inline"><%= alert %></span>
+        </div>
+      </div>
+    <% end %>
+
+    <main class="container mx-auto px-4 py-8">
+      <%= yield %>
+    </main>
+
+    <footer class="bg-white shadow-lg mt-12">
+      <div class="container mx-auto px-4 py-6 text-center text-gray-600">
+        <p>&copy; 2026 HealthForecast - あなたの健康管理パートナー</p>
+      </div>
+    </footer>
+  </body>
+</html>
