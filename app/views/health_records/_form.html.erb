@@ -1,6 +1,6 @@
-<%= form_with(model: health_record, class: "bg-white shadow-md rounded-lg p-6") do |form| %>
+<%= form_with(model: health_record, class: "card p-6") do |form| %>
   <% if health_record.errors.any? %>
-    <div id="error_explanation" class="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    <div id="error_explanation" class="alert alert-error mb-4">
       <h2 class="font-bold"><%= pluralize(health_record.errors.count, "件の") %>エラーがあります:</h2>
       <ul class="list-disc ml-6 mt-2">
         <% health_record.errors.each do |error| %>
@@ -11,51 +11,100 @@
   <% end %>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- 記録日 -->
     <div>
       <%= form.label :recorded_at, "記録日", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.date_field :recorded_at, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      <%= form.date_field :recorded_at, class: "input-field" %>
     </div>
 
+    <!-- 体重 -->
     <div>
       <%= form.label :weight, "体重 (kg)", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.number_field :weight, step: 0.1, placeholder: "例: 65.5", class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      <%= form.number_field :weight, step: 0.1, placeholder: "例: 65.5", inputmode: "decimal", class: "input-field" %>
     </div>
 
+    <!-- 睡眠時間 -->
     <div>
       <%= form.label :sleep_hours, "睡眠時間 (時間)", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.number_field :sleep_hours, step: 0.1, placeholder: "例: 7.5", class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      <%= form.number_field :sleep_hours, step: 0.1, placeholder: "例: 7.5", inputmode: "decimal", class: "input-field" %>
     </div>
 
+    <!-- 運動時間 -->
     <div>
       <%= form.label :exercise_minutes, "運動時間 (分)", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.number_field :exercise_minutes, placeholder: "例: 30", class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      <%= form.number_field :exercise_minutes, placeholder: "例: 30", inputmode: "numeric", class: "input-field" %>
     </div>
 
-    <div>
-      <%= form.label :mood, "体調スコア (1-5)", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.select :mood, options_for_select([[nil, "選択してください"], [1, "1 - とても悪い"], [2, "2 - 悪い"], [3, "3 - 普通"], [4, "4 - 良い"], [5, "5 - とても良い"]], health_record.mood), {}, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
-    </div>
-
+    <!-- 歩数 -->
     <div>
       <%= form.label :steps, "歩数", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.number_field :steps, placeholder: "例: 8000", class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      <%= form.number_field :steps, placeholder: "例: 8000", inputmode: "numeric", class: "input-field" %>
       <p class="text-xs text-gray-500 mt-1">※将来的にHealthKitから自動取得予定</p>
     </div>
 
+    <!-- 心拍数 -->
     <div>
       <%= form.label :heart_rate, "心拍数 (bpm)", class: "block text-sm font-medium text-gray-700 mb-2" %>
-      <%= form.number_field :heart_rate, placeholder: "例: 70", class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      <%= form.number_field :heart_rate, placeholder: "例: 70", inputmode: "numeric", class: "input-field" %>
       <p class="text-xs text-gray-500 mt-1">※将来的にHealthKitから自動取得予定</p>
     </div>
   </div>
 
+  <!-- 体調スコアセレクター -->
   <div class="mt-6">
-    <%= form.label :notes, "メモ", class: "block text-sm font-medium text-gray-700 mb-2" %>
-    <%= form.text_area :notes, rows: 4, placeholder: "体調や気分、その日の出来事などを自由に記録できます", class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+    <%= form.label :mood, "体調スコア", class: "block text-sm font-medium text-gray-700 mb-3" %>
+    <div class="mood-selector">
+      <div class="mood-option">
+        <%= form.radio_button :mood, 1, id: "mood_1" %>
+        <%= form.label :mood, for: "mood_1" do %>
+          <span class="emoji">😞</span>
+          <span class="text">とても悪い</span>
+        <% end %>
+      </div>
+
+      <div class="mood-option">
+        <%= form.radio_button :mood, 2, id: "mood_2" %>
+        <%= form.label :mood, for: "mood_2" do %>
+          <span class="emoji">😕</span>
+          <span class="text">悪い</span>
+        <% end %>
+      </div>
+
+      <div class="mood-option">
+        <%= form.radio_button :mood, 3, id: "mood_3" %>
+        <%= form.label :mood, for: "mood_3" do %>
+          <span class="emoji">😐</span>
+          <span class="text">普通</span>
+        <% end %>
+      </div>
+
+      <div class="mood-option">
+        <%= form.radio_button :mood, 4, id: "mood_4" %>
+        <%= form.label :mood, for: "mood_4" do %>
+          <span class="emoji">😊</span>
+          <span class="text">良い</span>
+        <% end %>
+      </div>
+
+      <div class="mood-option">
+        <%= form.radio_button :mood, 5, id: "mood_5" %>
+        <%= form.label :mood, for: "mood_5" do %>
+          <span class="emoji">😄</span>
+          <span class="text">とても良い</span>
+        <% end %>
+      </div>
+    </div>
   </div>
 
-  <div class="mt-6 flex gap-3">
-    <%= form.submit health_record.new_record? ? "記録を追加" : "記録を更新", class: "bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-md cursor-pointer" %>
-    <%= link_to "キャンセル", health_records_path, class: "bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-6 py-3 rounded-md" %>
+  <!-- メモ -->
+  <div class="mt-6">
+    <%= form.label :notes, "メモ", class: "block text-sm font-medium text-gray-700 mb-2" %>
+    <%= form.text_area :notes, rows: 4, placeholder: "体調や気分、その日の出来事などを自由に記録できます", class: "input-field", style: "min-height: 120px;" %>
+  </div>
+
+  <!-- ボタン -->
+  <div class="mt-6 flex flex-col md:flex-row gap-3">
+    <%= form.submit health_record.new_record? ? "記録を追加" : "記録を更新", class: "btn-primary order-1 md:order-2" %>
+    <%= link_to "キャンセル", health_records_path, class: "btn-secondary order-2 md:order-1" %>
   </div>
 <% end %>

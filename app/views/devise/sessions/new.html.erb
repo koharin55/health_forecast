@@ -1,0 +1,46 @@
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+  <div class="max-w-md w-full">
+    <!-- ロゴ -->
+    <div class="text-center mb-8">
+      <h1 class="logo text-5xl mb-2">HealthForecast</h1>
+      <p class="text-gray-600">あなたの健康管理パートナー</p>
+    </div>
+
+    <!-- ログインカード -->
+    <div class="card p-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">ログイン</h2>
+
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+        <!-- メールアドレス -->
+        <div class="mb-4">
+          <%= f.label :email, "メールアドレス", class: "block text-sm font-medium text-gray-700 mb-2" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "your@email.com", class: "input-field" %>
+        </div>
+
+        <!-- パスワード -->
+        <div class="mb-6">
+          <%= f.label :password, "パスワード", class: "block text-sm font-medium text-gray-700 mb-2" %>
+          <%= f.password_field :password, autocomplete: "current-password", placeholder: "••••••••", class: "input-field" %>
+        </div>
+
+        <!-- Remember me -->
+        <% if devise_mapping.rememberable? %>
+          <div class="flex items-center mb-6">
+            <%= f.check_box :remember_me, class: "w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500" %>
+            <%= f.label :remember_me, "ログイン状態を保持", class: "ml-2 text-sm text-gray-700" %>
+          </div>
+        <% end %>
+
+        <!-- 送信ボタン -->
+        <div class="mb-4">
+          <%= f.submit "ログイン", class: "btn-primary w-full" %>
+        </div>
+      <% end %>
+
+      <!-- リンク -->
+      <div class="text-center text-sm text-gray-600 space-y-2">
+        <%= render "devise/shared/links" %>
+      </div>
+    </div>
+  </div>
+</div>

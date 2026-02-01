@@ -1,34 +1,69 @@
 <div class="w-full">
-  <div class="flex justify-between items-center mb-8">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
     <h1 class="text-4xl font-bold text-gray-800">ダッシュボード</h1>
-    <%= link_to "新しい記録を追加", new_health_record_path, class: "bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold" %>
+    <%= link_to new_health_record_path, class: "btn-primary w-full md:w-auto" do %>
+      <span>➕ 新しい記録を追加</span>
+    <% end %>
   </div>
 
-  <!-- 統計サマリー -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow-md p-6">
+  <!-- 統計サマリーカード -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <!-- 総記録数 -->
+    <div class="card p-6 animate-fade-in-up delay-100">
+      <div class="icon-gradient mb-3">
+        <span>📊</span>
+      </div>
       <h3 class="text-gray-500 text-sm font-semibold mb-2">総記録数</h3>
-      <p class="text-3xl font-bold text-blue-600"><%= @total_records %></p>
+      <p class="text-3xl font-bold text-gray-800 mono"><%= @total_records %></p>
     </div>
 
     <% if @latest_record %>
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <!-- 最新体重 -->
+      <div class="card p-6 animate-fade-in-up delay-200">
+        <div class="icon-gradient mb-3">
+          <span>⚖️</span>
+        </div>
         <h3 class="text-gray-500 text-sm font-semibold mb-2">最新の体重</h3>
-        <p class="text-3xl font-bold text-green-600">
-          <%= @latest_record.weight.present? ? "#{@latest_record.weight} kg" : "未記録" %>
+        <p class="text-3xl font-bold text-gray-800 mono">
+          <%= @latest_record.weight.present? ? @latest_record.weight.to_s : "➖" %>
         </p>
-        <p class="text-xs text-gray-500 mt-1"><%= @latest_record.recorded_at.strftime("%Y年%m月%d日") %></p>
+        <% if @latest_record.weight.present? %>
+          <p class="text-xs text-gray-500 mt-1">kg</p>
+        <% end %>
       </div>
 
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <!-- 最新体調 -->
+      <div class="card p-6 animate-fade-in-up delay-300">
+        <div class="icon-gradient mb-3">
+          <span><%= mood_emoji(@latest_record.mood) %></span>
+        </div>
         <h3 class="text-gray-500 text-sm font-semibold mb-2">最新の体調</h3>
-        <p class="text-3xl font-bold text-purple-600">
-          <%= @latest_record.mood.present? ? "#{@latest_record.mood} / 5" : "未記録" %>
+        <p class="text-3xl font-bold text-gray-800 mono">
+          <%= @latest_record.mood.present? ? @latest_record.mood.to_s : "➖" %>
         </p>
-        <p class="text-xs text-gray-500 mt-1"><%= @latest_record.recorded_at.strftime("%Y年%m月%d日") %></p>
+        <% if @latest_record.mood.present? %>
+          <p class="text-xs text-gray-500 mt-1">/ 5</p>
+        <% end %>
+      </div>
+
+      <!-- 平均睡眠時間 -->
+      <div class="card p-6 animate-fade-in-up delay-400">
+        <div class="icon-gradient mb-3">
+          <span>😴</span>
+        </div>
+        <h3 class="text-gray-500 text-sm font-semibold mb-2">平均睡眠</h3>
+        <% avg_sleep = @recent_records.where.not(sleep_hours: nil).average(:sleep_hours) %>
+        <p class="text-3xl font-bold text-gray-800 mono">
+          <%= avg_sleep.present? ? avg_sleep.round(1).to_s : "➖" %>
+        </p>
+        <% if avg_sleep.present? %>
+          <p class="text-xs text-gray-500 mt-1">時間</p>
+        <% end %>
       </div>
     <% else %>
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <!-- 記録がない場合 -->
+      <div class="card p-6 col-span-3 animate-fade-in-up delay-200">
         <h3 class="text-gray-500 text-sm font-semibold mb-2">まだ記録がありません</h3>
         <p class="text-sm text-gray-600">最初の健康記録を追加しましょう</p>
       </div>
@@ -39,45 +74,236 @@
   <% if @recent_records.any? %>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <!-- 体重グラフ -->
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="card p-6">
         <h3 class="text-xl font-bold mb-4 text-gray-800">体重の推移</h3>
-        <%= line_chart @recent_records.where.not(weight: nil).reverse.map { |r| [r.recorded_at, r.weight] },
-            xtitle: "日付", ytitle: "体重 (kg)",
-            library: { scales: { y: { beginAtZero: false } } } %>
+        <div style="position: relative; height: 250px;">
+          <canvas id="weightChart"></canvas>
+        </div>
       </div>
 
       <!-- 睡眠時間グラフ -->
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="card p-6">
         <h3 class="text-xl font-bold mb-4 text-gray-800">睡眠時間の推移</h3>
-        <%= line_chart @recent_records.where.not(sleep_hours: nil).reverse.map { |r| [r.recorded_at, r.sleep_hours] },
-            xtitle: "日付", ytitle: "睡眠時間 (時間)" %>
+        <div style="position: relative; height: 250px;">
+          <canvas id="sleepChart"></canvas>
+        </div>
       </div>
 
       <!-- 体調グラフ -->
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="card p-6">
         <h3 class="text-xl font-bold mb-4 text-gray-800">体調スコアの推移</h3>
-        <%= line_chart @recent_records.where.not(mood: nil).reverse.map { |r| [r.recorded_at, r.mood] },
-            xtitle: "日付", ytitle: "体調スコア (1-5)",
-            library: { scales: { y: { min: 1, max: 5 } } } %>
+        <div style="position: relative; height: 250px;">
+          <canvas id="moodChart"></canvas>
+        </div>
       </div>
 
       <!-- 運動時間グラフ -->
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="card p-6">
         <h3 class="text-xl font-bold mb-4 text-gray-800">運動時間の推移</h3>
-        <%= column_chart @recent_records.where.not(exercise_minutes: nil).reverse.map { |r| [r.recorded_at, r.exercise_minutes] },
-            xtitle: "日付", ytitle: "運動時間 (分)" %>
+        <div style="position: relative; height: 250px;">
+          <canvas id="exerciseChart"></canvas>
+        </div>
       </div>
     </div>
+
+    <script>
+      document.addEventListener('turbo:load', () => {
+        // データ準備
+        const weightData = <%= raw @recent_records.where.not(weight: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.weight } }.to_json %>;
+        const sleepData = <%= raw @recent_records.where.not(sleep_hours: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.sleep_hours } }.to_json %>;
+        const moodData = <%= raw @recent_records.where.not(mood: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.mood } }.to_json %>;
+        const exerciseData = <%= raw @recent_records.where.not(exercise_minutes: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.exercise_minutes } }.to_json %>;
+
+        // 既存のチャートを破棄
+        ['weightChart', 'sleepChart', 'moodChart', 'exerciseChart'].forEach(id => {
+          const canvas = document.getElementById(id);
+          if (canvas && Chart.getChart(canvas)) {
+            Chart.getChart(canvas).destroy();
+          }
+        });
+
+        // 体重グラフ（Emeraldグラデーション）
+        const weightCtx = document.getElementById('weightChart');
+        if (weightCtx && weightData.length > 0) {
+          const gradient = weightCtx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+          gradient.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+          gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+          new Chart(weightCtx, {
+            type: 'line',
+            data: {
+              datasets: [{
+                label: '体重 (kg)',
+                data: weightData,
+                borderColor: '#10b981',
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#10b981'
+              }]
+            },
+            options: {
+              animation: { duration: 0 },
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: { type: 'time', time: { unit: 'day' } },
+                y: { beginAtZero: false }
+              },
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
+
+        // 睡眠時間グラフ（Cyanグラデーション）
+        const sleepCtx = document.getElementById('sleepChart');
+        if (sleepCtx && sleepData.length > 0) {
+          const gradient = sleepCtx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+          gradient.addColorStop(0, 'rgba(6, 182, 212, 0.5)');
+          gradient.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
+
+          new Chart(sleepCtx, {
+            type: 'line',
+            data: {
+              datasets: [{
+                label: '睡眠時間 (時間)',
+                data: sleepData,
+                borderColor: '#06b6d4',
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#06b6d4'
+              }]
+            },
+            options: {
+              animation: { duration: 0 },
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: { type: 'time', time: { unit: 'day' } },
+                y: { beginAtZero: true }
+              },
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
+
+        // 体調グラフ（Amberグラデーション、y軸1-5固定）
+        const moodCtx = document.getElementById('moodChart');
+        if (moodCtx && moodData.length > 0) {
+          const gradient = moodCtx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+          gradient.addColorStop(0, 'rgba(245, 158, 11, 0.5)');
+          gradient.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
+
+          new Chart(moodCtx, {
+            type: 'line',
+            data: {
+              datasets: [{
+                label: '体調スコア',
+                data: moodData,
+                borderColor: '#f59e0b',
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#f59e0b'
+              }]
+            },
+            options: {
+              animation: { duration: 0 },
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: { type: 'time', time: { unit: 'day' } },
+                y: { min: 1, max: 5, ticks: { stepSize: 1 } }
+              },
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
+
+        // 運動時間グラフ（棒グラフ、Emerald-Cyanグラデーション）
+        const exerciseCtx = document.getElementById('exerciseChart');
+        if (exerciseCtx && exerciseData.length > 0) {
+          const gradient = exerciseCtx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+          gradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)');
+          gradient.addColorStop(1, 'rgba(6, 182, 212, 0.8)');
+
+          new Chart(exerciseCtx, {
+            type: 'bar',
+            data: {
+              datasets: [{
+                label: '運動時間 (分)',
+                data: exerciseData,
+                backgroundColor: gradient,
+                borderColor: '#10b981',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              animation: { duration: 0 },
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: { type: 'time', time: { unit: 'day' } },
+                y: { beginAtZero: true }
+              },
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
+      });
+    </script>
   <% end %>
 
   <!-- 最近の記録 -->
-  <div class="bg-white rounded-lg shadow-md p-6">
+  <div class="card p-6">
     <h3 class="text-xl font-bold mb-4 text-gray-800">最近の記録</h3>
 
     <% if @recent_records.any? %>
-      <div class="overflow-x-auto">
+      <!-- モバイル：カードビュー -->
+      <div class="grid grid-cols-1 gap-4 md:hidden">
+        <% @recent_records.limit(5).each do |record| %>
+          <div class="card p-4 border border-gray-200">
+            <div class="flex justify-between items-start mb-3">
+              <div class="text-sm font-semibold text-gray-800">
+                <%= record.recorded_at.strftime("%Y年%m月%d日") %>
+              </div>
+              <% if record.mood.present? %>
+                <span class="<%= mood_badge_class(record.mood) %>">
+                  <%= mood_emoji(record.mood) %>
+                  <%= mood_text(record.mood) %>
+                </span>
+              <% end %>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
+              <div>
+                <span class="text-gray-500">体重:</span>
+                <span class="font-semibold"><%= record.weight.present? ? "#{record.weight} kg" : "➖" %></span>
+              </div>
+              <div>
+                <span class="text-gray-500">睡眠:</span>
+                <span class="font-semibold"><%= record.sleep_hours.present? ? "#{record.sleep_hours}h" : "➖" %></span>
+              </div>
+              <div>
+                <span class="text-gray-500">運動:</span>
+                <span class="font-semibold"><%= record.exercise_minutes.present? ? "#{record.exercise_minutes}分" : "➖" %></span>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <%= link_to "詳細", record, class: "btn-secondary flex-1 text-center text-sm py-2" %>
+              <%= link_to "編集", edit_health_record_path(record), class: "btn-primary flex-1 text-center text-sm py-2" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- デスクトップ：テーブルビュー -->
+      <div class="hidden md:block overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+          <thead class="bg-gray-50 bg-opacity-50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日付</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">体重</th>
@@ -87,27 +313,34 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <% @recent_records.each do |record| %>
-              <tr>
+          <tbody class="divide-y divide-gray-200">
+            <% @recent_records.limit(10).each do |record| %>
+              <tr class="hover:bg-gray-50 hover:bg-opacity-50 transition">
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <%= record.recorded_at.strftime("%Y-%m-%d") %>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <%= record.weight.present? ? "#{record.weight} kg" : "-" %>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 mono">
+                  <%= record.weight.present? ? "#{record.weight} kg" : "➖" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 mono">
+                  <%= record.sleep_hours.present? ? "#{record.sleep_hours}h" : "➖" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 mono">
+                  <%= record.exercise_minutes.present? ? "#{record.exercise_minutes}分" : "➖" %>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <%= record.sleep_hours.present? ? "#{record.sleep_hours}h" : "-" %>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <%= record.exercise_minutes.present? ? "#{record.exercise_minutes}分" : "-" %>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <%= record.mood.present? ? "#{record.mood}/5" : "-" %>
+                  <% if record.mood.present? %>
+                    <span class="<%= mood_badge_class(record.mood) %>">
+                      <%= mood_emoji(record.mood) %>
+                      <%= mood_text(record.mood) %>
+                    </span>
+                  <% else %>
+                    ➖
+                  <% end %>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <%= link_to "詳細", record, class: "text-blue-600 hover:text-blue-900 mr-3" %>
-                  <%= link_to "編集", edit_health_record_path(record), class: "text-green-600 hover:text-green-900" %>
+                  <%= link_to "詳細", record, class: "text-emerald-600 hover:text-emerald-900 mr-3" %>
+                  <%= link_to "編集", edit_health_record_path(record), class: "text-cyan-600 hover:text-cyan-900" %>
                 </td>
               </tr>
             <% end %>
@@ -116,22 +349,10 @@
       </div>
 
       <div class="mt-4 text-center">
-        <%= link_to "すべての記録を見る", health_records_path, class: "text-blue-600 hover:text-blue-900" %>
+        <%= link_to "すべての記録を見る →", health_records_path, class: "text-emerald-600 hover:text-emerald-900 font-semibold" %>
       </div>
     <% else %>
       <p class="text-gray-600 text-center py-8">まだ記録がありません。最初の記録を追加しましょう！</p>
     <% end %>
-  </div>
-
-  <!-- 将来的な機能のプレースホルダー -->
-  <div class="mt-8 bg-blue-50 border-l-4 border-blue-500 p-6 rounded">
-    <h3 class="text-lg font-semibold text-blue-800 mb-2">今後追加予定の機能</h3>
-    <ul class="list-disc list-inside text-blue-700 space-y-1">
-      <li>Apple Health / HealthKitからのデータ自動連携</li>
-      <li>AIによる体調予測とアラート機能</li>
-      <li>過去データの詳細分析とレポート生成</li>
-      <li>パーソナライズされた健康アドバイスとTips</li>
-      <li>PWA対応でスマホアプリのような操作性</li>
-    </ul>
   </div>
 </div>

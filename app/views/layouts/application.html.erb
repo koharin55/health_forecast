@@ -5,52 +5,116 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+    <style>
+      body {
+        font-family: 'Outfit', sans-serif;
+        position: relative;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #fef3c7 100%);
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--gradient-mesh);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      main {
+        position: relative;
+        z-index: 1;
+      }
+    </style>
   </head>
 
-  <body class="bg-gray-50">
+  <body>
     <% if user_signed_in? %>
-      <nav class="bg-white shadow-lg">
+      <!-- Navigation Bar -->
+      <nav class="card mx-4 mt-4 relative z-10" data-controller="mobile-menu">
         <div class="container mx-auto px-4 py-4">
           <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-              <%= link_to "HealthForecast", root_path, class: "text-2xl font-bold text-blue-600" %>
-              <%= link_to "ダッシュボード", root_path, class: "text-gray-700 hover:text-blue-600" %>
-              <%= link_to "健康記録", health_records_path, class: "text-gray-700 hover:text-blue-600" %>
+            <!-- Logo -->
+            <div class="flex items-center">
+              <%= link_to root_path, class: "logo" do %>
+                HealthForecast
+              <% end %>
             </div>
-            <div class="flex items-center space-x-4">
-              <span class="text-gray-700"><%= current_user.email %></span>
-              <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded" %>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-6">
+              <%= link_to "ダッシュボード", root_path, class: "text-gray-700 hover:text-emerald-600 font-semibold transition" %>
+              <%= link_to "健康記録", health_records_path, class: "text-gray-700 hover:text-emerald-600 font-semibold transition" %>
+              <span class="text-gray-500 text-sm"><%= current_user.email %></span>
+              <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn-primary" %>
             </div>
+
+            <!-- Mobile Hamburger Button -->
+            <button class="md:hidden hamburger" data-action="click->mobile-menu#toggle" aria-label="メニュー">
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" data-mobile-menu-target="overlay" data-action="click->mobile-menu#toggle"></div>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" data-mobile-menu-target="menu">
+          <div class="flex flex-col space-y-4">
+            <div class="text-sm text-gray-500 pb-4 border-b border-gray-200">
+              <%= current_user.email %>
+            </div>
+            <%= link_to "ダッシュボード", root_path, class: "text-gray-700 hover:text-emerald-600 font-semibold py-3 transition", data: { action: "click->mobile-menu#toggle" } %>
+            <%= link_to "健康記録", health_records_path, class: "text-gray-700 hover:text-emerald-600 font-semibold py-3 transition", data: { action: "click->mobile-menu#toggle" } %>
+            <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn-primary mt-4" %>
           </div>
         </div>
       </nav>
     <% end %>
 
+    <!-- Alerts -->
     <% if notice.present? %>
-      <div class="container mx-auto px-4 mt-4">
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+      <div class="container mx-auto px-4 mt-4 relative z-10">
+        <div class="alert alert-success" role="alert">
           <span class="block sm:inline"><%= notice %></span>
         </div>
       </div>
     <% end %>
 
     <% if alert.present? %>
-      <div class="container mx-auto px-4 mt-4">
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+      <div class="container mx-auto px-4 mt-4 relative z-10">
+        <div class="alert alert-error" role="alert">
           <span class="block sm:inline"><%= alert %></span>
         </div>
       </div>
     <% end %>
 
+    <!-- Main Content -->
     <main class="container mx-auto px-4 py-8">
       <%= yield %>
     </main>
 
-    <footer class="bg-white shadow-lg mt-12">
+    <!-- Footer -->
+    <footer class="card mx-4 mb-4 mt-12 relative z-10">
       <div class="container mx-auto px-4 py-6 text-center text-gray-600">
         <p>&copy; 2026 HealthForecast - あなたの健康管理パートナー</p>
       </div>
