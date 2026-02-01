@@ -8,6 +8,18 @@ class HealthRecord < ApplicationRecord
   validates :exercise_minutes, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
   validates :steps, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
   validates :heart_rate, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
+  validates :systolic_pressure, numericality: {
+    greater_than_or_equal_to: 60,
+    less_than_or_equal_to: 250,
+    only_integer: true,
+    allow_nil: true
+  }
+  validates :diastolic_pressure, numericality: {
+    greater_than_or_equal_to: 40,
+    less_than_or_equal_to: 150,
+    only_integer: true,
+    allow_nil: true
+  }
 
   scope :recent, -> { order(recorded_at: :desc) }
   scope :for_user, ->(user) { where(user: user) }

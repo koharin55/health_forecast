@@ -65,6 +65,6 @@ class HealthRecordsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def health_record_params
-      params.require(:health_record).permit(:recorded_at, :weight, :sleep_hours, :exercise_minutes, :mood, :notes, :steps, :heart_rate)
+      params.require(:health_record).permit(:recorded_at, :weight, :sleep_hours, :exercise_minutes, :mood, :notes, :steps, :heart_rate, :systolic_pressure, :diastolic_pressure)
     end
 end
