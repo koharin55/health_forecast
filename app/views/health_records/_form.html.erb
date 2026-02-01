@@ -51,6 +51,21 @@
     <%= form.number_field :heart_rate, min: 0, placeholder: "72", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
   </div>
 
+  <!-- 血圧（最高血圧 & 最低血圧） -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div>
+      <%= form.label :systolic_pressure, "最高血圧（mmHg）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :systolic_pressure, min: 60, max: 250, placeholder: "120", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+      <p class="mt-2 text-xs text-slate-500">正常範囲: 90-140 mmHg</p>
+    </div>
+
+    <div>
+      <%= form.label :diastolic_pressure, "最低血圧（mmHg）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
+      <%= form.number_field :diastolic_pressure, min: 40, max: 150, placeholder: "80", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+      <p class="mt-2 text-xs text-slate-500">正常範囲: 60-90 mmHg</p>
+    </div>
+  </div>
+
   <!-- 体調スコア -->
   <div>
     <%= form.label :mood, "体調スコア", class: "block text-base sm:text-sm font-bold text-slate-700 mb-4" %>
