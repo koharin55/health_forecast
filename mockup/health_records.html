@@ -5,36 +5,173 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>記録一覧 - HealthForecast</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #10b981;
+      --color-secondary: #06b6d4;
+      --color-accent: #f59e0b;
+    }
+
+    * {
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .mono {
+      font-family: 'Space Mono', monospace;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #fef3c7 100%);
+      background-attachment: fixed;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    nav {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 1.75rem;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+      animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .badge-mood-5 {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      color: white;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-mood-4 {
+      background: linear-gradient(135deg, #06b6d4, #22d3ee);
+      color: white;
+      box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
+    }
+
+    .badge-mood-3 {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      color: white;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-mood-2 {
+      background: linear-gradient(135deg, #f97316, #fb923c);
+      color: white;
+      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+    }
+
+    .badge-mood-1 {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: white;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    table tr {
+      transition: all 0.2s ease;
+    }
+
+    table tr:hover {
+      background: rgba(16, 185, 129, 0.05);
+      transform: scale(1.005);
+    }
+
+    .pagination-btn {
+      transition: all 0.2s ease;
+    }
+
+    .pagination-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .pagination-btn.active {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: white;
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
+<body>
   <!-- ナビゲーションバー -->
-  <nav class="bg-white shadow-sm border-b border-gray-200">
+  <nav class="sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <div class="flex items-center">
-          <h1 class="text-2xl font-bold text-blue-600">HealthForecast</h1>
+          <h1 class="logo">HealthForecast</h1>
         </div>
-        <div class="flex items-center space-x-4">
-          <a href="dashboard.html" class="text-gray-600 hover:text-gray-900">ダッシュボード</a>
-          <a href="health_records.html" class="text-blue-600 font-medium">記録一覧</a>
-          <a href="new_record.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">新規記録</a>
-          <a href="login.html" class="text-gray-600 hover:text-gray-900">ログアウト</a>
+        <div class="flex items-center space-x-6">
+          <a href="dashboard.html" class="text-slate-600 hover:text-emerald-600 transition-colors font-medium">ダッシュボード</a>
+          <a href="health_records.html" class="font-semibold text-emerald-600">記録一覧</a>
+          <a href="new_record.html" class="btn-primary text-white px-5 py-2.5 rounded-full font-semibold">新規記録</a>
+          <a href="login.html" class="text-slate-600 hover:text-slate-900 transition-colors">ログアウト</a>
         </div>
       </div>
     </div>
   </nav>
 
   <!-- メインコンテンツ -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="bg-white rounded-lg shadow">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+    <div class="card rounded-3xl">
       <!-- ヘッダー -->
-      <div class="px-6 py-4 border-b border-gray-200">
+      <div class="px-8 py-6 border-b border-slate-200">
         <div class="flex justify-between items-center">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">健康記録一覧</h2>
-            <p class="text-sm text-gray-600 mt-1">全 42 件の記録</p>
+            <h2 class="text-3xl font-bold text-slate-900">健康記録一覧</h2>
+            <p class="text-slate-600 mt-2">全 <span class="mono font-bold">42</span> 件の記録</p>
           </div>
-          <a href="new_record.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 inline-flex items-center">
+          <a href="new_record.html" class="btn-primary text-white px-6 py-3 rounded-xl font-bold inline-flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
@@ -45,146 +182,146 @@
 
       <!-- テーブル -->
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-slate-200">
+          <thead class="bg-slate-50/50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">記録日</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">体重</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">睡眠時間</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">運動時間</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">歩数</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">心拍数</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">体調</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+              <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">記録日</th>
+              <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">体重</th>
+              <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">睡眠時間</th>
+              <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">運動時間</th>
+              <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">歩数</th>
+              <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">心拍数</th>
+              <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">体調</th>
+              <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">操作</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2026-02-01</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">65.5 kg</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">7.5 h</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">30 分</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">8,500</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">72 bpm</td>
+          <tbody class="divide-y divide-slate-100">
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap font-bold text-slate-900 mono">2026-02-01</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">65.5 kg</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">7.5 h</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">30 分</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">8,500</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">72 bpm</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">良い</span>
+                <span class="badge-mood-4 px-3 py-1.5 text-xs font-bold rounded-full">良い</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <a href="detail.html" class="text-blue-600 hover:text-blue-900 mr-3">詳細</a>
-                <a href="edit.html" class="text-gray-600 hover:text-gray-900 mr-3">編集</a>
-                <button class="text-red-600 hover:text-red-900">削除</button>
+                <a href="detail.html" class="text-emerald-600 hover:text-emerald-700 font-semibold mr-4 transition-colors">詳細</a>
+                <a href="edit.html" class="text-slate-600 hover:text-slate-900 font-medium mr-4 transition-colors">編集</a>
+                <button class="text-red-600 hover:text-red-700 font-medium transition-colors">削除</button>
               </td>
             </tr>
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2026-01-31</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">65.8 kg</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">6.5 h</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">45 分</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">10,200</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">68 bpm</td>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap font-bold text-slate-900 mono">2026-01-31</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">65.8 kg</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">6.5 h</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">45 分</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">10,200</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">68 bpm</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">とても良い</span>
+                <span class="badge-mood-5 px-3 py-1.5 text-xs font-bold rounded-full">とても良い</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <a href="detail.html" class="text-blue-600 hover:text-blue-900 mr-3">詳細</a>
-                <a href="edit.html" class="text-gray-600 hover:text-gray-900 mr-3">編集</a>
-                <button class="text-red-600 hover:text-red-900">削除</button>
+                <a href="detail.html" class="text-emerald-600 hover:text-emerald-700 font-semibold mr-4 transition-colors">詳細</a>
+                <a href="edit.html" class="text-slate-600 hover:text-slate-900 font-medium mr-4 transition-colors">編集</a>
+                <button class="text-red-600 hover:text-red-700 font-medium transition-colors">削除</button>
               </td>
             </tr>
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2026-01-30</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">66.0 kg</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">7.0 h</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">20 分</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">6,800</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">75 bpm</td>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap font-bold text-slate-900 mono">2026-01-30</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">66.0 kg</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">7.0 h</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">20 分</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">6,800</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">75 bpm</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">普通</span>
+                <span class="badge-mood-3 px-3 py-1.5 text-xs font-bold rounded-full">普通</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <a href="detail.html" class="text-blue-600 hover:text-blue-900 mr-3">詳細</a>
-                <a href="edit.html" class="text-gray-600 hover:text-gray-900 mr-3">編集</a>
-                <button class="text-red-600 hover:text-red-900">削除</button>
+                <a href="detail.html" class="text-emerald-600 hover:text-emerald-700 font-semibold mr-4 transition-colors">詳細</a>
+                <a href="edit.html" class="text-slate-600 hover:text-slate-900 font-medium mr-4 transition-colors">編集</a>
+                <button class="text-red-600 hover:text-red-700 font-medium transition-colors">削除</button>
               </td>
             </tr>
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2026-01-29</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">66.2 kg</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">8.0 h</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">60 分</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">12,500</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">70 bpm</td>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap font-bold text-slate-900 mono">2026-01-29</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">66.2 kg</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">8.0 h</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">60 分</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">12,500</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">70 bpm</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">良い</span>
+                <span class="badge-mood-4 px-3 py-1.5 text-xs font-bold rounded-full">良い</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <a href="detail.html" class="text-blue-600 hover:text-blue-900 mr-3">詳細</a>
-                <a href="edit.html" class="text-gray-600 hover:text-gray-900 mr-3">編集</a>
-                <button class="text-red-600 hover:text-red-900">削除</button>
+                <a href="detail.html" class="text-emerald-600 hover:text-emerald-700 font-semibold mr-4 transition-colors">詳細</a>
+                <a href="edit.html" class="text-slate-600 hover:text-slate-900 font-medium mr-4 transition-colors">編集</a>
+                <button class="text-red-600 hover:text-red-700 font-medium transition-colors">削除</button>
               </td>
             </tr>
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2026-01-28</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">66.5 kg</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">6.0 h</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">15 分</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">5,200</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">78 bpm</td>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap font-bold text-slate-900 mono">2026-01-28</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">66.5 kg</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">6.0 h</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">15 分</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">5,200</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">78 bpm</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">悪い</span>
+                <span class="badge-mood-2 px-3 py-1.5 text-xs font-bold rounded-full">悪い</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <a href="detail.html" class="text-blue-600 hover:text-blue-900 mr-3">詳細</a>
-                <a href="edit.html" class="text-gray-600 hover:text-gray-900 mr-3">編集</a>
-                <button class="text-red-600 hover:text-red-900">削除</button>
+                <a href="detail.html" class="text-emerald-600 hover:text-emerald-700 font-semibold mr-4 transition-colors">詳細</a>
+                <a href="edit.html" class="text-slate-600 hover:text-slate-900 font-medium mr-4 transition-colors">編集</a>
+                <button class="text-red-600 hover:text-red-700 font-medium transition-colors">削除</button>
               </td>
             </tr>
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2026-01-27</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">66.8 kg</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">6.5 h</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">30 分</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">7,800</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">73 bpm</td>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap font-bold text-slate-900 mono">2026-01-27</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">66.8 kg</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">6.5 h</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">30 分</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">7,800</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">73 bpm</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">普通</span>
+                <span class="badge-mood-3 px-3 py-1.5 text-xs font-bold rounded-full">普通</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <a href="detail.html" class="text-blue-600 hover:text-blue-900 mr-3">詳細</a>
-                <a href="edit.html" class="text-gray-600 hover:text-gray-900 mr-3">編集</a>
-                <button class="text-red-600 hover:text-red-900">削除</button>
+                <a href="detail.html" class="text-emerald-600 hover:text-emerald-700 font-semibold mr-4 transition-colors">詳細</a>
+                <a href="edit.html" class="text-slate-600 hover:text-slate-900 font-medium mr-4 transition-colors">編集</a>
+                <button class="text-red-600 hover:text-red-700 font-medium transition-colors">削除</button>
               </td>
             </tr>
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2026-01-26</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">67.0 kg</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">7.5 h</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">45 分</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">9,500</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">71 bpm</td>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap font-bold text-slate-900 mono">2026-01-26</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">67.0 kg</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">7.5 h</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">45 分</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">9,500</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">71 bpm</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">良い</span>
+                <span class="badge-mood-4 px-3 py-1.5 text-xs font-bold rounded-full">良い</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <a href="detail.html" class="text-blue-600 hover:text-blue-900 mr-3">詳細</a>
-                <a href="edit.html" class="text-gray-600 hover:text-gray-900 mr-3">編集</a>
-                <button class="text-red-600 hover:text-red-900">削除</button>
+                <a href="detail.html" class="text-emerald-600 hover:text-emerald-700 font-semibold mr-4 transition-colors">詳細</a>
+                <a href="edit.html" class="text-slate-600 hover:text-slate-900 font-medium mr-4 transition-colors">編集</a>
+                <button class="text-red-600 hover:text-red-700 font-medium transition-colors">削除</button>
               </td>
             </tr>
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">2026-01-25</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">67.3 kg</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">5.5 h</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">10 分</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">4,200</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">80 bpm</td>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap font-bold text-slate-900 mono">2026-01-25</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">67.3 kg</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">5.5 h</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">10 分</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">4,200</td>
+              <td class="px-6 py-4 whitespace-nowrap text-slate-900 mono">80 bpm</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">とても悪い</span>
+                <span class="badge-mood-1 px-3 py-1.5 text-xs font-bold rounded-full">とても悪い</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <a href="detail.html" class="text-blue-600 hover:text-blue-900 mr-3">詳細</a>
-                <a href="edit.html" class="text-gray-600 hover:text-gray-900 mr-3">編集</a>
-                <button class="text-red-600 hover:text-red-900">削除</button>
+                <a href="detail.html" class="text-emerald-600 hover:text-emerald-700 font-semibold mr-4 transition-colors">詳細</a>
+                <a href="edit.html" class="text-slate-600 hover:text-slate-900 font-medium mr-4 transition-colors">編集</a>
+                <button class="text-red-600 hover:text-red-700 font-medium transition-colors">削除</button>
               </td>
             </tr>
           </tbody>
@@ -192,26 +329,18 @@
       </div>
 
       <!-- ページネーション -->
-      <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-        <div class="flex-1 flex justify-between sm:hidden">
-          <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">前へ</a>
-          <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">次へ</a>
+      <div class="px-8 py-6 border-t border-slate-200 flex items-center justify-between">
+        <div>
+          <p class="text-sm text-slate-700">
+            全 <span class="font-bold mono">42</span> 件中 <span class="font-bold mono">1</span> - <span class="font-bold mono">8</span> 件を表示
+          </p>
         </div>
-        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-          <div>
-            <p class="text-sm text-gray-700">
-              全 <span class="font-medium">42</span> 件中 <span class="font-medium">1</span> - <span class="font-medium">8</span> 件を表示
-            </p>
-          </div>
-          <div>
-            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-              <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">前へ</a>
-              <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">1</a>
-              <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">2</a>
-              <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">3</a>
-              <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">次へ</a>
-            </nav>
-          </div>
+        <div class="flex items-center space-x-2">
+          <button class="pagination-btn px-4 py-2 rounded-lg border-2 border-slate-200 text-slate-600 font-semibold hover:border-emerald-500">前へ</button>
+          <button class="pagination-btn active px-4 py-2 rounded-lg font-bold">1</button>
+          <button class="pagination-btn px-4 py-2 rounded-lg border-2 border-slate-200 text-slate-700 font-semibold hover:border-emerald-500">2</button>
+          <button class="pagination-btn px-4 py-2 rounded-lg border-2 border-slate-200 text-slate-700 font-semibold hover:border-emerald-500">3</button>
+          <button class="pagination-btn px-4 py-2 rounded-lg border-2 border-slate-200 text-slate-600 font-semibold hover:border-emerald-500">次へ</button>
         </div>
       </div>
     </div>

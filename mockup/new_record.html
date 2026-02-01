@@ -5,132 +5,288 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>新規記録 - HealthForecast</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #10b981;
+      --color-secondary: #06b6d4;
+      --color-accent: #f59e0b;
+    }
+
+    * {
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .mono {
+      font-family: 'Space Mono', monospace;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #fef3c7 100%);
+      background-attachment: fixed;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    nav {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+    }
+
+    .logo {
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+      transition: all 0.3s ease;
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+      animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .input-field {
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid rgba(16, 185, 129, 0.2);
+      transition: all 0.3s ease;
+      min-height: 56px;
+      font-size: 16px;
+    }
+
+    .input-field:focus {
+      background: rgba(255, 255, 255, 1);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+      outline: none;
+    }
+
+    .mood-option {
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-height: 80px;
+    }
+
+    .mood-option input:checked + div {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.15));
+      border-color: var(--color-primary);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+      transform: scale(1.05);
+    }
+
+    .mood-option:hover div {
+      border-color: var(--color-primary);
+      transform: scale(1.02);
+    }
+
+    .mobile-menu {
+      display: none;
+    }
+
+    .mobile-menu.active {
+      display: block;
+    }
+
+    /* モバイル専用スタイル */
+    @media (max-width: 768px) {
+      .input-field {
+        font-size: 16px;
+        padding: 16px;
+      }
+
+      .mood-option {
+        min-height: 100px;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
+<body>
   <!-- ナビゲーションバー -->
-  <nav class="bg-white shadow-sm border-b border-gray-200">
+  <nav class="sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between h-16">
+      <div class="flex justify-between items-center h-16">
         <div class="flex items-center">
-          <h1 class="text-2xl font-bold text-blue-600">HealthForecast</h1>
+          <h1 class="logo text-xl sm:text-2xl font-extrabold">HealthForecast</h1>
         </div>
-        <div class="flex items-center space-x-4">
-          <a href="dashboard.html" class="text-gray-600 hover:text-gray-900">ダッシュボード</a>
-          <a href="health_records.html" class="text-gray-600 hover:text-gray-900">記録一覧</a>
-          <a href="new_record.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">新規記録</a>
-          <a href="login.html" class="text-gray-600 hover:text-gray-900">ログアウト</a>
+
+        <!-- デスクトップメニュー -->
+        <div class="hidden md:flex items-center space-x-6">
+          <a href="dashboard.html" class="text-slate-600 hover:text-emerald-600 transition-colors font-medium">ダッシュボード</a>
+          <a href="health_records.html" class="text-slate-600 hover:text-emerald-600 transition-colors font-medium">記録一覧</a>
+          <a href="new_record.html" class="btn-primary text-white px-5 py-2.5 rounded-full font-semibold">新規記録</a>
+          <a href="login.html" class="text-slate-600 hover:text-slate-900 transition-colors">ログアウト</a>
         </div>
+
+        <!-- モバイルメニューボタン -->
+        <button class="md:hidden btn-primary text-white p-3 rounded-xl" onclick="toggleMobileMenu()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- モバイルメニュー -->
+      <div id="mobileMenu" class="mobile-menu md:hidden py-4 space-y-3">
+        <a href="dashboard.html" class="block py-3 px-4 rounded-xl text-slate-600 font-medium hover:bg-slate-50">ダッシュボード</a>
+        <a href="health_records.html" class="block py-3 px-4 rounded-xl text-slate-600 font-medium hover:bg-slate-50">記録一覧</a>
+        <a href="new_record.html" class="block py-3 px-4 rounded-xl btn-primary text-white font-bold text-center">新規記録</a>
+        <a href="login.html" class="block py-3 px-4 rounded-xl text-slate-600 font-medium hover:bg-slate-50">ログアウト</a>
       </div>
     </div>
   </nav>
 
   <!-- メインコンテンツ -->
-  <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="bg-white rounded-lg shadow">
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 relative z-10">
+    <div class="card rounded-3xl">
       <!-- ヘッダー -->
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h2 class="text-2xl font-bold text-gray-900">新規記録</h2>
-        <p class="text-sm text-gray-600 mt-1">健康データを記録しましょう</p>
+      <div class="px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-200">
+        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">新規記録</h2>
+        <p class="text-slate-600 mt-2 text-sm sm:text-base">健康データを記録しましょう</p>
       </div>
 
       <!-- フォーム -->
-      <form class="px-6 py-6 space-y-6">
+      <form class="px-4 sm:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
         <!-- 記録日 -->
         <div>
-          <label for="recorded_at" class="block text-sm font-medium text-gray-700 mb-2">
-            記録日 <span class="text-red-600">*</span>
+          <label for="recorded_at" class="block text-base sm:text-sm font-bold text-slate-700 mb-3">
+            記録日 <span class="text-red-500">*</span>
           </label>
           <input type="date" id="recorded_at" name="recorded_at" value="2026-02-01" required
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-          <p class="mt-1 text-sm text-gray-500">必須項目です</p>
+            class="input-field w-full px-4 py-4 rounded-2xl text-slate-900 font-semibold mono">
+          <p class="mt-2 text-sm text-slate-500">必須項目です</p>
         </div>
 
-        <!-- 体重 -->
-        <div>
-          <label for="weight" class="block text-sm font-medium text-gray-700 mb-2">
-            体重（kg）
-          </label>
-          <input type="number" id="weight" name="weight" step="0.1" min="0" placeholder="65.5"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-          <p class="mt-1 text-sm text-gray-500">小数点第1位まで入力可能</p>
+        <!-- 体重 & 睡眠時間 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label for="weight" class="block text-base sm:text-sm font-bold text-slate-700 mb-3">
+              体重（kg）
+            </label>
+            <input type="number" id="weight" name="weight" step="0.1" min="0" placeholder="65.5" inputmode="decimal"
+              class="input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg">
+          </div>
+
+          <div>
+            <label for="sleep_hours" class="block text-base sm:text-sm font-bold text-slate-700 mb-3">
+              睡眠時間（時間）
+            </label>
+            <input type="number" id="sleep_hours" name="sleep_hours" step="0.5" min="0" placeholder="7.5" inputmode="decimal"
+              class="input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg">
+          </div>
         </div>
 
-        <!-- 睡眠時間 -->
-        <div>
-          <label for="sleep_hours" class="block text-sm font-medium text-gray-700 mb-2">
-            睡眠時間（時間）
-          </label>
-          <input type="number" id="sleep_hours" name="sleep_hours" step="0.5" min="0" placeholder="7.5"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-          <p class="mt-1 text-sm text-gray-500">0.5時間単位で入力</p>
-        </div>
+        <!-- 運動時間 & 歩数 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label for="exercise_minutes" class="block text-base sm:text-sm font-bold text-slate-700 mb-3">
+              運動時間（分）
+            </label>
+            <input type="number" id="exercise_minutes" name="exercise_minutes" min="0" placeholder="30" inputmode="numeric"
+              class="input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg">
+          </div>
 
-        <!-- 運動時間 -->
-        <div>
-          <label for="exercise_minutes" class="block text-sm font-medium text-gray-700 mb-2">
-            運動時間（分）
-          </label>
-          <input type="number" id="exercise_minutes" name="exercise_minutes" min="0" placeholder="30"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-        </div>
-
-        <!-- 歩数 -->
-        <div>
-          <label for="steps" class="block text-sm font-medium text-gray-700 mb-2">
-            歩数
-          </label>
-          <input type="number" id="steps" name="steps" min="0" placeholder="8500"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <div>
+            <label for="steps" class="block text-base sm:text-sm font-bold text-slate-700 mb-3">
+              歩数
+            </label>
+            <input type="number" id="steps" name="steps" min="0" placeholder="8500" inputmode="numeric"
+              class="input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg">
+          </div>
         </div>
 
         <!-- 心拍数 -->
         <div>
-          <label for="heart_rate" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="heart_rate" class="block text-base sm:text-sm font-bold text-slate-700 mb-3">
             心拍数（bpm）
           </label>
-          <input type="number" id="heart_rate" name="heart_rate" min="0" placeholder="72"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <input type="number" id="heart_rate" name="heart_rate" min="0" placeholder="72" inputmode="numeric"
+            class="input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg">
         </div>
 
         <!-- 体調スコア -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-3">
+          <label class="block text-base sm:text-sm font-bold text-slate-700 mb-4">
             体調スコア
           </label>
-          <div class="grid grid-cols-5 gap-3">
-            <label class="cursor-pointer">
-              <input type="radio" name="mood" value="1" class="peer sr-only">
-              <div class="peer-checked:ring-2 peer-checked:ring-red-500 peer-checked:bg-red-50 border-2 border-gray-200 rounded-lg p-4 text-center hover:border-red-300 transition">
-                <div class="text-3xl mb-1">😞</div>
-                <div class="text-xs font-medium text-gray-700">とても悪い</div>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-3">
+            <label class="mood-option">
+              <input type="radio" name="mood" value="1" class="sr-only">
+              <div class="border-3 border-slate-200 rounded-2xl p-4 sm:p-4 text-center flex flex-col items-center justify-center">
+                <div class="text-4xl sm:text-3xl mb-2">😞</div>
+                <div class="text-sm sm:text-xs font-bold text-slate-700">とても悪い</div>
               </div>
             </label>
-            <label class="cursor-pointer">
-              <input type="radio" name="mood" value="2" class="peer sr-only">
-              <div class="peer-checked:ring-2 peer-checked:ring-orange-500 peer-checked:bg-orange-50 border-2 border-gray-200 rounded-lg p-4 text-center hover:border-orange-300 transition">
-                <div class="text-3xl mb-1">😕</div>
-                <div class="text-xs font-medium text-gray-700">悪い</div>
+            <label class="mood-option">
+              <input type="radio" name="mood" value="2" class="sr-only">
+              <div class="border-3 border-slate-200 rounded-2xl p-4 sm:p-4 text-center flex flex-col items-center justify-center">
+                <div class="text-4xl sm:text-3xl mb-2">😕</div>
+                <div class="text-sm sm:text-xs font-bold text-slate-700">悪い</div>
               </div>
             </label>
-            <label class="cursor-pointer">
-              <input type="radio" name="mood" value="3" class="peer sr-only">
-              <div class="peer-checked:ring-2 peer-checked:ring-yellow-500 peer-checked:bg-yellow-50 border-2 border-gray-200 rounded-lg p-4 text-center hover:border-yellow-300 transition">
-                <div class="text-3xl mb-1">😐</div>
-                <div class="text-xs font-medium text-gray-700">普通</div>
+            <label class="mood-option">
+              <input type="radio" name="mood" value="3" class="sr-only">
+              <div class="border-3 border-slate-200 rounded-2xl p-4 sm:p-4 text-center flex flex-col items-center justify-center">
+                <div class="text-4xl sm:text-3xl mb-2">😐</div>
+                <div class="text-sm sm:text-xs font-bold text-slate-700">普通</div>
               </div>
             </label>
-            <label class="cursor-pointer">
-              <input type="radio" name="mood" value="4" class="peer sr-only" checked>
-              <div class="peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:bg-blue-50 border-2 border-gray-200 rounded-lg p-4 text-center hover:border-blue-300 transition">
-                <div class="text-3xl mb-1">😊</div>
-                <div class="text-xs font-medium text-gray-700">良い</div>
+            <label class="mood-option">
+              <input type="radio" name="mood" value="4" class="sr-only" checked>
+              <div class="border-3 border-slate-200 rounded-2xl p-4 sm:p-4 text-center flex flex-col items-center justify-center">
+                <div class="text-4xl sm:text-3xl mb-2">😊</div>
+                <div class="text-sm sm:text-xs font-bold text-slate-700">良い</div>
               </div>
             </label>
-            <label class="cursor-pointer">
-              <input type="radio" name="mood" value="5" class="peer sr-only">
-              <div class="peer-checked:ring-2 peer-checked:ring-green-500 peer-checked:bg-green-50 border-2 border-gray-200 rounded-lg p-4 text-center hover:border-green-300 transition">
-                <div class="text-3xl mb-1">😄</div>
-                <div class="text-xs font-medium text-gray-700">とても良い</div>
+            <label class="mood-option col-span-2 sm:col-span-1">
+              <input type="radio" name="mood" value="5" class="sr-only">
+              <div class="border-3 border-slate-200 rounded-2xl p-4 sm:p-4 text-center flex flex-col items-center justify-center">
+                <div class="text-4xl sm:text-3xl mb-2">😄</div>
+                <div class="text-sm sm:text-xs font-bold text-slate-700">とても良い</div>
               </div>
             </label>
           </div>
@@ -138,19 +294,19 @@
 
         <!-- メモ -->
         <div>
-          <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="notes" class="block text-base sm:text-sm font-bold text-slate-700 mb-3">
             メモ
           </label>
           <textarea id="notes" name="notes" rows="4" placeholder="今日の調子や気になったことを記録..."
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+            class="input-field w-full px-4 py-4 rounded-2xl text-slate-900 text-base resize-none"></textarea>
         </div>
 
         <!-- アクションボタン -->
-        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-          <a href="health_records.html" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+        <div class="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-6 border-t border-slate-200">
+          <a href="health_records.html" class="w-full sm:w-auto text-center px-8 py-4 border-2 border-slate-300 rounded-2xl text-slate-700 hover:bg-slate-50 font-bold transition-colors order-2 sm:order-1">
             キャンセル
           </a>
-          <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+          <button type="submit" class="w-full sm:w-auto btn-primary px-8 py-4 text-white rounded-2xl font-bold text-lg order-1 sm:order-2">
             記録を保存
           </button>
         </div>
@@ -158,21 +314,41 @@
     </div>
 
     <!-- ヒント -->
-    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div class="mt-6 sm:mt-8 card rounded-2xl p-4 sm:p-6" style="animation-delay: 0.2s;">
       <div class="flex">
-        <svg class="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <div class="text-sm text-blue-800">
-          <p class="font-medium mb-1">記録のヒント</p>
-          <ul class="list-disc list-inside space-y-1 text-blue-700">
-            <li>記録日のみ必須項目です</li>
-            <li>空欄の項目は記録されません</li>
-            <li>定期的に記録することで、より正確なトレンド分析が可能になります</li>
+        <div class="flex-shrink-0">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-3 sm:ml-4">
+          <p class="font-bold text-slate-900 mb-2 text-sm sm:text-base">記録のヒント</p>
+          <ul class="space-y-1.5 text-sm text-slate-600">
+            <li class="flex items-start">
+              <span class="text-emerald-500 mr-2 text-lg">•</span>
+              <span>記録日のみ必須項目です</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-emerald-500 mr-2 text-lg">•</span>
+              <span>空欄の項目は記録されません</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-emerald-500 mr-2 text-lg">•</span>
+              <span>定期的に記録することで、より正確なトレンド分析が可能になります</span>
+            </li>
           </ul>
         </div>
       </div>
     </div>
   </main>
+
+  <script>
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobileMenu');
+      menu.classList.toggle('active');
+    }
+  </script>
 </body>
 </html>

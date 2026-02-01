@@ -5,73 +5,191 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ログイン - HealthForecast</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #10b981;
+      --color-secondary: #06b6d4;
+      --color-accent: #f59e0b;
+    }
+
+    * {
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #fef3c7 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      animation: slideUp 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .input-field {
+      background: rgba(255, 255, 255, 0.8);
+      border: 2px solid rgba(16, 185, 129, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .input-field:focus {
+      background: rgba(255, 255, 255, 1);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+      outline: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(16, 185, 129, 0.4);
+    }
+
+    .link {
+      color: var(--color-primary);
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+
+    .link:hover {
+      color: var(--color-secondary);
+    }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
-  <div class="max-w-md w-full mx-4">
+<body>
+  <div class="container max-w-md w-full mx-4">
     <!-- ロゴエリア -->
-    <div class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-blue-600 mb-2">HealthForecast</h1>
-      <p class="text-gray-600">健康データを記録して、未来を予測</p>
+    <div class="text-center mb-10">
+      <h1 class="logo mb-3">HealthForecast</h1>
+      <p class="text-slate-600 text-lg">健康データを記録して、未来を予測</p>
     </div>
 
     <!-- ログインフォーム -->
-    <div class="bg-white rounded-lg shadow-lg p-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">ログイン</h2>
+    <div class="card rounded-3xl p-10">
+      <h2 class="text-3xl font-bold text-slate-900 mb-8">ログイン</h2>
 
-      <form class="space-y-5">
+      <form class="space-y-6">
         <!-- メールアドレス -->
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="email" class="block text-sm font-semibold text-slate-700 mb-2">
             メールアドレス
           </label>
           <input type="email" id="email" name="email" required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="input-field w-full px-4 py-3.5 rounded-xl text-slate-900"
             placeholder="your@email.com">
         </div>
 
         <!-- パスワード -->
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="password" class="block text-sm font-semibold text-slate-700 mb-2">
             パスワード
           </label>
           <input type="password" id="password" name="password" required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="input-field w-full px-4 py-3.5 rounded-xl text-slate-900"
             placeholder="••••••••">
         </div>
 
         <!-- Remember me & パスワード忘れ -->
         <div class="flex items-center justify-between">
-          <label class="flex items-center">
-            <input type="checkbox" name="remember_me" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-            <span class="ml-2 text-sm text-gray-600">ログイン状態を保持</span>
+          <label class="flex items-center cursor-pointer">
+            <input type="checkbox" name="remember_me" class="w-4 h-4 text-emerald-600 border-emerald-300 rounded focus:ring-emerald-500">
+            <span class="ml-2.5 text-sm text-slate-600 font-medium">ログイン状態を保持</span>
           </label>
-          <a href="#" class="text-sm text-blue-600 hover:text-blue-700">パスワードを忘れた</a>
+          <a href="#" class="text-sm link">パスワードを忘れた</a>
         </div>
 
         <!-- ログインボタン -->
-        <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium transition">
+        <button type="submit" class="btn-primary w-full text-white py-4 rounded-xl font-bold text-lg">
           ログイン
         </button>
       </form>
 
       <!-- 区切り線 -->
-      <div class="my-6 flex items-center">
-        <div class="flex-1 border-t border-gray-300"></div>
-        <span class="px-4 text-sm text-gray-500">または</span>
-        <div class="flex-1 border-t border-gray-300"></div>
+      <div class="my-8 flex items-center">
+        <div class="flex-1 border-t border-slate-300"></div>
+        <span class="px-4 text-sm text-slate-500 font-medium">または</span>
+        <div class="flex-1 border-t border-slate-300"></div>
       </div>
 
       <!-- 新規登録リンク -->
       <div class="text-center">
-        <p class="text-sm text-gray-600">
+        <p class="text-slate-600">
           アカウントをお持ちでない方
-          <a href="signup.html" class="text-blue-600 hover:text-blue-700 font-medium">新規登録</a>
+          <a href="signup.html" class="link ml-1">新規登録</a>
         </p>
       </div>
     </div>
 
     <!-- フッター -->
-    <div class="text-center mt-6 text-sm text-gray-600">
+    <div class="text-center mt-8 text-sm text-slate-600">
       <p>&copy; 2026 HealthForecast. All rights reserved.</p>
     </div>
   </div>
