@@ -11,7 +11,7 @@
   </div>
 
   <!-- 統計サマリーカード -->
-  <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mb-8 sm:mb-12">
+  <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-6 mb-8 sm:mb-12">
     <!-- 総記録数 -->
     <div class="card rounded-2xl p-4 sm:p-6 animate-fade-in-up delay-100">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -105,6 +105,26 @@
           </div>
         </div>
       </div>
+
+      <!-- 最新体温 -->
+      <div class="card rounded-2xl p-4 sm:p-6 animate-fade-in-up delay-600">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div class="mb-3 sm:mb-0">
+            <p class="text-xs sm:text-sm text-slate-600 font-medium mb-1">最新体温</p>
+            <p class="text-2xl sm:text-4xl font-bold text-slate-900 mono">
+              <%= @latest_record.body_temperature.present? ? @latest_record.body_temperature.to_s : "➖" %>
+              <% if @latest_record.body_temperature.present? %>
+                <span class="text-base sm:text-xl text-slate-600">℃</span>
+              <% end %>
+            </p>
+          </div>
+          <div class="icon-gradient w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center">
+            <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
     <% else %>
       <!-- 記録がない場合 -->
       <div class="card rounded-2xl p-6 col-span-2 lg:col-span-3 animate-fade-in-up delay-200">
@@ -171,6 +191,17 @@
           <canvas id="bloodPressureChart"></canvas>
         </div>
       </div>
+
+      <!-- 体温グラフ -->
+      <div class="card rounded-2xl p-4 sm:p-6">
+        <h3 class="text-base sm:text-xl font-bold mb-4 sm:mb-6 text-slate-900">
+          体温の推移
+          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2">最近7日間</span>
+        </h3>
+        <div style="height: 200px;">
+          <canvas id="bodyTemperatureChart"></canvas>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -181,9 +212,10 @@
         const moodData = <%= raw @recent_records.where.not(mood: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.mood } }.to_json %>;
         const exerciseData = <%= raw @recent_records.where.not(exercise_minutes: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.exercise_minutes } }.to_json %>;
         const bloodPressureData = <%= raw @recent_records.where.not(systolic_pressure: nil, diastolic_pressure: nil).reverse.map { |r| { x: r.recorded_at.to_s, systolic: r.systolic_pressure, diastolic: r.diastolic_pressure } }.to_json %>;
+        const bodyTemperatureData = <%= raw @recent_records.where.not(body_temperature: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.body_temperature } }.to_json %>;
 
         // 既存のチャートを破棄
-        ['weightChart', 'sleepChart', 'moodChart', 'exerciseChart', 'bloodPressureChart'].forEach(id => {
+        ['weightChart', 'sleepChart', 'moodChart', 'exerciseChart', 'bloodPressureChart', 'bodyTemperatureChart'].forEach(id => {
           const canvas = document.getElementById(id);
           if (canvas && Chart.getChart(canvas)) {
             Chart.getChart(canvas).destroy();
@@ -389,6 +421,45 @@
             }
           });
         }
+
+        // 体温グラフ（Purpleグラデーション）
+        const bodyTemperatureCtx = document.getElementById('bodyTemperatureChart');
+        if (bodyTemperatureCtx && bodyTemperatureData.length > 0) {
+          const gradient = bodyTemperatureCtx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+          gradient.addColorStop(0, 'rgba(168, 85, 247, 0.5)');
+          gradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)');
+
+          new Chart(bodyTemperatureCtx, {
+            type: 'line',
+            data: {
+              datasets: [{
+                label: '体温 (℃)',
+                data: bodyTemperatureData,
+                borderColor: '#a855f7',
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#a855f7'
+              }]
+            },
+            options: {
+              animation: { duration: 0 },
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: { type: 'time', time: { unit: 'day' } },
+                y: {
+                  beginAtZero: false,
+                  min: 34,
+                  max: 40,
+                  ticks: { stepSize: 1 }
+                }
+              },
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
       });
     </script>
   <% end %>
@@ -447,6 +518,10 @@
                   <% end %>
                 </span>
               </div>
+              <div>
+                <span class="text-slate-500">体温:</span>
+                <span class="font-semibold"><%= record.body_temperature.present? ? "#{record.body_temperature}℃" : "➖" %></span>
+              </div>
             </div>
             <div class="flex gap-2">
               <%= link_to "詳細", record, class: "btn-secondary flex-1 text-center text-sm py-2" %>
@@ -466,6 +541,7 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">睡眠</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">運動</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">血圧</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体温</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体調</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">操作</th>
             </tr>
@@ -491,6 +567,9 @@
                   <% else %>
                     ➖
                   <% end %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
+                  <%= record.body_temperature.present? ? "#{record.body_temperature}℃" : "➖" %>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                   <% if record.mood.present? %>
