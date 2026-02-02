@@ -5,4 +5,9 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   has_many :health_records, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
+
+  def active_push_subscriptions
+    push_subscriptions.active
+  end
 end

@@ -103,13 +103,20 @@ GEM
       railties (>= 7.0)
       responders
       warden (~> 1.2.3)
+    diff-lcs (1.6.2)
     drb (2.2.3)
     erb (6.0.1)
     erubi (1.13.1)
+    factory_bot (6.5.6)
+      activesupport (>= 6.1.0)
+    factory_bot_rails (6.5.1)
+      factory_bot (~> 6.5)
+      railties (>= 6.1.0)
     globalid (1.3.0)
       activesupport (>= 6.1)
     groupdate (6.7.0)
       activesupport (>= 7.1)
+    hkdf (0.3.0)
     i18n (1.14.8)
       concurrent-ruby (~> 1.0)
     importmap-rails (2.2.3)
@@ -124,6 +131,8 @@ GEM
     jbuilder (2.14.1)
       actionview (>= 7.0.0)
       activesupport (>= 7.0.0)
+    jwt (2.10.2)
+      base64
     logger (1.7.0)
     loofah (2.25.0)
       crass (~> 1.0.2)
@@ -212,7 +221,26 @@ GEM
     responders (3.2.0)
       actionpack (>= 7.0)
       railties (>= 7.0)
+    rspec-core (3.13.6)
+      rspec-support (~> 3.13.0)
+    rspec-expectations (3.13.5)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-mocks (3.13.7)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-rails (7.1.1)
+      actionpack (>= 7.0)
+      activesupport (>= 7.0)
+      railties (>= 7.0)
+      rspec-core (~> 3.13)
+      rspec-expectations (~> 3.13)
+      rspec-mocks (~> 3.13)
+      rspec-support (~> 3.13)
+    rspec-support (3.13.7)
     securerandom (0.4.1)
+    shoulda-matchers (6.5.0)
+      activesupport (>= 5.2.0)
     sprockets (4.2.2)
       concurrent-ruby (~> 1.0)
       logger
@@ -244,6 +272,9 @@ GEM
       activemodel (>= 6.0.0)
       bindex (>= 0.4.0)
       railties (>= 6.0.0)
+    webpush (1.1.0)
+      hkdf (~> 0.2)
+      jwt (~> 2.0)
     websocket-driver (0.8.0)
       base64
       websocket-extensions (>= 0.1.0)
@@ -258,11 +289,14 @@ DEPENDENCIES
   chartkick
   debug
   devise
+  factory_bot_rails
   groupdate
   importmap-rails
   jbuilder
   puma (>= 5.0)
   rails (~> 7.1.6)
+  rspec-rails (~> 7.0)
+  shoulda-matchers (~> 6.0)
   sprockets-rails
   sqlite3 (~> 1.4)
   stimulus-rails
@@ -270,6 +304,7 @@ DEPENDENCIES
   turbo-rails
   tzinfo-data
   web-console
+  webpush (~> 1.1)
 
 RUBY VERSION
    ruby 3.2.0p0

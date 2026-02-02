@@ -1,0 +1,23 @@
+<div data-controller="install-prompt">
+  <div class="card rounded-2xl p-6 hidden" data-install-prompt-target="container">
+    <h3 class="text-lg font-semibold text-slate-800 mb-4">
+      <svg class="w-5 h-5 inline-block mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+      </svg>
+      アプリをインストール
+    </h3>
+
+    <p class="text-sm text-slate-600 mb-4">
+      HealthForecastをホーム画面に追加すると、アプリのように使えます。
+    </p>
+
+    <button
+      type="button"
+      class="btn-primary w-full px-4 py-3 rounded-lg text-white font-medium"
+      data-install-prompt-target="installButton"
+      data-action="click->install-prompt#install"
+    >
+      ホーム画面に追加
+    </button>
+  </div>
+</div>

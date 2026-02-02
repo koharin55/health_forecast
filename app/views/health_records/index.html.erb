@@ -107,7 +107,7 @@
             <%= link_to "詳細", record, class: "btn-secondary flex-1 text-center text-sm py-2" %>
             <%= link_to "編集", edit_health_record_path(record), class: "btn-primary flex-1 text-center text-sm py-2" %>
             <%= button_to "削除", record, method: :delete,
-                class: "flex-1 text-sm py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition",
+                class: "w-full text-center text-sm py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition",
                 form: { class: "flex-1" },
                 data: { turbo_confirm: "本当に削除しますか？" } %>
           </div>

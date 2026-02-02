@@ -45,6 +45,9 @@ gem "devise"
 gem "chartkick"
 gem "groupdate"
 
+# Web Push notifications
+gem "webpush", "~> 1.1"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
@@ -57,6 +60,11 @@ gem "bootsnap", require: false
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ]
+
+  # Testing
+  gem "rspec-rails", "~> 7.0"
+  gem "factory_bot_rails"
+  gem "shoulda-matchers", "~> 6.0"
 end
 
 group :development do
