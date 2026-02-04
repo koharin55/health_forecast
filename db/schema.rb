@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_02_02_123348) do
+ActiveRecord::Schema[7.1].define(version: 2026_02_02_145119) do
   create_table "health_records", force: :cascade do |t|
     t.integer "user_id", null: false
     t.date "recorded_at"
@@ -26,6 +26,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_02_123348) do
     t.integer "systolic_pressure"
     t.integer "diastolic_pressure"
     t.decimal "body_temperature"
+    t.decimal "weather_temperature", precision: 4, scale: 1
+    t.integer "weather_humidity"
+    t.decimal "weather_pressure", precision: 6, scale: 1
+    t.integer "weather_code"
+    t.string "weather_description"
     t.index ["user_id"], name: "index_health_records_on_user_id"
   end
 
@@ -52,6 +57,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_02_123348) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "latitude", precision: 10, scale: 7
+    t.decimal "longitude", precision: 10, scale: 7
+    t.string "location_name"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

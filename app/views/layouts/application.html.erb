@@ -19,7 +19,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
@@ -81,6 +81,7 @@
             <div class="hidden md:flex items-center space-x-6">
               <%= link_to "ダッシュボード", root_path, class: "text-slate-600 hover:text-emerald-600 font-medium transition-colors" %>
               <%= link_to "記録一覧", health_records_path, class: "text-slate-600 hover:text-emerald-600 font-medium transition-colors" %>
+              <%= link_to "設定", settings_path, class: "text-slate-600 hover:text-emerald-600 font-medium transition-colors" %>
               <%= link_to new_health_record_path, class: "btn-primary text-white px-5 py-2.5 rounded-full font-semibold" do %>
                 新規記録
               <% end %>
@@ -99,6 +100,7 @@
           <div class="mobile-menu md:hidden py-4 space-y-3" data-mobile-menu-target="menu" style="display: none;">
             <%= link_to "ダッシュボード", root_path, class: "block py-3 px-4 rounded-xl text-slate-600 font-medium hover:bg-slate-50 transition-colors", data: { action: "click->mobile-menu#toggle" } %>
             <%= link_to "記録一覧", health_records_path, class: "block py-3 px-4 rounded-xl text-slate-600 font-medium hover:bg-slate-50 transition-colors", data: { action: "click->mobile-menu#toggle" } %>
+            <%= link_to "設定", settings_path, class: "block py-3 px-4 rounded-xl text-slate-600 font-medium hover:bg-slate-50 transition-colors", data: { action: "click->mobile-menu#toggle" } %>
             <%= link_to "新規記録", new_health_record_path, class: "block py-3 px-4 rounded-xl btn-primary text-white font-bold text-center", data: { action: "click->mobile-menu#toggle" } %>
             <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "block w-full py-3 px-4 rounded-xl text-slate-600 font-medium hover:bg-slate-50 text-left transition-colors bg-transparent border-0" %>
           </div>

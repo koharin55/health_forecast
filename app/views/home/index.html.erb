@@ -10,6 +10,11 @@
     <% end %>
   </div>
 
+  <!-- 天気カード -->
+  <div class="mb-6 sm:mb-8">
+    <%= render 'shared/weather_card', weather: @current_weather %>
+  </div>
+
   <!-- 統計サマリーカード -->
   <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-6 mb-8 sm:mb-12">
     <!-- 総記録数 -->
@@ -536,42 +541,42 @@
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50 bg-opacity-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">日付</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">血圧</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体温</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">睡眠</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体重</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">運動</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">体調</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">操作</th>
+              <th class="px-3 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">日付</th>
+              <th class="px-3 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">血圧</th>
+              <th class="px-3 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">体温</th>
+              <th class="px-3 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">睡眠</th>
+              <th class="px-3 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">体重</th>
+              <th class="px-3 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">運動</th>
+              <th class="px-3 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">体調</th>
+              <th class="px-3 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">操作</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
             <% @recent_records.limit(10).each do |record| %>
               <tr class="hover:bg-gray-50 hover:bg-opacity-50 transition">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-900 text-center">
                   <%= record.recorded_at.strftime("%Y-%m-%d") %>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-900 mono text-center">
                   <% if record.systolic_pressure.present? && record.diastolic_pressure.present? %>
-                    <%= "#{record.systolic_pressure}/#{record.diastolic_pressure} mmHg" %>
+                    <%= "#{record.systolic_pressure}/#{record.diastolic_pressure}" %>
                   <% else %>
                     ➖
                   <% end %>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-900 mono text-center">
                   <%= record.body_temperature.present? ? "#{record.body_temperature}℃" : "➖" %>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-900 mono text-center">
                   <%= record.sleep_hours.present? ? "#{record.sleep_hours}h" : "➖" %>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
-                  <%= record.weight.present? ? "#{record.weight} kg" : "➖" %>
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-900 mono text-center">
+                  <%= record.weight.present? ? "#{record.weight}" : "➖" %>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 mono">
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-900 mono text-center">
                   <%= record.exercise_minutes.present? ? "#{record.exercise_minutes}分" : "➖" %>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-900 text-center">
                   <% if record.mood.present? %>
                     <span class="<%= mood_badge_class(record.mood) %>">
                       <%= mood_emoji(record.mood) %>
@@ -581,9 +586,11 @@
                     ➖
                   <% end %>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <%= link_to "詳細", record, class: "text-emerald-600 hover:text-emerald-900 mr-3" %>
-                  <%= link_to "編集", edit_health_record_path(record), class: "text-cyan-600 hover:text-cyan-900" %>
+                <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-center">
+                  <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <%= link_to "詳細", record, class: "btn-action btn-action-view" %>
+                    <%= link_to "編集", edit_health_record_path(record), class: "btn-action btn-action-edit" %>
+                  </div>
                 </td>
               </tr>
             <% end %>

@@ -136,6 +136,47 @@
       </div>
     </div>
 
+    <!-- 天候情報 -->
+    <% if @health_record.has_weather_data? %>
+      <div class="bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-4 mb-4">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+          <span class="text-lg"><%= @health_record.weather_icon %></span>
+          この日の天気
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <p class="text-xs text-slate-500 mb-1">天気</p>
+            <p class="text-lg font-semibold text-slate-800">
+              <%= @health_record.weather_icon %> <%= @health_record.weather_description %>
+            </p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 mb-1">気温</p>
+            <p class="text-lg font-semibold text-slate-800">
+              <%= @health_record.weather_temperature %><span class="text-sm">&#8451;</span>
+            </p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 mb-1">湿度</p>
+            <p class="text-lg font-semibold text-slate-800">
+              <%= @health_record.weather_humidity %><span class="text-sm">%</span>
+            </p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 mb-1">気圧</p>
+            <p class="text-lg font-semibold <%= pressure_class(@health_record.weather_pressure) %>">
+              <%= @health_record.weather_pressure&.round(1) %><span class="text-sm"> hPa</span>
+            </p>
+          </div>
+        </div>
+        <% if @health_record.weather_pressure && @health_record.weather_pressure < 1005 %>
+          <div class="mt-3 p-2 bg-amber-100 border border-amber-200 rounded-lg text-sm text-amber-800">
+            &#9888;&#65039; この日は低気圧でした。
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
     <!-- メモ -->
     <% if @health_record.notes.present? %>
       <div class="bg-white bg-opacity-50 rounded-xl p-4">
