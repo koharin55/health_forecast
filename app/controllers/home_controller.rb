@@ -4,6 +4,8 @@ class HomeController < ApplicationController
     @latest_record = @recent_records.first
     @total_records = current_user.health_records.count
     @current_weather = fetch_current_weather
+    @prediction_service = HealthPredictionService.new(current_user)
+    @predictions = fetch_predictions
   end
 
   private
@@ -19,5 +21,14 @@ class HomeController < ApplicationController
   rescue WeatherService::Error => e
     Rails.logger.error("HomeController#fetch_current_weather error: #{e.message}")
     nil
+  end
+
+  def fetch_predictions
+    return [] unless current_user.location_configured?
+
+    @prediction_service.predict_next_days(days: 4)
+  rescue StandardError => e
+    Rails.logger.error("HomeController#fetch_predictions error: #{e.message}")
+    []
   end
 end

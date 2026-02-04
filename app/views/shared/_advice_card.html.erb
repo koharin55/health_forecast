@@ -1,0 +1,86 @@
+<% if current_user.location_configured? %>
+  <% if predictions.any? %>
+    <% high_risk = predictions.find { |p| [:high, :critical].include?(p[:risk_level]) } %>
+    <% if high_risk %>
+      <!-- 高リスク時のアドバイス -->
+      <div class="card rounded-2xl p-4 sm:p-5 animate-fade-in-up bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200">
+        <div class="flex items-start gap-3">
+          <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-100 flex items-center justify-center">
+            <span class="text-2xl sm:text-3xl">&#128161;</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-base sm:text-lg font-bold text-amber-800 mb-1">
+              <%= format_date_with_weekday(high_risk[:date]) %>の注意点
+            </h3>
+            <p class="text-sm sm:text-base text-amber-700"><%= high_risk[:advice] %></p>
+            <% if high_risk[:factors].any? %>
+              <div class="flex flex-wrap gap-1 mt-2">
+                <% high_risk[:factors].each do |factor| %>
+                  <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                    <%= factor[:message] %>
+                  </span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% else %>
+      <!-- 低リスク時のポジティブメッセージ -->
+      <% best = predictions.min_by { |p| p[:risk_score] } %>
+      <div class="card rounded-2xl p-4 sm:p-5 animate-fade-in-up bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200">
+        <div class="flex items-start gap-3">
+          <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+            <span class="text-2xl sm:text-3xl">&#127775;</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-base sm:text-lg font-bold text-emerald-800 mb-1">今後数日間の見通し</h3>
+            <p class="text-sm sm:text-base text-emerald-700"><%= best[:advice] %></p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% elsif prediction_service %>
+    <!-- データ収集中 -->
+    <div class="card rounded-2xl p-4 sm:p-5 animate-fade-in-up bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-sky-100 flex items-center justify-center">
+          <span class="text-2xl sm:text-3xl">&#128200;</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-bold text-sky-800 mb-1">分析データを収集中...</p>
+          <p class="text-sm text-sky-700 mb-2">
+            天候データ付きの記録があと<span class="font-bold"><%= prediction_service.required_data_count - prediction_service.current_data_count %></span>件必要です。
+          </p>
+          <!-- プログレスバー -->
+          <div class="max-w-sm">
+            <div class="flex justify-between text-xs text-sky-600 mb-1">
+              <span>進捗</span>
+              <span class="mono"><%= prediction_service.current_data_count %>/<%= prediction_service.required_data_count %>件</span>
+            </div>
+            <div class="h-2 bg-sky-200 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-full transition-all duration-500"
+                   style="width: <%= prediction_service.data_progress %>%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <!-- 地域未設定 -->
+  <div class="card rounded-2xl p-4 sm:p-5 animate-fade-in-up bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200">
+    <div class="flex items-start gap-3">
+      <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 flex items-center justify-center">
+        <span class="text-2xl sm:text-3xl">&#127758;</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-bold text-slate-800 mb-1">体調予測を始めましょう</p>
+        <p class="text-sm text-slate-600 mb-2">地域を設定すると、天気予報に基づく体調予測とアドバイスが表示されます。</p>
+        <%= link_to settings_path, class: "inline-flex items-center gap-1 btn-primary px-4 py-1.5 rounded-full font-semibold text-sm" do %>
+          <span>&#128205;</span> 地域を設定する
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

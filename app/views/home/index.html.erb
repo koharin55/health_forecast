@@ -10,9 +10,19 @@
     <% end %>
   </div>
 
-  <!-- 天気カード -->
-  <div class="mb-6 sm:mb-8">
+  <!-- アドバイスカード（メインコンセプト） -->
+  <div class="mb-4 sm:mb-6">
+    <%= render 'shared/advice_card', predictions: @predictions, prediction_service: @prediction_service %>
+  </div>
+
+  <!-- 天気カード（全幅・コンパクト） -->
+  <div class="mb-4 sm:mb-6">
     <%= render 'shared/weather_card', weather: @current_weather %>
+  </div>
+
+  <!-- 予測カード（全幅・4日分） -->
+  <div class="mb-6 sm:mb-8">
+    <%= render 'shared/prediction_card', predictions: @predictions, prediction_service: @prediction_service %>
   </div>
 
   <!-- 統計サマリーカード -->
