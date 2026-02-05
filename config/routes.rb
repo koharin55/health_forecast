@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   authenticated :user do
     root to: 'home#index', as: :authenticated_root
     resources :health_records
+    resources :weekly_reports, only: [:index, :show, :create]
     resource :settings, only: [ :show, :update ] do
       post :search_zipcode, on: :collection
       post :backfill_weather, on: :collection

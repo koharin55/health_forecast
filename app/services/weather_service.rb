@@ -84,6 +84,29 @@ class WeatherService
     end
   end
 
+  # 複数日の天気予報を取得（最大7日先まで）
+  def fetch_forecast_days(days: 3)
+    return [] if days < 1 || days > 7
+
+    start_date = Date.current + 1
+    end_date = Date.current + days
+
+    params = {
+      latitude: @latitude,
+      longitude: @longitude,
+      daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
+      start_date: start_date.to_s,
+      end_date: end_date.to_s,
+      timezone: TIMEZONE
+    }
+
+    response = make_request(params)
+    parse_multi_day_weather(response)
+  rescue StandardError => e
+    Rails.logger.error("WeatherService forecast_days error: #{e.message}")
+    []
+  end
+
   # 天気コードから説明を取得
   def self.weather_description(code)
     WEATHER_CODES[code] || "不明"
@@ -196,5 +219,21 @@ class WeatherService
       weather_description: self.class.weather_description(daily["weather_code"]&.first),
       fetched_at: Time.current
     }
+  end
+
+  def parse_multi_day_weather(response)
+    daily = response["daily"]
+    return [] unless daily && daily["time"]&.any?
+
+    daily["time"].each_with_index.map do |date_str, i|
+      {
+        date: Date.parse(date_str),
+        temperature: daily["temperature_2m_mean"]&.[](i),
+        humidity: daily["relative_humidity_2m_mean"]&.[](i)&.to_i,
+        pressure: daily["surface_pressure_mean"]&.[](i),
+        weather_code: daily["weather_code"]&.[](i),
+        weather_description: self.class.weather_description(daily["weather_code"]&.[](i))
+      }
+    end
   end
 end

@@ -40,6 +40,8 @@ class HealthRecord < ApplicationRecord
   scope :recent, -> { order(recorded_at: :desc) }
   scope :for_user, ->(user) { where(user: user) }
   scope :with_weather, -> { where.not(weather_code: nil) }
+  scope :with_mood, -> { where.not(mood: nil) }
+  scope :with_weather_and_mood, -> { with_weather.with_mood.where.not(weather_pressure: nil) }
 
   # 天候データを取得して設定
   def fetch_and_set_weather!

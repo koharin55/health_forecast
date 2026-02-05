@@ -94,7 +94,7 @@ if (document.readyState === 'loading') {
 }
 
 // グローバルにエクスポート（Stimulusコントローラーから利用可能に）
-window.HealthForecastSW = {
+window.PreCareSW = {
   register: registerServiceWorker,
 
   // Service Worker登録を取得

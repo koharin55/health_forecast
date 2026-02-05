@@ -49,7 +49,7 @@ class WebPushService
 
   def send_reminder(user)
     payload = {
-      title: 'HealthForecast',
+      title: 'PreCare',
       body: '今日の健康記録をつけましょう',
       url: '/health_records/new',
       actions: [
@@ -65,7 +65,7 @@ class WebPushService
 
   def build_message(payload)
     {
-      title: payload[:title] || 'HealthForecast',
+      title: payload[:title] || 'PreCare',
       body: payload[:body] || '',
       url: payload[:url] || '/',
       actions: payload[:actions] || []

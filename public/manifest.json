@@ -1,6 +1,6 @@
 {
-  "name": "HealthForecast",
-  "short_name": "HealthFC",
+  "name": "PreCare",
+  "short_name": "PreCare",
   "description": "日々の健康データを記録・管理するアプリ",
   "start_url": "/",
   "scope": "/",

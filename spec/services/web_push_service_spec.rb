@@ -128,7 +128,7 @@ RSpec.describe WebPushService do
 
       expect(Webpush).to have_received(:payload_send) do |args|
         message = JSON.parse(args[:message])
-        expect(message['title']).to eq('HealthForecast')
+        expect(message['title']).to eq('PreCare')
         expect(message['body']).to include('今日の健康記録')
         expect(message['url']).to eq('/health_records/new')
       end

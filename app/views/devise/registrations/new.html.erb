@@ -2,13 +2,13 @@
   <div class="max-w-md w-full">
     <!-- ロゴエリア -->
     <div class="text-center mb-10">
-      <h1 class="logo text-5xl mb-3">HealthForecast</h1>
-      <p class="text-slate-600 text-lg">健康データを記録して、未来を予測</p>
+      <h1 class="logo text-5xl mb-3 flex items-center justify-center gap-2"><span>🌿</span>PreCare</h1>
+      <p class="text-slate-600 text-lg">予防ケアで、健やかな毎日を</p>
     </div>
 
     <!-- 新規登録カード -->
     <div class="card rounded-3xl p-10">
-      <h2 class="text-3xl font-bold text-slate-900 mb-8">新規登録</h2>
+      <h2 class="text-3xl font-bold text-slate-600 mb-8">新規登録</h2>
 
       <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "space-y-6" }) do |f| %>
         <%= render "devise/shared/error_messages", resource: resource %>
@@ -62,7 +62,7 @@
 
     <!-- フッター -->
     <div class="text-center mt-8 text-sm text-slate-600">
-      <p>&copy; 2026 HealthForecast. All rights reserved.</p>
+      <p>&copy; 2026 PreCare. All rights reserved.</p>
     </div>
   </div>
 </div>

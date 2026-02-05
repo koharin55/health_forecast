@@ -1,7 +1,7 @@
-// HealthForecast Service Worker
+// PreCare Service Worker
 const CACHE_VERSION = 'v1';
-const STATIC_CACHE_NAME = `healthforecast-static-${CACHE_VERSION}`;
-const DYNAMIC_CACHE_NAME = `healthforecast-dynamic-${CACHE_VERSION}`;
+const STATIC_CACHE_NAME = `precare-static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE_NAME = `precare-dynamic-${CACHE_VERSION}`;
 
 // 静的アセット（Cache First戦略）
 const STATIC_ASSETS = [
@@ -40,7 +40,7 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames
             .filter((cacheName) => {
-              return cacheName.startsWith('healthforecast-') &&
+              return (cacheName.startsWith('precare-') || cacheName.startsWith('healthforecast-')) &&
                      cacheName !== STATIC_CACHE_NAME &&
                      cacheName !== DYNAMIC_CACHE_NAME;
             })
@@ -179,7 +179,7 @@ function isCdnRequest(url) {
 self.addEventListener('push', (event) => {
   console.log('[SW] Push received');
 
-  let data = { title: 'HealthForecast', body: '新しい通知があります' };
+  let data = { title: 'PreCare', body: '新しい通知があります' };
 
   if (event.data) {
     try {

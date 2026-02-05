@@ -6,6 +6,7 @@ class User < ApplicationRecord
 
   has_many :health_records, dependent: :destroy
   has_many :push_subscriptions, dependent: :destroy
+  has_many :weekly_reports, dependent: :destroy
 
   validates :latitude, numericality: {
     greater_than_or_equal_to: -90,

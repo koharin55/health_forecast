@@ -26,12 +26,12 @@
               <%= prediction[:risk_level_label] %>
             </p>
             <% if prediction[:forecast] && prediction[:forecast][:weather_code] %>
-              <p class="text-xs text-slate-500 mt-1">
-                <%= WeatherService.weather_icon(prediction[:forecast][:weather_code]) %>
+              <div class="flex items-center justify-center gap-1 mt-1">
+                <span class="text-xl"><%= WeatherService.weather_icon(prediction[:forecast][:weather_code]) %></span>
                 <% if prediction[:forecast][:pressure] %>
-                  <span class="mono"><%= prediction[:forecast][:pressure].round %>hPa</span>
+                  <span class="text-xs text-slate-500 mono"><%= prediction[:forecast][:pressure].round %>hPa</span>
                 <% end %>
-              </p>
+              </div>
             <% end %>
           </div>
         <% end %>

@@ -1,16 +1,52 @@
-<h2>Forgot your password?</h2>
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+  <div class="max-w-md w-full">
+    <!-- ロゴエリア -->
+    <div class="text-center mb-10">
+      <h1 class="logo text-5xl mb-3 flex items-center justify-center gap-2"><span>🌿</span>PreCare</h1>
+      <p class="text-slate-600 text-lg">予防ケアで、健やかな毎日を</p>
+    </div>
 
-<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+    <!-- パスワードリセットカード -->
+    <div class="card rounded-3xl p-10">
+      <h2 class="text-3xl font-bold text-slate-600 mb-4">パスワードをお忘れですか？</h2>
+      <p class="text-slate-500 mb-8">登録済みのメールアドレスを入力してください。パスワード再設定用のリンクをお送りします。</p>
 
-  <div class="field">
-    <p><%= f.label :email %></p>
-    <p><%= f.email_field :email, autofocus: true, autocomplete: "email" %></p>
+      <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, class: "space-y-6" }) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <!-- メールアドレス -->
+        <div>
+          <%= f.label :email, "メールアドレス", class: "block text-sm font-semibold text-slate-700 mb-2" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "your@email.com", class: "input-field w-full px-4 py-3.5 rounded-xl text-slate-900" %>
+        </div>
+
+        <!-- 送信ボタン -->
+        <%= f.submit "再設定メールを送信", class: "btn-primary w-full text-white py-4 rounded-xl font-bold text-lg" %>
+      <% end %>
+
+      <!-- 区切り線 -->
+      <div class="my-8 flex items-center">
+        <div class="flex-1 border-t border-slate-300"></div>
+        <span class="px-4 text-sm text-slate-500 font-medium">または</span>
+        <div class="flex-1 border-t border-slate-300"></div>
+      </div>
+
+      <!-- ログインリンク -->
+      <div class="text-center space-y-2">
+        <p class="text-slate-600">
+          パスワードを思い出しましたか？
+          <%= link_to "ログイン", new_session_path(resource_name), class: "link ml-1" %>
+        </p>
+        <p class="text-slate-600">
+          アカウントをお持ちでない方
+          <%= link_to "新規登録", new_registration_path(resource_name), class: "link ml-1" %>
+        </p>
+      </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="text-center mt-8 text-sm text-slate-600">
+      <p>&copy; 2026 PreCare. All rights reserved.</p>
+    </div>
   </div>
-
-  <div class="actions">
-    <%= f.submit "Send me password reset instructions" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
+</div>

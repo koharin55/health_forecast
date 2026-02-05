@@ -92,12 +92,13 @@
    Logo with Gradient
    ======================================== */
 .logo {
-  background: var(--gradient-primary);
+  background: linear-gradient(135deg, #34d399 0%, #22d3ee 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.75rem;
+  letter-spacing: 0.02em;
 }
 
 /* ========================================
@@ -367,6 +368,94 @@
 .btn-action-delete:hover {
   background: rgba(239, 68, 68, 0.2);
   color: #b91c1c;
+}
+
+/* ========================================
+   Weekly Report Content
+   ======================================== */
+.weekly-report-content {
+  color: #334155;
+  line-height: 1.8;
+}
+
+.weekly-report-content h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.weekly-report-content h2:first-child {
+  margin-top: 0;
+}
+
+.weekly-report-content h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #334155;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.weekly-report-content p {
+  font-size: 1rem;
+  margin-bottom: 1.25rem;
+  color: #475569;
+}
+
+.weekly-report-content ul,
+.weekly-report-content ol {
+  margin-top: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.weekly-report-content li {
+  font-size: 1rem;
+  margin-bottom: 0.625rem;
+  color: #475569;
+}
+
+.weekly-report-content li::marker {
+  color: var(--color-primary);
+}
+
+.weekly-report-content strong {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.weekly-report-content em {
+  font-style: italic;
+  color: #64748b;
+}
+
+.weekly-report-content blockquote {
+  border-left: 4px solid var(--color-primary);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: #64748b;
+  font-style: italic;
+  background: rgba(16, 185, 129, 0.05);
+  padding: 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.weekly-report-content code {
+  background: #f1f5f9;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: #0f766e;
+}
+
+.weekly-report-content hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 2rem 0;
 }
 
 /* ========================================

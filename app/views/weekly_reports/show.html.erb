@@ -1,0 +1,98 @@
+<div class="w-full max-w-4xl mx-auto">
+  <!-- ヘッダー -->
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
+    <div>
+      <%= link_to authenticated_root_path, class: "text-slate-500 hover:text-slate-700 text-sm inline-flex items-center mb-2" do %>
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        ダッシュボードに戻る
+      <% end %>
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-700">AI週次レポート</h1>
+      <p class="text-slate-600 mt-1">
+        <%= @weekly_report.period_display_ja %>
+      </p>
+    </div>
+    <div class="text-right">
+      <p class="text-xs text-slate-500">
+        生成日時: <%= @weekly_report.created_at.strftime('%Y/%m/%d %H:%M') %>
+      </p>
+      <% if @weekly_report.tokens_used.present? %>
+        <p class="text-xs text-slate-400">
+          トークン使用量: <%= @weekly_report.tokens_used %>
+        </p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- サマリーカード -->
+  <% if @weekly_report.summary_data.present? %>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <div class="card rounded-xl p-4 text-center">
+        <p class="text-xs text-slate-500 mb-1">記録数</p>
+        <p class="text-2xl font-bold text-slate-900 mono"><%= @weekly_report.summary_data['record_count'] || '-' %></p>
+      </div>
+      <div class="card rounded-xl p-4 text-center">
+        <p class="text-xs text-slate-500 mb-1">平均体調</p>
+        <p class="text-2xl font-bold text-emerald-600 mono"><%= @weekly_report.summary_data['avg_mood'] || '-' %><span class="text-sm text-slate-500">/5</span></p>
+      </div>
+      <div class="card rounded-xl p-4 text-center">
+        <p class="text-xs text-slate-500 mb-1">平均睡眠</p>
+        <p class="text-2xl font-bold text-cyan-600 mono"><%= @weekly_report.summary_data['avg_sleep'] || '-' %><span class="text-sm text-slate-500">h</span></p>
+      </div>
+      <div class="card rounded-xl p-4 text-center">
+        <p class="text-xs text-slate-500 mb-1">総運動時間</p>
+        <p class="text-2xl font-bold text-amber-600 mono"><%= @weekly_report.summary_data['total_exercise'] || '-' %><span class="text-sm text-slate-500">分</span></p>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- 警戒日アラート -->
+  <% if @weekly_report.predictions.present? && @weekly_report.predictions['warning_dates']&.any? %>
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+      <div class="flex items-start gap-3">
+        <div class="text-amber-500 mt-0.5">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="font-bold text-amber-800 mb-1">来週の注意日</h3>
+          <p class="text-sm text-amber-700">
+            <% @weekly_report.predictions['warning_dates'].each do |date_str| %>
+              <% date = Date.parse(date_str) %>
+              <% wday = %w[日 月 火 水 木 金 土][date.wday] %>
+              <span class="inline-block bg-amber-100 px-2 py-0.5 rounded mr-1 mb-1">
+                <%= date.strftime('%m/%d') %>(<%= wday %>)
+              </span>
+            <% end %>
+            に低気圧が予報されています。体調管理にご注意ください。
+          </p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- レポート本文 -->
+  <div class="card rounded-2xl p-6 sm:p-8">
+    <div class="weekly-report-content">
+      <%= markdown(@weekly_report.content) %>
+    </div>
+  </div>
+
+  <!-- アクションボタン -->
+  <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+    <%= button_to weekly_reports_path, method: :post, class: "btn-primary px-6 py-3 rounded-xl font-bold inline-flex items-center justify-center" do %>
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      新しいレポートを生成
+    <% end %>
+    <%= link_to weekly_reports_path, class: "btn-secondary px-6 py-3 rounded-xl font-bold inline-flex items-center justify-center" do %>
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+      過去のレポート一覧
+    <% end %>
+  </div>
+</div>

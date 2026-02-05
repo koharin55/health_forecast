@@ -48,6 +48,12 @@ gem "groupdate"
 # Web Push notifications
 gem "webpush", "~> 1.1"
 
+# AI API (Gemini)
+gem "gemini-ai"
+
+# Markdown rendering
+gem "redcarpet"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

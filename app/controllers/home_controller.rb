@@ -6,6 +6,7 @@ class HomeController < ApplicationController
     @current_weather = fetch_current_weather
     @prediction_service = HealthPredictionService.new(current_user)
     @predictions = fetch_predictions
+    @latest_report = current_user.weekly_reports.recent.first
   end
 
   private

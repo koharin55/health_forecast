@@ -23,7 +23,7 @@ export default class extends Controller {
       return
     }
 
-    const subscription = await window.HealthForecastSW?.getPushSubscription()
+    const subscription = await window.PreCareSW?.getPushSubscription()
     this.subscribedValue = !!subscription
     this.setStatus(subscription ? "subscribed" : "unsubscribed")
   }
@@ -63,7 +63,7 @@ export default class extends Controller {
       const { vapid_public_key } = await vapidResponse.json()
 
       // Service Workerでプッシュを購読
-      const subscription = await window.HealthForecastSW.subscribeToPush(vapid_public_key)
+      const subscription = await window.PreCareSW.subscribeToPush(vapid_public_key)
 
       // サーバーに登録
       const response = await fetch("/api/v1/push_subscriptions", {
@@ -98,7 +98,7 @@ export default class extends Controller {
     try {
       this.setStatus("loading")
 
-      const subscription = await window.HealthForecastSW?.getPushSubscription()
+      const subscription = await window.PreCareSW?.getPushSubscription()
       if (subscription) {
         // サーバーから削除
         const encodedEndpoint = encodeURIComponent(subscription.endpoint)
@@ -110,7 +110,7 @@ export default class extends Controller {
         })
 
         // ブラウザの購読を解除
-        await window.HealthForecastSW.unsubscribeFromPush()
+        await window.PreCareSW.unsubscribeFromPush()
       }
 
       this.subscribedValue = false

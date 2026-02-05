@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
   <head>
-    <title>HealthForecast</title>
+    <title>PreCare</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#10b981">
     <meta name="description" content="日々の健康データを記録・管理するアプリ">
@@ -13,13 +13,13 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="HealthFC">
+    <meta name="apple-mobile-web-app-title" content="PreCare">
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
@@ -29,11 +29,12 @@
 
     <style>
       body {
-        font-family: 'Outfit', sans-serif;
+        font-family: 'Zen Maru Gothic', sans-serif;
         position: relative;
         min-height: 100vh;
         background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #fef3c7 100%);
         background-attachment: fixed;
+        color: #475569;
       }
 
       body::before {
@@ -72,8 +73,8 @@
           <div class="flex justify-between items-center h-16">
             <!-- ロゴ -->
             <div class="flex items-center">
-              <%= link_to root_path, class: "logo text-xl sm:text-2xl font-extrabold" do %>
-                HealthForecast
+              <%= link_to root_path, class: "logo text-xl sm:text-2xl font-extrabold flex items-center gap-1" do %>
+                <span>🌿</span>PreCare
               <% end %>
             </div>
 
@@ -134,7 +135,7 @@
       <!-- フッター -->
       <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 relative z-10">
         <div class="card rounded-2xl px-4 py-6 text-center text-slate-600">
-          <p class="text-sm">&copy; 2026 HealthForecast. All rights reserved.</p>
+          <p class="text-sm">&copy; 2026 PreCare. All rights reserved.</p>
         </div>
       </footer>
     <% end %>

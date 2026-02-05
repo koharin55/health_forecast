@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_02_02_145119) do
+ActiveRecord::Schema[7.1].define(version: 2026_02_04_212542) do
   create_table "health_records", force: :cascade do |t|
     t.integer "user_id", null: false
     t.date "recorded_at"
@@ -64,6 +64,21 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_02_145119) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "weekly_reports", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.date "week_start", null: false
+    t.date "week_end", null: false
+    t.text "content", null: false
+    t.json "summary_data"
+    t.json "predictions"
+    t.integer "tokens_used"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "week_start"], name: "index_weekly_reports_on_user_id_and_week_start", unique: true
+    t.index ["user_id"], name: "index_weekly_reports_on_user_id"
+  end
+
   add_foreign_key "health_records", "users"
   add_foreign_key "push_subscriptions", "users"
+  add_foreign_key "weekly_reports", "users"
 end
