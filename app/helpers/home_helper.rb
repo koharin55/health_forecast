@@ -32,7 +32,7 @@ module HomeHelper
 
   # 予測日のラベル（日付付き）
   def prediction_date_label(index)
-    date = Date.today + index + 1
+    date = Date.current + index + 1
     label = case index
             when 0 then "明日"
             when 1 then "明後日"

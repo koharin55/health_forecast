@@ -19,7 +19,7 @@ user.health_records.destroy_all
 puts "📊 Creating 30 days of health records..."
 
 30.downto(0) do |days_ago|
-  date = Date.today - days_ago.days
+  date = Date.current - days_ago.days
 
   # 体重: 70kg から徐々に減少（ランダムな変動あり）
   base_weight = 70.0 - (days_ago * 0.05)

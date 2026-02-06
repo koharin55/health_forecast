@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
         <span class="text-lg"><%= weather ? WeatherService.weather_icon(weather[:weather_code]) : "&#9728;&#65039;" %></span>
-        現在の天気：<%= format_date_with_weekday(Date.today) %>
+        現在の天気：<%= format_date_with_weekday(Date.current) %>
       </h3>
       <span class="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
         <%= current_user.location_name %>

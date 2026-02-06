@@ -12,7 +12,7 @@ class HealthRecordsController < ApplicationController
 
   # GET /health_records/new
   def new
-    @health_record = current_user.health_records.new(recorded_at: Date.today)
+    @health_record = current_user.health_records.new(recorded_at: Date.current)
   end
 
   # GET /health_records/1/edit
