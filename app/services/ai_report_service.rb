@@ -44,7 +44,7 @@ class AiReportService
   end
 
   def api_key
-    @api_key ||= Rails.application.credentials.dig(:gemini_api_key)
+    @api_key ||= Rails.application.credentials.dig(:gemini_api_key) || ENV["GEMINI_API_KEY"]
   end
 
   def client
