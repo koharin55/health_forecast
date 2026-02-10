@@ -61,6 +61,56 @@ class HealthRecordsController < ApplicationController
     end
   end
 
+  def export
+    service = HealthRecordExportService.new(current_user)
+    csv_data = service.generate_csv
+    filename = "health_records_#{Date.current.strftime('%Y%m%d')}.csv"
+    send_data csv_data, filename: filename, type: 'text/csv; charset=utf-8'
+  end
+
+  def import_form
+  end
+
+  def import
+    if params[:file].blank?
+      redirect_to import_health_records_path, alert: "ファイルを選択してください"
+      return
+    end
+
+    uploaded_file = params[:file]
+
+    if uploaded_file.size > 5.megabytes
+      redirect_to import_health_records_path, alert: "ファイルサイズが大きすぎます（上限: 5MB）"
+      return
+    end
+
+    unless uploaded_file.content_type.in?(%w[text/csv application/csv text/plain])
+      redirect_to import_health_records_path, alert: "CSVファイルを選択してください"
+      return
+    end
+
+    strategy = params[:duplicate_strategy]
+    strategy = 'skip' unless strategy.in?(%w[skip overwrite])
+
+    file_content = uploaded_file.read
+    service = HealthRecordImportService.new(
+      current_user, file_content,
+      duplicate_strategy: strategy
+    )
+    result = service.import
+
+    messages = []
+    messages << "#{result[:imported]}件インポートしました" if result[:imported] > 0
+    messages << "#{result[:skipped]}件スキップしました" if result[:skipped] > 0
+    messages << "#{result[:errors].size}件エラーがありました" if result[:errors].any?
+
+    if result[:errors].any?
+      flash[:alert] = result[:errors].first(5).join("\n")
+    end
+
+    redirect_to health_records_path, notice: messages.join("、")
+  end
+
   private
 
   def set_health_record

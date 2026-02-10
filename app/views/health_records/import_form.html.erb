@@ -1,0 +1,60 @@
+<div class="w-full max-w-2xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold text-slate-700">CSVインポート</h1>
+    <%= link_to health_records_path, class: "btn-secondary px-4 py-2 rounded-xl font-bold inline-flex items-center" do %>
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      戻る
+    <% end %>
+  </div>
+
+  <div class="card p-6 mb-6">
+    <%= form_with url: import_health_records_path, method: :post, multipart: true, class: "space-y-6" do |form| %>
+      <!-- ファイル選択 -->
+      <div>
+        <label class="block text-base font-bold text-slate-700 mb-3">CSVファイル</label>
+        <%= form.file_field :file, accept: ".csv", class: "input-field w-full" %>
+      </div>
+
+      <!-- 重複戦略 -->
+      <div>
+        <label class="block text-base font-bold text-slate-700 mb-3">同一日付のデータが既に存在する場合</label>
+        <div class="space-y-2">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <%= form.radio_button :duplicate_strategy, 'skip', checked: true, class: "text-blue-500" %>
+            <span class="text-slate-700">スキップ（既存データを保持）</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <%= form.radio_button :duplicate_strategy, 'overwrite', class: "text-blue-500" %>
+            <span class="text-slate-700">上書き（CSVデータで更新）</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 送信ボタン -->
+      <div class="flex gap-3">
+        <%= form.submit "インポート実行", class: "btn-primary px-6 py-3 rounded-xl font-bold cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- フォーマット説明 -->
+  <div class="card p-6">
+    <h2 class="text-lg font-bold text-slate-700 mb-4">CSVフォーマットについて</h2>
+    <div class="space-y-3 text-sm text-slate-600">
+      <p>エクスポート機能でダウンロードしたCSVファイルをそのままインポートできます。</p>
+      <p class="font-bold text-slate-700">必須列:</p>
+      <ul class="list-disc ml-6 space-y-1">
+        <li><span class="mono font-bold">記録日</span>（YYYY-MM-DD形式）</li>
+      </ul>
+      <p class="font-bold text-slate-700 mt-3">対応列:</p>
+      <div class="overflow-x-auto">
+        <code class="block text-xs bg-slate-100 rounded-lg p-3 whitespace-nowrap">
+          記録日,体調スコア,体重(kg),睡眠時間(h),運動時間(分),歩数,心拍数(bpm),最高血圧(mmHg),最低血圧(mmHg),体温(℃),メモ
+        </code>
+      </div>
+      <p class="text-slate-500 mt-2">※ 天気・気温・湿度・気圧の列が含まれていても無視されます（天候データは自動取得されます）。</p>
+    </div>
+  </div>
+</div>
