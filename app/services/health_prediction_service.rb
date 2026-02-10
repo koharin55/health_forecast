@@ -14,7 +14,7 @@ class HealthPredictionService
     low: "良好",
     moderate: "注意",
     high: "警戒",
-    critical: "要注意"
+    critical: "危険"
   }.freeze
 
   RISK_LEVEL_ICONS = {
