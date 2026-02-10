@@ -3,7 +3,13 @@ Rails.application.routes.draw do
 
   authenticated :user do
     root to: 'home#index', as: :authenticated_root
-    resources :health_records
+    resources :health_records do
+      collection do
+        get :export
+        get :import, action: :import_form
+        post :import
+      end
+    end
     resources :weekly_reports, only: [:index, :show, :create]
     resource :settings, only: [ :show, :update ] do
       post :search_zipcode, on: :collection
