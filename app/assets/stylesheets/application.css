@@ -472,3 +472,27 @@
   white-space: nowrap;
   border-width: 0;
 }
+
+/* ========================================
+   Accordion (details/summary)
+   ======================================== */
+.accordion summary {
+  list-style: none;
+}
+
+.accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion summary::marker {
+  display: none;
+  content: "";
+}
+
+.accordion .accordion-arrow {
+  transition: transform 0.2s ease;
+}
+
+.accordion[open] .accordion-arrow {
+  transform: rotate(90deg);
+}
