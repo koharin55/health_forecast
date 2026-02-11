@@ -15,6 +15,7 @@ class MypageController < ApplicationController
         redirect_to mypage_path, notice: "プロフィールを更新しました"
       else
         @prefecture_options = User.prefecture_options
+        @open_profile = true
         flash.now[:alert] = @user.errors.full_messages.join(", ")
         render :show, status: :unprocessable_entity
       end
@@ -23,6 +24,7 @@ class MypageController < ApplicationController
         redirect_to mypage_path, notice: "プロフィールを更新しました"
       else
         @prefecture_options = User.prefecture_options
+        @open_profile = true
         flash.now[:alert] = @user.errors.full_messages.join(", ")
         render :show, status: :unprocessable_entity
       end

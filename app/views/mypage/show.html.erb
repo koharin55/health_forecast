@@ -2,14 +2,14 @@
   <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mb-6">マイページ</h1>
 
   <!-- プロフィール編集 -->
-  <details class="card rounded-2xl mb-6 accordion">
+  <details class="card rounded-2xl mb-6 accordion" <%= "open" if @open_profile %>>
     <summary class="p-6 sm:p-8 cursor-pointer select-none flex items-center justify-between">
       <div class="flex items-center gap-2">
         <span class="text-2xl" aria-hidden="true">&#128100;</span>
         <span class="text-xl font-bold text-slate-800">プロフィール編集</span>
       </div>
       <div class="flex items-center gap-3">
-        <span class="text-sm text-slate-500"><%= @user.nickname %> / <%= @user.email %></span>
+        <span class="text-sm text-slate-500"><%= @user.nickname_in_database %> / <%= @user.email_in_database %></span>
         <span class="accordion-arrow text-slate-400 transition-transform" aria-hidden="true">&#9654;</span>
       </div>
     </summary>

@@ -62,6 +62,17 @@ RSpec.describe "Mypage", type: :request do
         }
         expect(response).to have_http_status(:unprocessable_entity)
       end
+
+      it "keeps profile accordion open on validation error" do
+        patch update_profile_mypage_path, params: { user: { nickname: "あ" * 21 } }
+        expect(response.body).to include('details class="card rounded-2xl mb-6 accordion" open')
+      end
+
+      it "displays database nickname in summary on validation error" do
+        original_nickname = user.nickname
+        patch update_profile_mypage_path, params: { user: { nickname: "あ" * 21 } }
+        expect(response.body).to include(original_nickname)
+      end
     end
   end
 
