@@ -22,6 +22,8 @@ class User < ApplicationRecord
 
   validates :nickname, length: { maximum: 20, message: "は20文字以内で入力してください" }
 
+  validate :validate_nickname_not_only_whitespace
+
   def active_push_subscriptions
     push_subscriptions.active
   end
@@ -106,5 +108,13 @@ class User < ApplicationRecord
   # 都道府県一覧を取得
   def self.prefecture_options
     I18n.t("prefectures").map { |p| [ p[:name], p[:code] ] }
+  end
+
+  private
+
+  def validate_nickname_not_only_whitespace
+    if !nickname.nil? && !nickname.empty? && nickname.gsub(/[[:space:]]/, "").empty?
+      errors.add(:nickname, "にスペースのみは使用できません")
+    end
   end
 end

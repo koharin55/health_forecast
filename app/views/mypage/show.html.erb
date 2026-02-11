@@ -35,6 +35,17 @@
               class: "input-field w-full px-4 py-3 rounded-xl text-slate-900" %>
         </div>
 
+        <div>
+          <%= f.label :current_password, class: "block font-medium text-slate-700 mb-2" do %>
+            現在のパスワード
+          <% end %>
+          <p class="text-xs text-slate-500 mb-2">※メールアドレス変更時のみ必要</p>
+          <%= f.password_field :current_password,
+              autocomplete: "current-password",
+              placeholder: "メールアドレス変更時に入力",
+              class: "input-field w-full px-4 py-3 rounded-xl text-slate-900" %>
+        </div>
+
         <button type="submit" class="w-full btn-primary text-white py-3 px-6 rounded-xl font-bold text-lg transition-all">
           プロフィールを更新
         </button>

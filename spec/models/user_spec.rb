@@ -38,6 +38,29 @@ RSpec.describe User, type: :model do
         user = build(:user, :without_nickname)
         expect(user).to be_valid
       end
+
+      it 'is invalid with only half-width spaces' do
+        user = build(:user, nickname: "   ")
+        expect(user).not_to be_valid
+        expect(user.errors[:nickname]).to include("にスペースのみは使用できません")
+      end
+
+      it 'is invalid with only full-width spaces' do
+        user = build(:user, nickname: "\u3000\u3000")
+        expect(user).not_to be_valid
+        expect(user.errors[:nickname]).to include("にスペースのみは使用できません")
+      end
+
+      it 'is invalid with mixed whitespace only' do
+        user = build(:user, nickname: " \u3000 ")
+        expect(user).not_to be_valid
+        expect(user.errors[:nickname]).to include("にスペースのみは使用できません")
+      end
+
+      it 'is valid with spaces around text' do
+        user = build(:user, nickname: " テスト ")
+        expect(user).to be_valid
+      end
     end
 
     it 'validates longitude range' do

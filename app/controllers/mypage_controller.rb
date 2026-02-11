@@ -9,12 +9,23 @@ class MypageController < ApplicationController
   def update_profile
     @user = current_user
 
-    if @user.update(profile_params)
-      redirect_to mypage_path, notice: "プロフィールを更新しました"
+    if email_changed?
+      if @user.update_with_password(profile_params_with_password)
+        bypass_sign_in(@user)
+        redirect_to mypage_path, notice: "プロフィールを更新しました"
+      else
+        @prefecture_options = User.prefecture_options
+        flash.now[:alert] = @user.errors.full_messages.join(", ")
+        render :show, status: :unprocessable_entity
+      end
     else
-      @prefecture_options = User.prefecture_options
-      flash.now[:alert] = @user.errors.full_messages.join(", ")
-      render :show, status: :unprocessable_entity
+      if @user.update(profile_params)
+        redirect_to mypage_path, notice: "プロフィールを更新しました"
+      else
+        @prefecture_options = User.prefecture_options
+        flash.now[:alert] = @user.errors.full_messages.join(", ")
+        render :show, status: :unprocessable_entity
+      end
     end
   end
 
@@ -86,6 +97,14 @@ class MypageController < ApplicationController
 
   def profile_params
     params.require(:user).permit(:nickname, :email)
+  end
+
+  def email_changed?
+    params.dig(:user, :email).present? && params.dig(:user, :email) != current_user.email
+  end
+
+  def profile_params_with_password
+    params.require(:user).permit(:nickname, :email, :current_password)
   end
 
   def password_params

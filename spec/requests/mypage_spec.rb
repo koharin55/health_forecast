@@ -25,14 +25,16 @@ RSpec.describe "Mypage", type: :request do
     before { sign_in user }
 
     context "with valid params" do
-      it "updates nickname" do
+      it "updates nickname without password" do
         patch update_profile_mypage_path, params: { user: { nickname: "新しい名前" } }
         expect(response).to redirect_to(mypage_path)
         expect(user.reload.nickname).to eq("新しい名前")
       end
 
-      it "updates email" do
-        patch update_profile_mypage_path, params: { user: { email: "new@example.com" } }
+      it "updates email with correct password" do
+        patch update_profile_mypage_path, params: {
+          user: { email: "new@example.com", current_password: "password123" }
+        }
         expect(response).to redirect_to(mypage_path)
         expect(user.reload.email).to eq("new@example.com")
       end
@@ -46,6 +48,18 @@ RSpec.describe "Mypage", type: :request do
 
       it "renders show with error for invalid email" do
         patch update_profile_mypage_path, params: { user: { email: "" } }
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it "rejects email update without password" do
+        patch update_profile_mypage_path, params: { user: { email: "new@example.com" } }
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it "rejects email update with wrong password" do
+        patch update_profile_mypage_path, params: {
+          user: { email: "new@example.com", current_password: "wrongpassword" }
+        }
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
