@@ -13,12 +13,24 @@
       <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "space-y-6" }) do |f| %>
         <%= render "devise/shared/error_messages", resource: resource %>
 
+        <!-- ニックネーム -->
+        <div>
+          <%= f.label :nickname, class: "block text-sm font-semibold text-slate-700 mb-2" do %>
+            ニックネーム <span class="text-red-500">*</span>
+          <% end %>
+          <p class="text-xs text-slate-500 mb-2">※20文字以内</p>
+          <%= f.text_field :nickname, autofocus: true, required: true,
+              placeholder: "表示名を入力",
+              class: "input-field w-full px-4 py-3.5 rounded-xl text-slate-900",
+              maxlength: 20 %>
+        </div>
+
         <!-- メールアドレス -->
         <div>
           <%= f.label :email, class: "block text-sm font-semibold text-slate-700 mb-2" do %>
             メールアドレス <span class="text-red-500">*</span>
           <% end %>
-          <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "your@email.com", class: "input-field w-full px-4 py-3.5 rounded-xl text-slate-900" %>
+          <%= f.email_field :email, autocomplete: "email", placeholder: "your@email.com", class: "input-field w-full px-4 py-3.5 rounded-xl text-slate-900" %>
         </div>
 
         <!-- パスワード -->

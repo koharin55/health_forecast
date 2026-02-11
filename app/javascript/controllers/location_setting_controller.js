@@ -31,7 +31,7 @@ export default class extends Controller {
     this.showResult("検索中...", "loading")
 
     try {
-      const response = await fetch("/settings/search_zipcode", {
+      const response = await fetch("/mypage/search_zipcode", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

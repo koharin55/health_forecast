@@ -11,10 +11,17 @@ Rails.application.routes.draw do
       end
     end
     resources :weekly_reports, only: [:index, :show, :create]
-    resource :settings, only: [ :show, :update ] do
+    resource :mypage, only: [:show], controller: 'mypage' do
+      patch :update_profile, on: :member
+      patch :update_password, on: :member
+      patch :update_location, on: :member
       post :search_zipcode, on: :collection
       post :backfill_weather, on: :collection
+      delete :destroy_account, on: :member
     end
+
+    # 旧設定ページからリダイレクト
+    get '/settings', to: redirect('/mypage')
   end
 
   # API endpoints

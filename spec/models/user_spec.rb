@@ -22,6 +22,24 @@ RSpec.describe User, type: :model do
       expect(user.errors[:latitude]).to be_present
     end
 
+    describe 'nickname' do
+      it 'is valid with 20 characters' do
+        user = build(:user, nickname: "あ" * 20)
+        expect(user).to be_valid
+      end
+
+      it 'is invalid with 21 characters' do
+        user = build(:user, nickname: "あ" * 21)
+        expect(user).not_to be_valid
+        expect(user.errors[:nickname]).to include("は20文字以内で入力してください")
+      end
+
+      it 'is valid with nil nickname (existing users)' do
+        user = build(:user, :without_nickname)
+        expect(user).to be_valid
+      end
+    end
+
     it 'validates longitude range' do
       user = build(:user, longitude: 181)
       expect(user).not_to be_valid
@@ -133,6 +151,47 @@ RSpec.describe User, type: :model do
       expect(options.length).to eq(47)
       expect(options.first).to eq([ "北海道", "01" ])
       expect(options.last).to eq([ "沖縄県", "47" ])
+    end
+  end
+
+  describe '#time_based_greeting' do
+    include ActiveSupport::Testing::TimeHelpers
+
+    let(:user) { build(:user) }
+
+    it 'returns おはようございます in the morning (5-11)' do
+      travel_to Time.zone.local(2026, 1, 1, 8, 0, 0) do
+        expect(user.time_based_greeting).to eq("おはようございます")
+      end
+    end
+
+    it 'returns こんにちは in the afternoon (12-17)' do
+      travel_to Time.zone.local(2026, 1, 1, 14, 0, 0) do
+        expect(user.time_based_greeting).to eq("こんにちは")
+      end
+    end
+
+    it 'returns こんばんは in the evening (18-4)' do
+      travel_to Time.zone.local(2026, 1, 1, 21, 0, 0) do
+        expect(user.time_based_greeting).to eq("こんばんは")
+      end
+    end
+  end
+
+  describe '#nickname_set?' do
+    it 'returns true when nickname is present' do
+      user = build(:user, nickname: "テスト")
+      expect(user.nickname_set?).to be true
+    end
+
+    it 'returns false when nickname is nil' do
+      user = build(:user, :without_nickname)
+      expect(user.nickname_set?).to be false
+    end
+
+    it 'returns false when nickname is empty string' do
+      user = build(:user, nickname: "")
+      expect(user.nickname_set?).to be false
     end
   end
 
