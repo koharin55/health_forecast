@@ -77,7 +77,7 @@
       <div class="flex-1 min-w-0">
         <p class="text-sm font-bold text-slate-800 mb-1">体調予測を始めましょう</p>
         <p class="text-sm text-slate-600 mb-2">地域を設定すると、天気予報に基づく体調予測とアドバイスが表示されます。</p>
-        <%= link_to mypage_path, class: "inline-flex items-center gap-1 btn-primary px-4 py-1.5 rounded-full font-semibold text-sm" do %>
+        <%= link_to mypage_path(open: "region"), class: "inline-flex items-center gap-1 btn-primary px-4 py-1.5 rounded-full font-semibold text-sm" do %>
           <span>&#128205;</span> 地域を設定する
         <% end %>
       </div>

@@ -4,6 +4,7 @@ class MypageController < ApplicationController
   def show
     @user = current_user
     @prefecture_options = User.prefecture_options
+    @open_region = params[:open] == "region"
   end
 
   def update_profile
