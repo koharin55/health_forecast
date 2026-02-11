@@ -1,0 +1,187 @@
+<div class="max-w-2xl mx-auto">
+  <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mb-6">マイページ</h1>
+
+  <!-- プロフィール編集 -->
+  <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+    <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+      <span class="text-2xl">&#128100;</span>
+      プロフィール編集
+    </h2>
+
+    <%= form_with model: @user, url: update_profile_mypage_path, method: :patch, local: true, class: "space-y-4" do |f| %>
+      <div>
+        <%= f.label :nickname, class: "block font-medium text-slate-700 mb-2" do %>
+          ニックネーム <span class="text-red-500">*</span>
+        <% end %>
+        <p class="text-xs text-slate-500 mb-2">※20文字以内</p>
+        <%= f.text_field :nickname, required: true,
+            placeholder: "表示名を入力",
+            class: "input-field w-full px-4 py-3 rounded-xl text-slate-900",
+            maxlength: 20 %>
+      </div>
+
+      <div>
+        <%= f.label :email, class: "block font-medium text-slate-700 mb-2" do %>
+          メールアドレス <span class="text-red-500">*</span>
+        <% end %>
+        <%= f.email_field :email, required: true,
+            placeholder: "your@email.com",
+            class: "input-field w-full px-4 py-3 rounded-xl text-slate-900" %>
+      </div>
+
+      <button type="submit" class="w-full btn-primary text-white py-3 px-6 rounded-xl font-bold text-lg transition-all">
+        プロフィールを更新
+      </button>
+    <% end %>
+  </div>
+
+  <!-- パスワード変更 -->
+  <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+    <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+      <span class="text-2xl">&#128272;</span>
+      パスワード変更
+    </h2>
+
+    <%= form_with model: @user, url: update_password_mypage_path, method: :patch, local: true, class: "space-y-4" do |f| %>
+      <div>
+        <%= f.label :current_password, "現在のパスワード", class: "block font-medium text-slate-700 mb-2" %>
+        <%= f.password_field :current_password, required: true,
+            autocomplete: "current-password",
+            placeholder: "現在のパスワード",
+            class: "input-field w-full px-4 py-3 rounded-xl text-slate-900" %>
+      </div>
+
+      <div>
+        <%= f.label :password, "新しいパスワード", class: "block font-medium text-slate-700 mb-2" %>
+        <p class="text-xs text-slate-500 mb-2">※6文字以上</p>
+        <%= f.password_field :password, required: true,
+            autocomplete: "new-password",
+            placeholder: "新しいパスワード",
+            class: "input-field w-full px-4 py-3 rounded-xl text-slate-900" %>
+      </div>
+
+      <div>
+        <%= f.label :password_confirmation, "新しいパスワード（確認）", class: "block font-medium text-slate-700 mb-2" %>
+        <%= f.password_field :password_confirmation, required: true,
+            autocomplete: "new-password",
+            placeholder: "確認のため再入力",
+            class: "input-field w-full px-4 py-3 rounded-xl text-slate-900" %>
+      </div>
+
+      <button type="submit" class="w-full btn-secondary py-3 px-6 rounded-xl font-bold text-lg transition-all">
+        パスワードを変更
+      </button>
+    <% end %>
+  </div>
+
+  <!-- 地域設定 -->
+  <div class="card rounded-2xl p-6 sm:p-8 mb-6" data-controller="location-setting">
+    <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+      <span class="text-2xl">&#128205;</span>
+      地域設定
+    </h2>
+    <p class="text-slate-600 mb-6">
+      地域を設定すると、健康記録に天候情報が自動的に追加されます。
+      天候データは体調との相関分析に活用されます。
+    </p>
+
+    <% if @user.location_configured? %>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
+        <p class="text-emerald-800 font-medium">
+          <span class="text-lg mr-1">&#9989;</span>
+          現在の設定: <span class="font-bold"><%= @user.location_name %></span>
+        </p>
+        <p class="text-sm text-emerald-600 mt-1">
+          緯度: <%= @user.latitude %>, 経度: <%= @user.longitude %>
+        </p>
+      </div>
+    <% else %>
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+        <p class="text-amber-800">
+          <span class="text-lg mr-1">&#9888;&#65039;</span>
+          地域が設定されていません。天候情報を記録するには地域を設定してください。
+        </p>
+      </div>
+    <% end %>
+
+    <%= form_with url: update_location_mypage_path, method: :patch, local: true, data: { location_setting_target: "form" } do |f| %>
+      <div class="mb-6">
+        <p class="font-medium text-slate-700 mb-3">地域の指定方法</p>
+        <div class="space-y-3">
+          <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+            <input type="radio" name="location_type" value="prefecture" class="w-5 h-5 text-emerald-500" data-action="change->location-setting#toggleType" data-location-setting-target="prefectureRadio" checked>
+            <span class="text-slate-700">都道府県から選択</span>
+          </label>
+          <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+            <input type="radio" name="location_type" value="zipcode" class="w-5 h-5 text-emerald-500" data-action="change->location-setting#toggleType" data-location-setting-target="zipcodeRadio">
+            <span class="text-slate-700">郵便番号を入力</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 都道府県選択 -->
+      <div data-location-setting-target="prefectureSection" class="mb-6">
+        <label class="block font-medium text-slate-700 mb-2">都道府県</label>
+        <%= f.select :prefecture_code, @prefecture_options, { include_blank: "選択してください" }, class: "input-field w-full px-4 py-3 rounded-xl" %>
+      </div>
+
+      <!-- 郵便番号入力 -->
+      <div data-location-setting-target="zipcodeSection" class="mb-6" style="display: none;">
+        <label class="block font-medium text-slate-700 mb-2">郵便番号</label>
+        <div class="flex gap-3">
+          <input type="text" name="zipcode" placeholder="例: 160-0023" class="input-field flex-1 px-4 py-3 rounded-xl" data-location-setting-target="zipcodeInput" data-action="input->location-setting#clearResult">
+          <button type="button" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors" data-action="click->location-setting#searchZipcode">
+            検索
+          </button>
+        </div>
+        <div data-location-setting-target="zipcodeResult" class="mt-3"></div>
+      </div>
+
+      <button type="submit" class="w-full btn-primary text-white py-3 px-6 rounded-xl font-bold text-lg transition-all">
+        設定を保存
+      </button>
+    <% end %>
+  </div>
+
+  <!-- 過去データ天候取得 -->
+  <% if @user.location_configured? %>
+    <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+      <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <span class="text-2xl">&#9729;&#65039;</span>
+        過去データの天候取得
+      </h2>
+      <p class="text-slate-600 mb-4">
+        天候情報がない過去の健康記録に、天候データを追加します。
+      </p>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
+        <p class="text-sm text-slate-600">
+          <span class="font-medium">取得可能範囲:</span> 過去92日以内の記録<br>
+          <span class="font-medium">対象:</span> 天候データが未設定の記録
+        </p>
+      </div>
+      <%= button_to "過去データの天候を取得", backfill_weather_mypage_path,
+          method: :post,
+          class: "w-full btn-secondary py-3 px-6 rounded-xl font-bold text-lg transition-all",
+          data: { turbo_confirm: "過去92日以内の記録に天候データを取得します。よろしいですか？" } %>
+    </div>
+  <% end %>
+
+  <!-- アカウント削除 -->
+  <div class="card rounded-2xl p-6 sm:p-8 mb-6 border-2 border-red-200">
+    <h2 class="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
+      <span class="text-2xl">&#9888;&#65039;</span>
+      アカウント削除
+    </h2>
+    <p class="text-slate-600 mb-4">
+      アカウントを削除すると、すべての健康記録データが完全に削除されます。この操作は取り消せません。
+    </p>
+    <%= button_to "アカウントを削除する", destroy_account_mypage_path,
+        method: :delete,
+        class: "w-full bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded-xl font-bold text-lg transition-all",
+        data: { turbo_confirm: "本当にアカウントを削除しますか？すべてのデータが完全に削除されます。" } %>
+  </div>
+
+  <div class="text-center">
+    <%= link_to "ダッシュボードに戻る", root_path, class: "text-emerald-600 hover:text-emerald-700 font-medium" %>
+  </div>
+</div>

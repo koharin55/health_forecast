@@ -3,6 +3,11 @@ FactoryBot.define do
     sequence(:email) { |n| "user#{n}@example.com" }
     password { "password123" }
     password_confirmation { "password123" }
+    nickname { "テストユーザー" }
+
+    trait :without_nickname do
+      nickname { nil }
+    end
 
     trait :with_location do
       latitude { 35.6895 }

@@ -42,7 +42,7 @@
         <div class="text-3xl mb-2">&#128200;</div>
         <p class="text-slate-600 font-medium">分析データを収集中...</p>
         <p class="text-sm text-slate-500 mt-1">
-          <%= link_to "設定画面", settings_path, class: "text-sky-600 hover:underline" %>から過去データの天候を一括取得できます。
+          <%= link_to "マイページ", mypage_path, class: "text-sky-600 hover:underline" %>から過去データの天候を一括取得できます。
         </p>
       </div>
     <% end %>
@@ -55,7 +55,7 @@
     </div>
     <div class="bg-slate-50 rounded-xl p-3 text-center">
       <p class="text-slate-600 text-sm mb-2">地域を設定すると、天気予報に基づく体調予測が表示されます。</p>
-      <%= link_to settings_path, class: "inline-flex items-center gap-1 btn-primary px-4 py-1.5 rounded-full font-semibold text-sm" do %>
+      <%= link_to mypage_path, class: "inline-flex items-center gap-1 btn-primary px-4 py-1.5 rounded-full font-semibold text-sm" do %>
         <span>&#128205;</span> 地域を設定する
       <% end %>
     </div>
