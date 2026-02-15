@@ -167,4 +167,68 @@ RSpec.describe HealthRecord, type: :model do
       end
     end
   end
+
+  describe '.create_or_merge_for_date' do
+    let(:user) { create(:user) }
+    let(:today) { Date.current }
+
+    context 'when no record exists for the date' do
+      it 'creates a new record' do
+        result = described_class.create_or_merge_for_date(
+          user: user,
+          recorded_at: today,
+          attributes: { weight: 65.5, steps: 8000 }
+        )
+
+        expect(result[:merged]).to be false
+        expect(result[:record].weight).to eq(65.5)
+        expect(result[:record].steps).to eq(8000)
+        expect(result[:record].recorded_at).to eq(today)
+      end
+    end
+
+    context 'when a record already exists for the date' do
+      let!(:existing_record) do
+        create(:health_record, user: user, recorded_at: today, weight: 60.0, mood: 4, steps: nil)
+      end
+
+      it 'merges only nil attributes' do
+        result = described_class.create_or_merge_for_date(
+          user: user,
+          recorded_at: today,
+          attributes: { weight: 65.5, steps: 8000, mood: 3 }
+        )
+
+        expect(result[:merged]).to be true
+        expect(result[:record].weight).to eq(60.0)   # 既存値を保持
+        expect(result[:record].mood).to eq(4)         # 既存値を保持
+        expect(result[:record].steps).to eq(8000)     # nilだったので補完
+      end
+
+      it 'does not update when all attributes already have values' do
+        existing_record.update!(steps: 5000)
+
+        result = described_class.create_or_merge_for_date(
+          user: user,
+          recorded_at: today,
+          attributes: { weight: 70.0, steps: 10000 }
+        )
+
+        expect(result[:merged]).to be true
+        expect(result[:record].weight).to eq(60.0)
+        expect(result[:record].steps).to eq(5000)
+      end
+
+      it 'ignores non-mergeable attributes' do
+        result = described_class.create_or_merge_for_date(
+          user: user,
+          recorded_at: today,
+          attributes: { weather_code: 1 }
+        )
+
+        expect(result[:merged]).to be true
+        expect(result[:record].weather_code).to be_nil
+      end
+    end
+  end
 end

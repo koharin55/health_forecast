@@ -251,4 +251,40 @@ RSpec.describe "Mypage", type: :request do
       expect(response).to redirect_to("/mypage")
     end
   end
+
+  describe "POST /mypage/generate_api_token" do
+    before { sign_in user }
+
+    it "generates an API token digest" do
+      expect(user.api_token_digest).to be_nil
+      post generate_api_token_mypage_path
+      expect(user.reload.api_token_digest).to be_present
+      expect(response).to redirect_to(mypage_path)
+    end
+
+    it "stores raw token in flash for one-time display" do
+      post generate_api_token_mypage_path
+      expect(flash[:api_token]).to be_present
+      expect(flash[:api_token].length).to eq(64)
+    end
+
+    it "regenerates an existing API token" do
+      user.generate_api_token!
+      old_digest = user.api_token_digest
+      post generate_api_token_mypage_path
+      expect(user.reload.api_token_digest).not_to eq(old_digest)
+    end
+  end
+
+  describe "DELETE /mypage/revoke_api_token" do
+    before { sign_in user }
+
+    it "revokes the API token" do
+      user.generate_api_token!
+      expect(user.api_token_digest).to be_present
+      delete revoke_api_token_mypage_path
+      expect(user.reload.api_token_digest).to be_nil
+      expect(response).to redirect_to(mypage_path)
+    end
+  end
 end

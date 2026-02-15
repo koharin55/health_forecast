@@ -210,6 +210,93 @@
     </details>
   <% end %>
 
+  <!-- API連携（iOSショートカット） -->
+  <details class="card rounded-2xl mb-6 accordion">
+    <summary class="p-6 sm:p-8 cursor-pointer select-none flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl" aria-hidden="true">&#128279;</span>
+        <span class="text-xl font-bold text-slate-800">API連携</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <% if current_user.api_token_set? %>
+          <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium">設定済み</span>
+        <% end %>
+        <span class="accordion-arrow text-slate-400 transition-transform" aria-hidden="true">&#9654;</span>
+      </div>
+    </summary>
+    <div class="px-6 sm:px-8 pb-6 sm:pb-8">
+      <p class="text-slate-600 mb-4">
+        iOSショートカットと連携して、ヘルスケアデータを自動で取り込みます。
+      </p>
+
+      <% if flash[:api_token].present? %>
+        <!-- トークン生成直後の表示（一度だけ） -->
+        <div class="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-4">
+          <p class="text-sm font-medium text-amber-800 mb-2">
+            このトークンは再表示できません。必ずコピーして安全な場所に保管してください。
+          </p>
+          <div class="flex items-center gap-2">
+            <input type="text" value="<%= flash[:api_token] %>" readonly
+              id="api-token-field"
+              class="input-field flex-1 mono text-sm bg-white" />
+            <button type="button"
+              onclick="navigator.clipboard.writeText(document.getElementById('api-token-field').value).then(() => { this.textContent = 'OK'; setTimeout(() => { this.textContent = 'コピー'; }, 2000); })"
+              class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap">
+              コピー
+            </button>
+          </div>
+        </div>
+      <% end %>
+
+      <% if current_user.api_token_set? %>
+        <!-- トークン設定済み -->
+        <% unless flash[:api_token].present? %>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4">
+            <p class="text-sm text-emerald-700">
+              APIトークンは設定済みです。セキュリティのため、トークンの値は表示できません。
+            </p>
+          </div>
+        <% end %>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
+          <p class="text-sm text-slate-600">
+            <span class="font-medium">エンドポイント:</span>
+            <code class="mono text-xs bg-white px-2 py-1 rounded">POST /api/v1/health_records</code>
+          </p>
+        </div>
+
+        <!-- iOSショートカットリンク（プレースホルダー） -->
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+          <p class="text-sm text-blue-800">
+            <span class="font-medium">iOSショートカット:</span>
+            近日公開予定。ショートカットアプリのオートメーション機能で、毎日自動的にヘルスケアデータを送信できます。
+          </p>
+        </div>
+
+        <div class="flex gap-3">
+          <%= button_to "トークンを再生成", generate_api_token_mypage_path,
+              method: :post,
+              class: "flex-1 btn-secondary py-3 px-6 rounded-xl font-bold text-lg transition-all",
+              data: { turbo_confirm: "現在のトークンは無効になります。再生成しますか？" } %>
+          <%= button_to "トークンを無効化", revoke_api_token_mypage_path,
+              method: :delete,
+              class: "flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-3 px-6 rounded-xl font-bold text-lg transition-all",
+              data: { turbo_confirm: "APIトークンを無効化します。API連携が停止されます。よろしいですか？" } %>
+        </div>
+      <% else %>
+        <!-- トークン未生成 -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
+          <p class="text-sm text-slate-600">
+            APIトークンを生成すると、iOSショートカットからヘルスケアデータを自動送信できるようになります。
+          </p>
+        </div>
+        <%= button_to "APIトークンを生成", generate_api_token_mypage_path,
+            method: :post,
+            class: "w-full btn-primary py-3 px-6 rounded-xl font-bold text-lg transition-all" %>
+      <% end %>
+    </div>
+  </details>
+
   <!-- アカウント削除 -->
   <details class="card rounded-2xl mb-6 border-2 border-red-200 accordion">
     <summary class="p-6 sm:p-8 cursor-pointer select-none flex items-center justify-between">
