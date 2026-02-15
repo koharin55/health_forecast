@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_02_11_041301) do
+ActiveRecord::Schema[7.1].define(version: 2026_02_14_140349) do
   create_table "health_records", force: :cascade do |t|
     t.integer "user_id", null: false
     t.date "recorded_at"
@@ -61,6 +61,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_11_041301) do
     t.decimal "longitude", precision: 10, scale: 7
     t.string "location_name"
     t.string "nickname", limit: 20
+    t.string "api_token_digest"
+    t.index ["api_token_digest"], name: "index_users_on_api_token_digest", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

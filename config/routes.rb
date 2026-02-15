@@ -17,6 +17,8 @@ Rails.application.routes.draw do
       patch :update_location, on: :member
       post :search_zipcode, on: :collection
       post :backfill_weather, on: :collection
+      post :generate_api_token, on: :member
+      delete :revoke_api_token, on: :member
       delete :destroy_account, on: :member
     end
 
@@ -27,6 +29,7 @@ Rails.application.routes.draw do
   # API endpoints
   namespace :api do
     namespace :v1 do
+      resources :health_records, only: [:create]
       resources :push_subscriptions, only: [:create] do
         collection do
           delete :destroy, action: :destroy

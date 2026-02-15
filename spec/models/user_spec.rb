@@ -239,4 +239,63 @@ RSpec.describe User, type: :model do
       expect(prefecture).to be_nil
     end
   end
+
+  describe '#generate_api_token!' do
+    let(:user) { create(:user) }
+
+    it 'returns a raw token and stores digest' do
+      raw_token = user.generate_api_token!
+      expect(raw_token).to be_present
+      expect(raw_token.length).to eq(64)
+      expect(user.reload.api_token_digest).to eq(Digest::SHA256.hexdigest(raw_token))
+    end
+
+    it 'generates a different token each time' do
+      token1 = user.generate_api_token!
+      token2 = user.generate_api_token!
+      expect(token1).not_to eq(token2)
+    end
+  end
+
+  describe '#revoke_api_token!' do
+    let(:user) { create(:user, :with_api_token) }
+
+    it 'sets api_token_digest to nil' do
+      expect(user.api_token_digest).to be_present
+      user.revoke_api_token!
+      expect(user.reload.api_token_digest).to be_nil
+    end
+  end
+
+  describe '#api_token_set?' do
+    it 'returns true when api_token_digest is present' do
+      user = create(:user, :with_api_token)
+      expect(user.api_token_set?).to be true
+    end
+
+    it 'returns false when api_token_digest is nil' do
+      user = create(:user)
+      expect(user.api_token_set?).to be false
+    end
+  end
+
+  describe '.find_by_api_token' do
+    let(:user) { create(:user) }
+
+    it 'finds user by raw token' do
+      raw_token = user.generate_api_token!
+      found = User.find_by_api_token(raw_token)
+      expect(found).to eq(user)
+    end
+
+    it 'returns nil for invalid token' do
+      user.generate_api_token!
+      expect(User.find_by_api_token('invalid_token')).to be_nil
+    end
+
+    it 'returns nil for blank token' do
+      expect(User.find_by_api_token(nil)).to be_nil
+      expect(User.find_by_api_token('')).to be_nil
+    end
+  end
 end

@@ -1,4 +1,9 @@
 class HealthRecord < ApplicationRecord
+  MERGEABLE_ATTRIBUTES = %w[
+    weight sleep_hours exercise_minutes mood notes steps
+    heart_rate systolic_pressure diastolic_pressure body_temperature
+  ].freeze
+
   belongs_to :user
 
   validates :recorded_at, presence: true
@@ -96,6 +101,30 @@ class HealthRecord < ApplicationRecord
       :normal
     else
       :high
+    end
+  end
+
+  def self.create_or_merge_for_date(user:, recorded_at:, attributes:)
+    transaction do
+      record = user.health_records.find_by(recorded_at: recorded_at)
+
+      if record
+        merge_attrs = {}
+        attributes.each do |key, value|
+          key_s = key.to_s
+          next unless MERGEABLE_ATTRIBUTES.include?(key_s)
+          next if value.nil?
+
+          merge_attrs[key_s] = value if record[key_s].nil?
+        end
+        record.update!(merge_attrs) if merge_attrs.any?
+        { record: record.reload, merged: true }
+      else
+        record = user.health_records.create!(
+          attributes.slice(*MERGEABLE_ATTRIBUTES.map(&:to_sym)).merge(recorded_at: recorded_at)
+        )
+        { record: record, merged: false }
+      end
     end
   end
 end

@@ -69,6 +69,7 @@ PreCareは、日々の健康データを記録・可視化し、AIを活用し�
    - 記録の編集・削除
 
 8. **PWA対応**work\health_forecast\docs\Render.png
+
    - ホーム画面への追加
    - プッシュ通知機能
    - オフライン対応

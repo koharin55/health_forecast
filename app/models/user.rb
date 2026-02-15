@@ -100,6 +100,28 @@ class User < ApplicationRecord
     nickname.present?
   end
 
+  def generate_api_token!
+    raw_token = SecureRandom.hex(32)
+    self.api_token_digest = Digest::SHA256.hexdigest(raw_token)
+    save!
+    raw_token
+  end
+
+  def revoke_api_token!
+    update!(api_token_digest: nil)
+  end
+
+  def api_token_set?
+    api_token_digest.present?
+  end
+
+  def self.find_by_api_token(raw_token)
+    return nil if raw_token.blank?
+
+    digest = Digest::SHA256.hexdigest(raw_token)
+    find_by(api_token_digest: digest)
+  end
+
   def self.find_prefecture(code)
     prefectures = I18n.t("prefectures")
     prefectures.find { |p| p[:code] == code.to_s.rjust(2, "0") }
