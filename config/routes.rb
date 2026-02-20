@@ -22,6 +22,8 @@ Rails.application.routes.draw do
       delete :destroy_account, on: :member
     end
 
+    get '/guides/ios_shortcut', to: 'guides#ios_shortcut', as: :guides_ios_shortcut
+
     # 旧設定ページからリダイレクト
     get '/settings', to: redirect('/mypage')
   end
