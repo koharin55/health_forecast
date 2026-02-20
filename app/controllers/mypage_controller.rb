@@ -90,6 +90,17 @@ class MypageController < ApplicationController
     redirect_to mypage_path, notice: message
   end
 
+  def generate_api_token
+    raw_token = current_user.generate_api_token!
+    flash[:api_token] = raw_token
+    redirect_to mypage_path, notice: "APIトークンを生成しました。このトークンは再表示できないため、必ずコピーしてください。"
+  end
+
+  def revoke_api_token
+    current_user.revoke_api_token!
+    redirect_to mypage_path, notice: "APIトークンを無効化しました"
+  end
+
   def destroy_account
     current_user.destroy
     sign_out
