@@ -40,3 +40,7 @@
 # Ignore SQLite database files.
 /db/*.sqlite3
 /db/*.sqlite3-*
+
+# Ignore Claude Code local settings and plans.
+.claude/settings.local.json
+.claude/plans/
