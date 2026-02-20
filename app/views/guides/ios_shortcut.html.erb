@@ -1,0 +1,330 @@
+<div class="max-w-2xl mx-auto">
+  <div class="flex items-center gap-3 mb-6">
+    <%= link_to mypage_path, class: "text-slate-400 hover:text-slate-600 transition-colors", "aria-label": "マイページに戻る" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    <% end %>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">iOSショートカット設定ガイド</h1>
+  </div>
+
+  <p class="text-slate-600 mb-6">
+    iOSの「ショートカット」アプリを使って、ヘルスケアデータを毎日自動的にPreCareへ送信する方法を説明します。
+  </p>
+
+  <%# サンプルショートカットDLセクション %>
+  <% if @shortcut_icloud_url.present? %>
+    <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+      <h2 class="text-xl font-bold text-slate-800 mb-3">サンプルショートカットをダウンロード</h2>
+      <p class="text-sm text-slate-600 mb-4">
+        あらかじめ設定されたショートカットをインポートできます。インポート時にAPIトークンとサーバーURLを入力してください。
+      </p>
+      <%= link_to @shortcut_icloud_url, class: "inline-flex items-center gap-2 btn-primary py-3 px-6 rounded-xl font-bold text-lg transition-all", target: "_blank", rel: "noopener noreferrer" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        ショートカットを入手
+      <% end %>
+
+      <div class="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4">
+        <p class="text-sm font-medium text-slate-700 mb-2">インポート時の質問:</p>
+        <ol class="text-sm text-slate-600 list-decimal list-inside space-y-1">
+          <li><strong>APIトークン</strong>: マイページで生成したトークンを入力</li>
+          <li><strong>サーバーURL</strong>: 通常はデフォルト値のままでOK</li>
+        </ol>
+      </div>
+    </div>
+  <% end %>
+
+  <%# 手動作成ガイド %>
+  <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+    <h2 class="text-xl font-bold text-slate-800 mb-4">手動でショートカットを作成する</h2>
+    <p class="text-sm text-slate-600 mb-6">
+      以下の手順に従って、iOSの「ショートカット」アプリでデータ送信ショートカットを作成します。
+      <br>
+      <span class="text-xs text-slate-500">※ iOS 26準拠の手順です</span>
+    </p>
+
+    <%# Step 1 %>
+    <div class="mb-6">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">1</span>
+        新規ショートカットを作成
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-1">
+        <p>「ショートカット」アプリを開き、右上の「+」をタップして新しいショートカットを作成します。</p>
+        <p>名前を「PreCare 記録」などに設定してください。</p>
+      </div>
+    </div>
+
+    <%# Step 2 %>
+    <div class="mb-6">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">2</span>
+        ヘルスケアデータの取得アクション追加
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-2">
+        <p>「アクションを追加」から「ヘルスケアサンプルを検索」を<strong>6回</strong>追加し、それぞれ以下のように設定します。</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
+            <caption class="sr-only">ヘルスケアサンプル検索の設定一覧</caption>
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">種類</th>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">グループ化</th>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">ソート順</th>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">制限</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr><td class="px-3 py-2">体重</td><td class="px-3 py-2">なし</td><td class="px-3 py-2">開始日（新しい順）</td><td class="px-3 py-2">1件</td></tr>
+              <tr><td class="px-3 py-2">歩数</td><td class="px-3 py-2">なし</td><td class="px-3 py-2">開始日（新しい順）</td><td class="px-3 py-2">1件</td></tr>
+              <tr><td class="px-3 py-2">心拍数</td><td class="px-3 py-2">なし</td><td class="px-3 py-2">開始日（新しい順）</td><td class="px-3 py-2">1件</td></tr>
+              <tr><td class="px-3 py-2">最高血圧</td><td class="px-3 py-2">なし</td><td class="px-3 py-2">開始日（新しい順）</td><td class="px-3 py-2">1件</td></tr>
+              <tr><td class="px-3 py-2">最低血圧</td><td class="px-3 py-2">なし</td><td class="px-3 py-2">開始日（新しい順）</td><td class="px-3 py-2">1件</td></tr>
+              <tr><td class="px-3 py-2">体温</td><td class="px-3 py-2">なし</td><td class="px-3 py-2">開始日（新しい順）</td><td class="px-3 py-2">1件</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2">
+          <p class="text-xs text-amber-800">
+            <strong>マジック変数の名前変更:</strong>
+            各アクションの出力（色付きピル型ラベル）をタップ → 画面下部のメニュー → 「名前を変更」で、わかりやすい名前（例: 「体重データ」「歩数データ」）に変更しておくと、後の手順で識別しやすくなります。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <%# Step 3 %>
+    <div class="mb-6">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">3</span>
+        手入力データのアクション追加
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-2">
+        <p>「入力を要求」アクションを<strong>2回</strong>追加します。</p>
+        <ul class="list-disc list-inside space-y-1">
+          <li><strong>体調スコア</strong>: プロンプト「今日の体調は？(1:とても悪い〜5:とても良い)」、入力タイプ「数字」</li>
+          <li><strong>メモ</strong>: プロンプト「メモ（任意）」、入力タイプ「テキスト」</li>
+        </ul>
+      </div>
+    </div>
+
+    <%# Step 4 %>
+    <div class="mb-6">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">4</span>
+        APIリクエストの送信
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-2">
+        <p>「URLの内容を取得」アクションを追加し、以下のように設定します。</p>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2">
+          <p><strong>URL:</strong></p>
+          <code class="mono text-xs bg-white px-2 py-1 rounded block break-all"><%= @api_endpoint %></code>
+          <p><strong>方法:</strong> POST</p>
+          <p><strong>ヘッダー:</strong></p>
+          <div class="ml-4">
+            <code class="mono text-xs bg-white px-2 py-1 rounded">Authorization</code>: <code class="mono text-xs bg-white px-2 py-1 rounded">Bearer <em>あなたのAPIトークン</em></code>
+          </div>
+          <p><strong>本文:</strong> JSON</p>
+          <div class="ml-4 text-xs">
+            <p>以下のキーと値を設定してください。値には各アクションのマジック変数を指定します。</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto mt-2">
+          <table class="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
+            <caption class="sr-only">JSON本文のキーと値の設定</caption>
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">キー</th>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">値（マジック変数）</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr><td class="px-3 py-2 mono text-xs">health_record[recorded_at]</td><td class="px-3 py-2">現在の日付（「日付をフォーマット」で<code class="mono text-xs">yyyy-MM-dd</code>形式に変換）</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[weight]</td><td class="px-3 py-2">体重データの値</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[steps]</td><td class="px-3 py-2">歩数データの値</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[heart_rate]</td><td class="px-3 py-2">心拍数データの値</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[systolic_pressure]</td><td class="px-3 py-2">最高血圧データの値</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[diastolic_pressure]</td><td class="px-3 py-2">最低血圧データの値</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[body_temperature]</td><td class="px-3 py-2">体温データの値</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[mood]</td><td class="px-3 py-2">体調スコア入力の値</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[notes]</td><td class="px-3 py-2">メモ入力の値</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <%# Step 5 %>
+    <div class="mb-6">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">5</span>
+        通知の表示
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-1">
+        <p>「通知を表示」アクションを追加し、送信完了を確認できるようにします。</p>
+        <p>タイトル「PreCare」、本文「データを送信しました」などに設定してください。</p>
+      </div>
+    </div>
+
+    <%# Step 6 %>
+    <div class="mb-6">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">6</span>
+        オートメーション設定（任意）
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-1">
+        <p>毎日自動で実行するには、「オートメーション」タブで以下を設定します。</p>
+        <ol class="list-decimal list-inside space-y-1">
+          <li>「+」→「時刻」を選択</li>
+          <li>実行時刻を設定（例: 毎日 22:00）</li>
+          <li>「すぐに実行」を選択</li>
+          <li>作成したショートカットを選択</li>
+        </ol>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2">
+          <p class="text-xs text-amber-800">
+            <strong>注意:</strong>
+            「入力を要求」アクションを含む場合、自動実行時にはiPhoneの画面にプロンプトが表示されます。手入力なしで完全自動化したい場合は、Step 3のアクションを省略してください（体調スコアとメモは送信されません）。
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# APIリファレンス %>
+  <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+    <h2 class="text-xl font-bold text-slate-800 mb-4">APIリファレンス</h2>
+
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
+      <p class="text-sm text-slate-600 mb-1">
+        <span class="font-medium">エンドポイント:</span>
+        <code class="mono text-xs bg-white px-2 py-1 rounded">POST <%= @api_endpoint %></code>
+      </p>
+      <p class="text-sm text-slate-600">
+        <span class="font-medium">認証:</span>
+        <code class="mono text-xs bg-white px-2 py-1 rounded">Authorization: Bearer &lt;APIトークン&gt;</code>
+      </p>
+    </div>
+
+    <h3 class="text-base font-bold text-slate-700 mb-2">送信可能なパラメータ</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
+        <caption class="sr-only">APIパラメータ一覧</caption>
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="px-3 py-2 text-left font-medium text-slate-700">パラメータ</th>
+            <th class="px-3 py-2 text-left font-medium text-slate-700">型</th>
+            <th class="px-3 py-2 text-left font-medium text-slate-700">必須</th>
+            <th class="px-3 py-2 text-left font-medium text-slate-700">説明</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200">
+          <tr>
+            <td class="px-3 py-2 mono text-xs">health_record[recorded_at]</td>
+            <td class="px-3 py-2">date</td>
+            <td class="px-3 py-2"><span class="text-red-500 font-medium">必須</span></td>
+            <td class="px-3 py-2">記録日（yyyy-MM-dd形式）</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 mono text-xs">health_record[weight]</td>
+            <td class="px-3 py-2">decimal</td>
+            <td class="px-3 py-2">任意</td>
+            <td class="px-3 py-2">体重（kg）</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 mono text-xs">health_record[mood]</td>
+            <td class="px-3 py-2">integer</td>
+            <td class="px-3 py-2">任意</td>
+            <td class="px-3 py-2">体調スコア（1-5）</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 mono text-xs">health_record[sleep_hours]</td>
+            <td class="px-3 py-2">decimal</td>
+            <td class="px-3 py-2">任意</td>
+            <td class="px-3 py-2">睡眠時間</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 mono text-xs">health_record[exercise_minutes]</td>
+            <td class="px-3 py-2">integer</td>
+            <td class="px-3 py-2">任意</td>
+            <td class="px-3 py-2">運動時間（分）</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 mono text-xs">health_record[steps]</td>
+            <td class="px-3 py-2">integer</td>
+            <td class="px-3 py-2">任意</td>
+            <td class="px-3 py-2">歩数</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 mono text-xs">health_record[heart_rate]</td>
+            <td class="px-3 py-2">integer</td>
+            <td class="px-3 py-2">任意</td>
+            <td class="px-3 py-2">心拍数（bpm）</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 mono text-xs">health_record[systolic_pressure]</td>
+            <td class="px-3 py-2">integer</td>
+            <td class="px-3 py-2">任意</td>
+            <td class="px-3 py-2">最高血圧（mmHg）</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 mono text-xs">health_record[diastolic_pressure]</td>
+            <td class="px-3 py-2">integer</td>
+            <td class="px-3 py-2">任意</td>
+            <td class="px-3 py-2">最低血圧（mmHg）</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 mono text-xs">health_record[body_temperature]</td>
+            <td class="px-3 py-2">decimal</td>
+            <td class="px-3 py-2">任意</td>
+            <td class="px-3 py-2">体温</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 mono text-xs">health_record[notes]</td>
+            <td class="px-3 py-2">text</td>
+            <td class="px-3 py-2">任意</td>
+            <td class="px-3 py-2">メモ</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <%# トラブルシューティング %>
+  <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+    <h2 class="text-xl font-bold text-slate-800 mb-4">トラブルシューティング</h2>
+
+    <div class="space-y-4">
+      <div>
+        <h3 class="text-base font-medium text-slate-700 mb-1">401 Unauthorized</h3>
+        <p class="text-sm text-slate-600">APIトークンが正しくありません。マイページでトークンを確認し、<code class="mono text-xs bg-slate-100 px-1 rounded">Bearer </code>の後にスペースを入れてトークンを設定してください。トークンを再生成した場合は、ショートカット内のトークンも更新してください。</p>
+      </div>
+
+      <div>
+        <h3 class="text-base font-medium text-slate-700 mb-1">422 Unprocessable Entity</h3>
+        <p class="text-sm text-slate-600">送信データにバリデーションエラーがあります。<code class="mono text-xs bg-slate-100 px-1 rounded">recorded_at</code>が正しい日付形式（yyyy-MM-dd）か、<code class="mono text-xs bg-slate-100 px-1 rounded">mood</code>が1-5の範囲内かを確認してください。</p>
+      </div>
+
+      <div>
+        <h3 class="text-base font-medium text-slate-700 mb-1">ヘルスケアデータが取得できない</h3>
+        <p class="text-sm text-slate-600">「設定」→「プライバシーとセキュリティ」→「ヘルスケア」→「ショートカット」で、必要なデータへのアクセスが許可されているか確認してください。</p>
+      </div>
+
+      <div>
+        <h3 class="text-base font-medium text-slate-700 mb-1">同じ日に複数回送信した場合</h3>
+        <p class="text-sm text-slate-600">同じ日付の記録が既に存在する場合はデータが更新されます。重複して作成されることはありません。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center">
+    <%= link_to mypage_path, class: "inline-flex items-center gap-2 btn-secondary py-3 px-6 rounded-xl font-bold transition-all" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      マイページに戻る
+    <% end %>
+  </div>
+</div>

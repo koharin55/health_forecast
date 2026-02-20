@@ -265,12 +265,18 @@
           </p>
         </div>
 
-        <!-- iOSショートカットリンク（プレースホルダー） -->
+        <!-- iOSショートカットガイドリンク -->
         <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-          <p class="text-sm text-blue-800">
+          <p class="text-sm text-blue-800 mb-2">
             <span class="font-medium">iOSショートカット:</span>
-            近日公開予定。ショートカットアプリのオートメーション機能で、毎日自動的にヘルスケアデータを送信できます。
+            ショートカットアプリのオートメーション機能で、毎日自動的にヘルスケアデータを送信できます。
           </p>
+          <%= link_to guides_ios_shortcut_path, class: "inline-flex items-center gap-1 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors" do %>
+            設定ガイドを見る
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          <% end %>
         </div>
 
         <div class="flex gap-3">
