@@ -102,6 +102,22 @@ RSpec.describe WeeklyReport, type: :model do
     end
   end
 
+  describe '.find_for_period' do
+    it 'returns report for the specified period' do
+      user = create(:user)
+      report = create(:weekly_report, user: user, week_start: Date.new(2026, 2, 3), week_end: Date.new(2026, 2, 9))
+
+      expect(WeeklyReport.find_for_period(user, Date.new(2026, 2, 3), Date.new(2026, 2, 9))).to eq(report)
+    end
+
+    it 'returns nil when no report exists for the period' do
+      user = create(:user)
+      create(:weekly_report, user: user, week_start: Date.new(2026, 2, 3), week_end: Date.new(2026, 2, 9))
+
+      expect(WeeklyReport.find_for_period(user, Date.new(2026, 2, 3), Date.new(2026, 2, 10))).to be_nil
+    end
+  end
+
   describe '.latest_for_user' do
     it 'returns the most recent report for the user' do
       user = create(:user)
