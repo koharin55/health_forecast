@@ -4,7 +4,7 @@ class WeeklyReport < ApplicationRecord
   validates :week_start, presence: true
   validates :week_end, presence: true
   validates :content, presence: true
-  validates :week_start, uniqueness: { scope: :user_id, message: "の週次レポートは既に存在します" }
+  validates :week_start, uniqueness: { scope: [:user_id, :week_end], message: "の週次レポートは既に存在します" }
 
   validate :validate_week_end_after_week_start
 
