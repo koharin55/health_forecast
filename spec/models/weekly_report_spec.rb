@@ -29,21 +29,29 @@ RSpec.describe WeeklyReport, type: :model do
       expect(report.errors[:content]).to be_present
     end
 
-    it 'validates uniqueness of week_start scoped to user' do
+    it 'validates uniqueness of week_start scoped to user and week_end' do
       user = create(:user)
-      create(:weekly_report, user: user, week_start: Date.new(2026, 2, 3))
+      create(:weekly_report, user: user, week_start: Date.new(2026, 2, 3), week_end: Date.new(2026, 2, 9))
 
-      duplicate = build(:weekly_report, user: user, week_start: Date.new(2026, 2, 3))
+      duplicate = build(:weekly_report, user: user, week_start: Date.new(2026, 2, 3), week_end: Date.new(2026, 2, 9))
       expect(duplicate).not_to be_valid
       expect(duplicate.errors[:week_start]).to be_present
+    end
+
+    it 'allows same week_start with different week_end for same user' do
+      user = create(:user)
+      create(:weekly_report, user: user, week_start: Date.new(2026, 2, 3), week_end: Date.new(2026, 2, 9))
+
+      report2 = build(:weekly_report, user: user, week_start: Date.new(2026, 2, 3), week_end: Date.new(2026, 2, 10))
+      expect(report2).to be_valid
     end
 
     it 'allows same week_start for different users' do
       user1 = create(:user)
       user2 = create(:user)
 
-      create(:weekly_report, user: user1, week_start: Date.new(2026, 2, 3))
-      report2 = build(:weekly_report, user: user2, week_start: Date.new(2026, 2, 3))
+      create(:weekly_report, user: user1, week_start: Date.new(2026, 2, 3), week_end: Date.new(2026, 2, 9))
+      report2 = build(:weekly_report, user: user2, week_start: Date.new(2026, 2, 3), week_end: Date.new(2026, 2, 9))
 
       expect(report2).to be_valid
     end

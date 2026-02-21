@@ -26,13 +26,14 @@ class WeeklyReportsController < ApplicationController
     Rails.logger.error("WeeklyReportsController: #{e.message}")
     redirect_to authenticated_root_path,
                 alert: "レポートの生成に失敗しました。しばらく経ってから再度お試しください。"
-  rescue ActiveRecord::RecordNotUnique
-    # 同じ週のレポートが既に存在する場合
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
+    # 同じ期間のレポートが既に存在する場合
+    week_start = Date.current - AiReportService::DEFAULT_PERIOD_DAYS
     existing_report = current_user.weekly_reports.find_for_week(
       current_user,
-      Date.current.beginning_of_week(:monday)
+      week_start
     )
-    redirect_to existing_report, notice: "今週のレポートは既に生成済みです"
+    redirect_to existing_report, notice: "同じ期間のレポートは既に生成済みです"
   end
 
   # GET /weekly_reports
