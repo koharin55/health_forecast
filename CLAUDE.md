@@ -282,6 +282,9 @@ end
 #### 現在のサービスクラス
 - `WeatherService`: Open-Meteo APIから天候データを取得
 - `ZipcodeService`: Zipcloud APIから郵便番号→住所変換
+- `AiReportService`: Gemini APIで週次ヘルスレポートを生成
+- `HealthRecordImportService`: CSVインポート処理
+- `HealthRecordExportService`: CSVエクスポート処理
 
 ### 認証・認可
 
@@ -478,6 +481,30 @@ EDITOR="vim" rails credentials:edit
 rails db:migrate:redo
 ```
 
+### Renderデプロイ失敗
+
+```bash
+# exit code 126 → bin/配下の実行権限が欠落
+# 原因: git操作（改行コード正規化等）で権限が644に変わることがある
+chmod +x bin/*
+git add bin/
+git commit -m "[fix] bin/配下の実行権限を復元"
+
+# テスト環境のマイグレーション未実行
+# rspec実行時に「Migrations are pending」エラーが出る場合
+RAILS_ENV=test rails db:migrate
+```
+
+### Git: 改行コード・ファイル権限のトラブル
+
+```bash
+# bin/配下の改行コード正規化時の注意点
+# git rm --cached → git add で正規化すると実行権限(755→644)が外れる場合がある
+# 必ず正規化後に権限を確認すること
+ls -la bin/
+chmod +x bin/*  # 必要に応じて権限を復元
+```
+
 ---
 
 ## 環境変数
@@ -496,5 +523,5 @@ export RAILS_ENV=production
 
 ---
 
-**最終更新**: 2026-02-04
-**バージョン**: 1.1.0
+**最終更新**: 2026-02-21
+**バージョン**: 1.2.0

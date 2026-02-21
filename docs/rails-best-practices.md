@@ -23,10 +23,28 @@ class WeatherService
 end
 ```
 
+## G-01: 一般原則 (General)
+- **マジックナンバー禁止**: ビジネスロジックに関わる数値は定数化し、コントローラー・サービス・テスト間で一元管理すること。
+```ruby
+# 悪い例: 同じ数値が複数箇所に散在
+week_start = Date.current - 7  # サービス
+week_start = Date.current - 7  # コントローラー
+
+# 良い例: 定数で一元管理
+DEFAULT_PERIOD_DAYS = 7
+week_start = Date.current - DEFAULT_PERIOD_DAYS
+```
+- **例外処理の整合性**: モデルのバリデーション（`RecordInvalid`）とDBのユニーク制約（`RecordNotUnique`）は発火タイミングが異なる。コントローラーでは両方をrescueすること。
+```ruby
+# モデルにvalidates uniquenessがある場合、RecordInvalidが先に発火する
+rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
+```
+
 ## T-01: テスト (RSpec)
 - テストは実装ではなく**振る舞い**をテストすること。
 - テストコードは明確なテスト名を持ち、期待されるシナリオを説明すること。
 - 外部APIはWebMockでスタブ化すること。
+- ファクトリのデフォルト値にマジックナンバーを使わず、サービスクラスの定数を参照すること。
 
 ## CSS-01: スタイリング
 - **カスタムクラス優先**: Tailwindユーティリティクラスが動作しない場合は、`application.css`にカスタムクラスを定義すること。
