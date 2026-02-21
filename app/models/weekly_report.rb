@@ -16,6 +16,11 @@ class WeeklyReport < ApplicationRecord
     find_by(user: user, week_start: week_start)
   end
 
+  # 指定された期間のレポートを取得（存在しない場合はnil）
+  def self.find_for_period(user, week_start, week_end)
+    find_by(user: user, week_start: week_start, week_end: week_end)
+  end
+
   # 最新のレポートを取得
   def self.latest_for_user(user)
     for_user(user).recent.first
