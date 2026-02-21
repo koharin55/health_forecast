@@ -4,7 +4,7 @@ class WeeklyReport < ApplicationRecord
   validates :week_start, presence: true
   validates :week_end, presence: true
   validates :content, presence: true
-  validates :week_start, uniqueness: { scope: :user_id, message: "の週次レポートは既に存在します" }
+  validates :week_start, uniqueness: { scope: [:user_id, :week_end], message: "の週次レポートは既に存在します" }
 
   validate :validate_week_end_after_week_start
 
@@ -14,6 +14,11 @@ class WeeklyReport < ApplicationRecord
   # 指定された週のレポートを取得（存在しない場合はnil）
   def self.find_for_week(user, week_start)
     find_by(user: user, week_start: week_start)
+  end
+
+  # 指定された期間のレポートを取得（存在しない場合はnil）
+  def self.find_for_period(user, week_start, week_end)
+    find_by(user: user, week_start: week_start, week_end: week_end)
   end
 
   # 最新のレポートを取得
