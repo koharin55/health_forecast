@@ -24,28 +24,66 @@ RSpec.describe AiReportService do
     end
   end
 
-  describe '#sufficient_data?' do
-    context 'when user has less than MINIMUM_RECORDS' do
+  describe '#check_sufficient_data' do
+    let(:week_start) { Date.current - AiReportService::DEFAULT_PERIOD_DAYS }
+    let(:week_end) { Date.current - 1 }
+
+    context 'when period has less than MINIMUM_PERIOD_RECORDS' do
       before do
         2.times do |i|
-          create(:health_record, user: user, recorded_at: i.days.ago)
+          create(:health_record, user: user, recorded_at: Date.current - 1 - i)
         end
       end
 
-      it 'returns false' do
-        expect(service.sufficient_data?).to be false
+      it 'returns sufficient: false with count' do
+        result = service.check_sufficient_data(week_start, week_end)
+        expect(result[:sufficient]).to be false
+        expect(result[:count]).to eq(2)
+        expect(result[:required]).to eq(AiReportService::MINIMUM_PERIOD_RECORDS)
       end
     end
 
-    context 'when user has MINIMUM_RECORDS or more' do
+    context 'when period has MINIMUM_PERIOD_RECORDS or more' do
       before do
         5.times do |i|
-          create(:health_record, user: user, recorded_at: i.days.ago)
+          create(:health_record, user: user, recorded_at: Date.current - 1 - i)
         end
       end
 
-      it 'returns true' do
-        expect(service.sufficient_data?).to be true
+      it 'returns sufficient: true with count' do
+        result = service.check_sufficient_data(week_start, week_end)
+        expect(result[:sufficient]).to be true
+        expect(result[:count]).to eq(5)
+      end
+    end
+
+    context 'when records exist outside the period' do
+      before do
+        # 対象期間外に5件作成
+        5.times do |i|
+          create(:health_record, user: user, recorded_at: Date.current - 30 - i)
+        end
+        # 対象期間内に1件のみ
+        create(:health_record, user: user, recorded_at: Date.current - 1)
+      end
+
+      it 'returns sufficient: false because only period records are counted' do
+        result = service.check_sufficient_data(week_start, week_end)
+        expect(result[:sufficient]).to be false
+        expect(result[:count]).to eq(1)
+      end
+    end
+
+    context 'when called without arguments uses default period' do
+      before do
+        5.times do |i|
+          create(:health_record, user: user, recorded_at: Date.current - 1 - i)
+        end
+      end
+
+      it 'returns sufficient: true' do
+        result = service.check_sufficient_data
+        expect(result[:sufficient]).to be true
       end
     end
   end
@@ -69,8 +107,9 @@ RSpec.describe AiReportService do
     end
 
     before do
+      # 対象期間（昨日〜7日前）内にレコードを作成
       5.times do |i|
-        create(:health_record, :complete, user: user, recorded_at: i.days.ago)
+        create(:health_record, :complete, user: user, recorded_at: Date.current - 1 - i)
       end
 
       # WeatherServiceのモック
@@ -108,14 +147,15 @@ RSpec.describe AiReportService do
       expect(report.tokens_used).to eq(500)
     end
 
-    context 'when insufficient data' do
+    context 'when insufficient data in period' do
       before do
         user.health_records.destroy_all
       end
 
-      it 'raises InsufficientDataError' do
+      it 'raises InsufficientDataError with record count message' do
         expect { service.generate_weekly_report }.to raise_error(
-          AiReportService::InsufficientDataError
+          AiReportService::InsufficientDataError,
+          /対象期間の記録が0件しかありません/
         )
       end
     end

@@ -10,9 +10,10 @@ class WeeklyReportsController < ApplicationController
   def create
     service = AiReportService.new(current_user)
 
-    unless service.sufficient_data?
+    result = service.check_sufficient_data
+    unless result[:sufficient]
       redirect_to authenticated_root_path,
-                  alert: "レポート生成には#{AiReportService::MINIMUM_RECORDS}件以上の健康記録が必要です"
+                  alert: "対象期間の記録が#{result[:count]}件しかありません。#{result[:required]}件以上必要です"
       return
     end
 

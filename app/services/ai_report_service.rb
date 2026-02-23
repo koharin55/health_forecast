@@ -9,7 +9,7 @@ class AiReportService
   class ConfigurationError < Error; end
 
   GEMINI_MODEL = "gemini-2.5-flash"
-  MINIMUM_RECORDS = 3
+  MINIMUM_PERIOD_RECORDS = 3
   DEFAULT_PERIOD_DAYS = 7
 
   def initialize(user)
@@ -23,7 +23,11 @@ class AiReportService
     week_start ||= Date.current - DEFAULT_PERIOD_DAYS
     week_end ||= Date.current - 1
 
-    raise InsufficientDataError, "レポート生成には#{MINIMUM_RECORDS}件以上のデータが必要です" unless sufficient_data?
+    result = check_sufficient_data(week_start, week_end)
+    unless result[:sufficient]
+      raise InsufficientDataError,
+            "対象期間の記録が#{result[:count]}件しかありません。#{MINIMUM_PERIOD_RECORDS}件以上必要です"
+    end
 
     prompt = build_prompt(week_start, week_end)
     response = call_gemini_api(prompt)
@@ -32,12 +36,23 @@ class AiReportService
     create_report(week_start, week_end, content, response)
   end
 
-  # レポート生成に十分なデータがあるか
-  def sufficient_data?
-    @user.health_records.count >= MINIMUM_RECORDS
+  # 対象期間内のデータ件数と十分性を返す（1回のクエリで完結）
+  def check_sufficient_data(week_start = nil, week_end = nil)
+    week_start ||= Date.current - DEFAULT_PERIOD_DAYS
+    week_end ||= Date.current - 1
+    count = period_record_count(week_start, week_end)
+    {
+      sufficient: count >= MINIMUM_PERIOD_RECORDS,
+      count: count,
+      required: MINIMUM_PERIOD_RECORDS
+    }
   end
 
   private
+
+  def period_record_count(week_start, week_end)
+    @user.health_records.where(recorded_at: week_start..week_end).count
+  end
 
   def validate_configuration!
     return if api_key.present?
