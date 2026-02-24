@@ -134,12 +134,14 @@ RSpec.describe AiReportService do
       end
     end
 
-    context 'when report for the same week already exists' do
+    context 'when report for the same period already exists' do
       before do
-        create(:weekly_report, user: user, week_start: Date.current.beginning_of_week(:monday))
+        create(:weekly_report, user: user,
+               week_start: Date.current - AiReportService::DEFAULT_PERIOD_DAYS,
+               week_end: Date.current - 1)
       end
 
-      it 'raises ActiveRecord::RecordNotUnique' do
+      it 'raises ActiveRecord::RecordInvalid' do
         expect { service.generate_weekly_report }.to raise_error(ActiveRecord::RecordInvalid)
       end
     end

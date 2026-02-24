@@ -10,6 +10,7 @@ class AiReportService
 
   GEMINI_MODEL = "gemini-2.5-flash"
   MINIMUM_RECORDS = 3
+  DEFAULT_PERIOD_DAYS = 7
 
   def initialize(user)
     @user = user
@@ -17,9 +18,10 @@ class AiReportService
   end
 
   # 週次レポートを生成
-  def generate_weekly_report(week_start: nil)
-    week_start ||= Date.current.beginning_of_week(:monday)
-    week_end = week_start + 6.days
+  # デフォルト: 直近7日間（昨日まで）を対象
+  def generate_weekly_report(week_start: nil, week_end: nil)
+    week_start ||= Date.current - DEFAULT_PERIOD_DAYS
+    week_end ||= Date.current - 1
 
     raise InsufficientDataError, "レポート生成には#{MINIMUM_RECORDS}件以上のデータが必要です" unless sufficient_data?
 

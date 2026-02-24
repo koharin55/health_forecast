@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_02_14_140349) do
+ActiveRecord::Schema[7.1].define(version: 2026_02_21_130950) do
   create_table "health_records", force: :cascade do |t|
     t.integer "user_id", null: false
     t.date "recorded_at"
@@ -77,7 +77,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_14_140349) do
     t.integer "tokens_used"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id", "week_start"], name: "index_weekly_reports_on_user_id_and_week_start", unique: true
+    t.index ["user_id", "week_start", "week_end"], name: "index_weekly_reports_on_user_id_and_period", unique: true
     t.index ["user_id"], name: "index_weekly_reports_on_user_id"
   end
 
