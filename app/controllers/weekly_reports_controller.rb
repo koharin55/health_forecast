@@ -1,6 +1,6 @@
 class WeeklyReportsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_weekly_report, only: [:show]
+  before_action :set_weekly_report, only: [:show, :destroy]
 
   # GET /weekly_reports/:id
   def show
@@ -33,6 +33,14 @@ class WeeklyReportsController < ApplicationController
       Date.current.beginning_of_week(:monday)
     )
     redirect_to existing_report, notice: "今週のレポートは既に生成済みです"
+  end
+
+  # DELETE /weekly_reports/:id
+  def destroy
+    @weekly_report.destroy!
+    redirect_to weekly_reports_path, notice: "レポートを削除しました"
+  rescue ActiveRecord::RecordNotDestroyed
+    redirect_to @weekly_report, alert: "レポートの削除に失敗しました"
   end
 
   # GET /weekly_reports
