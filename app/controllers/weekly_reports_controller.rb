@@ -9,14 +9,17 @@ class WeeklyReportsController < ApplicationController
   # POST /weekly_reports
   def create
     service = AiReportService.new(current_user)
+    @week_start = Date.current - AiReportService::DEFAULT_PERIOD_DAYS
+    @week_end = Date.current - 1
 
-    unless service.sufficient_data?
+    result = service.check_sufficient_data(@week_start, @week_end)
+    unless result[:sufficient]
       redirect_to authenticated_root_path,
-                  alert: "レポート生成には#{AiReportService::MINIMUM_RECORDS}件以上の健康記録が必要です"
+                  alert: "対象期間の記録が#{result[:count]}件しかありません。#{result[:required]}件以上必要です"
       return
     end
 
-    @weekly_report = service.generate_weekly_report
+    @weekly_report = service.generate_weekly_report(week_start: @week_start, week_end: @week_end)
     redirect_to @weekly_report, notice: "週次レポートを生成しました"
   rescue AiReportService::ConfigurationError => e
     Rails.logger.error("WeeklyReportsController: #{e.message}")
@@ -51,9 +54,7 @@ class WeeklyReportsController < ApplicationController
   end
 
   def redirect_to_existing_report
-    week_start = Date.current - AiReportService::DEFAULT_PERIOD_DAYS
-    week_end = Date.current - 1
-    existing_report = WeeklyReport.find_for_period(current_user, week_start, week_end)
+    existing_report = WeeklyReport.find_for_period(current_user, @week_start, @week_end)
     if existing_report
       redirect_to existing_report, notice: "同じ期間のレポートは既に生成済みです"
     else
