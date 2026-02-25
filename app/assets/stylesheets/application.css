@@ -88,6 +88,23 @@
   background: rgba(16, 185, 129, 0.1);
 }
 
+.btn-danger {
+  background: #ef4444;
+  color: white;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.btn-danger:active {
+  transform: translateY(0);
+}
+
 /* ========================================
    Logo with Gradient
    ======================================== */
