@@ -6,15 +6,28 @@ class WeeklyReportsController < ApplicationController
   def show
   end
 
-  # POST /weekly_reports
-  def create
-    service = AiReportService.new(current_user)
+  # GET /weekly_reports/new
+  def new
     @week_start = Date.current - AiReportService::DEFAULT_PERIOD_DAYS
     @week_end = Date.current - 1
+  end
+
+  # POST /weekly_reports
+  def create
+    @week_start = parse_date(params[:week_start]) || Date.current - AiReportService::DEFAULT_PERIOD_DAYS
+    @week_end = parse_date(params[:week_end]) || Date.current - 1
+
+    service = AiReportService.new(current_user)
+
+    error = service.validate_period(@week_start, @week_end)
+    if error
+      redirect_to new_weekly_report_path(week_start: @week_start, week_end: @week_end), alert: error
+      return
+    end
 
     result = service.check_sufficient_data(@week_start, @week_end)
     unless result[:sufficient]
-      redirect_to authenticated_root_path,
+      redirect_to new_weekly_report_path(week_start: @week_start, week_end: @week_end),
                   alert: "対象期間の記録が#{result[:count]}件しかありません。#{result[:required]}件以上必要です"
       return
     end
@@ -59,6 +72,14 @@ class WeeklyReportsController < ApplicationController
     @weekly_report = current_user.weekly_reports.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     redirect_to authenticated_root_path, alert: "レポートが見つかりません"
+  end
+
+  def parse_date(value)
+    return nil if value.blank?
+
+    Date.parse(value.to_s)
+  rescue Date::Error
+    nil
   end
 
   def redirect_to_existing_report

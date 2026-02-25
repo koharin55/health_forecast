@@ -88,6 +88,38 @@ RSpec.describe AiReportService do
     end
   end
 
+  describe '#validate_period' do
+    it 'returns nil for valid period' do
+      result = service.validate_period(Date.current - 7, Date.current - 1)
+      expect(result).to be_nil
+    end
+
+    it 'returns error when end is before start' do
+      result = service.validate_period(Date.current - 1, Date.current - 7)
+      expect(result).to include('終了日は開始日より後')
+    end
+
+    it 'returns error when start is in the future' do
+      result = service.validate_period(Date.current + 1, Date.current + 3)
+      expect(result).to include('未来の日付')
+    end
+
+    it 'returns error when end is in the future' do
+      result = service.validate_period(Date.current - 3, Date.current + 1)
+      expect(result).to include('未来の日付')
+    end
+
+    it 'returns error when period exceeds MAX_PERIOD_DAYS' do
+      result = service.validate_period(Date.current - 40, Date.current - 1)
+      expect(result).to include("最大#{AiReportService::MAX_PERIOD_DAYS}日間")
+    end
+
+    it 'returns nil for exactly MAX_PERIOD_DAYS period' do
+      result = service.validate_period(Date.current - AiReportService::MAX_PERIOD_DAYS, Date.current - 1)
+      expect(result).to be_nil
+    end
+  end
+
   describe '#generate_weekly_report' do
     let(:gemini_response) do
       [

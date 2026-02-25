@@ -1,0 +1,52 @@
+<div class="w-full max-w-2xl mx-auto">
+  <!-- ヘッダー -->
+  <div class="mb-6 sm:mb-8">
+    <%= link_to authenticated_root_path, class: "text-slate-500 hover:text-slate-700 text-sm inline-flex items-center mb-2" do %>
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      ダッシュボードに戻る
+    <% end %>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-700">AI週次レポート生成</h1>
+    <p class="text-slate-600 mt-1">対象期間を選択してレポートを生成します</p>
+  </div>
+
+  <!-- フォーム -->
+  <div class="card rounded-2xl p-6 sm:p-8">
+    <%= form_with url: weekly_reports_path, method: :post, class: "space-y-6" do |form| %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="week_start" class="block text-sm font-bold text-slate-700 mb-2">開始日</label>
+          <%= form.date_field :week_start,
+              value: params[:week_start] || @week_start,
+              max: Date.current.to_s,
+              class: "input-field w-full px-4 py-3 rounded-xl text-slate-900 mono" %>
+        </div>
+        <div>
+          <label for="week_end" class="block text-sm font-bold text-slate-700 mb-2">終了日</label>
+          <%= form.date_field :week_end,
+              value: params[:week_end] || @week_end,
+              max: Date.current.to_s,
+              class: "input-field w-full px-4 py-3 rounded-xl text-slate-900 mono" %>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 rounded-xl p-4 text-sm text-slate-600">
+        <ul class="space-y-1">
+          <li>・対象期間は最大<span class="font-bold"><%= AiReportService::MAX_PERIOD_DAYS %>日間</span>まで指定できます</li>
+          <li>・期間内に<span class="font-bold"><%= AiReportService::MINIMUM_PERIOD_RECORDS %>件以上</span>の健康記録が必要です</li>
+          <li>・同じ期間のレポートが既にある場合は生成できません</li>
+        </ul>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <%= form.submit "レポートを生成",
+            class: "btn-primary px-6 py-3 rounded-xl font-bold inline-flex items-center justify-center cursor-pointer",
+            data: { turbo_submits_with: "生成中..." } %>
+        <%= link_to weekly_reports_path, class: "btn-secondary px-6 py-3 rounded-xl font-bold inline-flex items-center justify-center" do %>
+          過去のレポート一覧
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
