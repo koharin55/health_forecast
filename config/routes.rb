@@ -10,7 +10,7 @@ Rails.application.routes.draw do
         post :import
       end
     end
-    resources :weekly_reports, only: [:index, :show, :create, :destroy]
+    resources :weekly_reports, only: [:index, :show, :new, :create, :destroy]
     resource :mypage, only: [:show], controller: 'mypage' do
       patch :update_profile, on: :member
       patch :update_password, on: :member

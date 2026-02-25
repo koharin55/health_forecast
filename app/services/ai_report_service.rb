@@ -11,6 +11,7 @@ class AiReportService
   GEMINI_MODEL = "gemini-2.5-flash"
   MINIMUM_PERIOD_RECORDS = 3
   DEFAULT_PERIOD_DAYS = 7
+  MAX_PERIOD_DAYS = 31
 
   def initialize(user)
     @user = user
@@ -34,6 +35,17 @@ class AiReportService
     content = parse_response(response)
 
     create_report(week_start, week_end, content, response)
+  end
+
+  # 対象期間のバリデーション（エラーメッセージ or nil）
+  def validate_period(week_start, week_end)
+    if week_start > Date.current || week_end > Date.current
+      "未来の日付は指定できません"
+    elsif week_end < week_start
+      "終了日は開始日より後の日付を指定してください"
+    elsif (week_end - week_start).to_i + 1 > MAX_PERIOD_DAYS
+      "対象期間は最大#{MAX_PERIOD_DAYS}日間までです"
+    end
   end
 
   # 対象期間内のデータ件数と十分性を返す（1回のクエリで完結）
