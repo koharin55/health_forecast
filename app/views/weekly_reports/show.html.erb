@@ -19,8 +19,32 @@
       </p>
       <% if @weekly_report.tokens_used.present? %>
         <p class="text-xs text-slate-400">
-          トークン使用量: <%= @weekly_report.tokens_used %>
+          トークン使用量: <span class="mono"><%= number_with_delimiter(@weekly_report.tokens_used) %></span>
         </p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- 前後ナビゲーション -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <% if @previous_report %>
+        <%= link_to weekly_report_path(@previous_report), class: "inline-flex items-center text-sm text-slate-500 hover:text-emerald-600 transition" do %>
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          <%= @previous_report.period_display %>
+        <% end %>
+      <% end %>
+    </div>
+    <div>
+      <% if @next_report %>
+        <%= link_to weekly_report_path(@next_report), class: "inline-flex items-center text-sm text-slate-500 hover:text-emerald-600 transition" do %>
+          <%= @next_report.period_display %>
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        <% end %>
       <% end %>
     </div>
   </div>
@@ -60,10 +84,8 @@
           <h3 class="font-bold text-amber-800 mb-1">来週の注意日</h3>
           <p class="text-sm text-amber-700">
             <% @weekly_report.predictions['warning_dates'].each do |date_str| %>
-              <% date = Date.parse(date_str) %>
-              <% wday = %w[日 月 火 水 木 金 土][date.wday] %>
               <span class="inline-block bg-amber-100 px-2 py-0.5 rounded mr-1 mb-1">
-                <%= date.strftime('%m/%d') %>(<%= wday %>)
+                <%= format_date_with_wday(date_str) %>
               </span>
             <% end %>
             に低気圧が予報されています。体調管理にご注意ください。

@@ -11,6 +11,26 @@ class WeeklyReport < ApplicationRecord
   scope :recent, -> { order(week_start: :desc) }
   scope :for_user, ->(user) { where(user: user) }
 
+  # 前のレポートを取得（同じユーザーの、week_startが古いもの）
+  def previous_report
+    user.weekly_reports.where("week_start < ?", week_start).order(week_start: :desc).first
+  end
+
+  # 次のレポートを取得（同じユーザーの、week_startが新しいもの）
+  def next_report
+    user.weekly_reports.where("week_start > ?", week_start).order(week_start: :asc).first
+  end
+
+  # レポートの対象期間を表示用文字列で返す
+  def period_display
+    "#{week_start.strftime('%m/%d')}〜#{week_end.strftime('%m/%d')}"
+  end
+
+  # レポートの対象期間を日本語で返す
+  def period_display_ja
+    "#{week_start.strftime('%Y年%m月%d日')}〜#{week_end.strftime('%m月%d日')}"
+  end
+
   # 指定された週のレポートを取得（存在しない場合はnil）
   def self.find_for_week(user, week_start)
     find_by(user: user, week_start: week_start)
@@ -26,14 +46,13 @@ class WeeklyReport < ApplicationRecord
     for_user(user).recent.first
   end
 
-  # レポートの対象期間を表示用文字列で返す
-  def period_display
-    "#{week_start.strftime('%m/%d')}〜#{week_end.strftime('%m/%d')}"
-  end
-
-  # レポートの対象期間を日本語で返す
-  def period_display_ja
-    "#{week_start.strftime('%Y年%m月%d日')}〜#{week_end.strftime('%m月%d日')}"
+  # 月間トークン使用量を集計
+  def self.monthly_tokens_used(user, date = Date.current)
+    month_start = date.beginning_of_month
+    month_end = date.end_of_month
+    for_user(user)
+      .where(created_at: month_start.beginning_of_day..month_end.end_of_day)
+      .sum(:tokens_used)
   end
 
   private
