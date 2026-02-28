@@ -196,7 +196,7 @@ RSpec.describe HealthRecordImportService do
     end
 
     context '天候データ列が含まれる場合' do
-      it '天候データ列は無視する' do
+      it '天候データが正しくインポートされる' do
         csv = <<~CSV
           #{header}
           2026-01-15,4,65.5,7.5,30,8000,70,120,80,36.5,良い日だった,晴れ,18.5,55,1013.2
@@ -207,8 +207,27 @@ RSpec.describe HealthRecordImportService do
 
         expect(result[:imported]).to eq(1)
         record = user.health_records.find_by(recorded_at: Date.new(2026, 1, 15))
+        expect(record.weather_description).to eq('晴れ')
+        expect(record.weather_temperature).to eq(18.5)
+        expect(record.weather_humidity).to eq(55)
+        expect(record.weather_pressure).to eq(1013.2)
+      end
+
+      it '天候データが空でもインポートできる' do
+        csv = <<~CSV
+          #{header}
+          2026-01-15,4,65.5,7.5,30,8000,70,120,80,36.5,良い日だった,,,,
+        CSV
+
+        service = described_class.new(user, csv)
+        result = service.import
+
+        expect(result[:imported]).to eq(1)
+        record = user.health_records.find_by(recorded_at: Date.new(2026, 1, 15))
         expect(record.weather_description).to be_nil
         expect(record.weather_temperature).to be_nil
+        expect(record.weather_humidity).to be_nil
+        expect(record.weather_pressure).to be_nil
       end
     end
   end

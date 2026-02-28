@@ -1,4 +1,6 @@
 module ApplicationHelper
+  include Pagy::Frontend
+
   def pressure_class(pressure)
     return "" unless pressure
 
@@ -9,6 +11,12 @@ module ApplicationHelper
     else
       ""
     end
+  end
+
+  def format_date_with_wday(date_str)
+    date = Date.parse(date_str)
+    wday = %w[日 月 火 水 木 金 土][date.wday]
+    "#{date.strftime('%m/%d')}(#{wday})"
   end
 
   def markdown(text)

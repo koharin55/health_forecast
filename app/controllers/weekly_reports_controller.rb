@@ -4,6 +4,8 @@ class WeeklyReportsController < ApplicationController
 
   # GET /weekly_reports/:id
   def show
+    @previous_report = @weekly_report.previous_report
+    @next_report = @weekly_report.next_report
   end
 
   # GET /weekly_reports/new
@@ -63,7 +65,8 @@ class WeeklyReportsController < ApplicationController
 
   # GET /weekly_reports
   def index
-    @weekly_reports = current_user.weekly_reports.recent.limit(20)
+    @pagy, @weekly_reports = pagy(current_user.weekly_reports.recent)
+    @monthly_tokens = WeeklyReport.monthly_tokens_used(current_user)
   end
 
   private
