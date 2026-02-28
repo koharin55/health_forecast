@@ -73,13 +73,16 @@ class HealthRecord < ApplicationRecord
 
   # 天候データが存在するか
   def has_weather_data?
-    weather_code.present?
+    weather_code.present? || weather_description.present?
   end
 
   # 天気アイコンを取得
   def weather_icon
-    return nil unless weather_code
-    WeatherService.weather_icon(weather_code)
+    return nil unless has_weather_data?
+    return WeatherService.weather_icon(weather_code) if weather_code.present?
+
+    code = WeatherService.code_from_description(weather_description)
+    code ? WeatherService.weather_icon(code) : "🌡️"
   end
 
   # 天気の表示文字列を取得

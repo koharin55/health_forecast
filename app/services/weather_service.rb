@@ -112,6 +112,11 @@ class WeatherService
     WEATHER_CODES[code] || "不明"
   end
 
+  # 天気の日本語説明からコードを逆引き
+  def self.code_from_description(description)
+    WEATHER_CODES.key(description)
+  end
+
   # 天気コードからアイコン絵文字を取得
   def self.weather_icon(code)
     case code
