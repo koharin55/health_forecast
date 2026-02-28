@@ -14,6 +14,10 @@ class HealthRecordImportService
     "最高血圧(mmHg)" => :systolic_pressure,
     "最低血圧(mmHg)" => :diastolic_pressure,
     "体温(℃)" => :body_temperature,
+    "天気" => :weather_description,
+    "気温(℃)" => :weather_temperature,
+    "湿度(%)" => :weather_humidity,
+    "気圧(hPa)" => :weather_pressure,
     "メモ" => :notes
   }.freeze
 
@@ -114,11 +118,12 @@ class HealthRecordImportService
     when :recorded_at
       Date.parse(value)
     when :mood, :exercise_minutes, :steps, :heart_rate,
-         :systolic_pressure, :diastolic_pressure
+         :systolic_pressure, :diastolic_pressure, :weather_humidity
       value.to_i
-    when :weight, :sleep_hours, :body_temperature
+    when :weight, :sleep_hours, :body_temperature,
+         :weather_temperature, :weather_pressure
       value.to_f
-    when :notes
+    when :notes, :weather_description
       value
     end
   rescue Date::Error
