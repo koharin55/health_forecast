@@ -1,0 +1,466 @@
+<div class="max-w-2xl mx-auto">
+  <div class="flex items-center gap-3 mb-6">
+    <%= link_to mypage_path, class: "text-slate-400 hover:text-slate-600 transition-colors", "aria-label": "マイページに戻る" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    <% end %>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">iOSショートカット設定ガイド</h1>
+  </div>
+
+  <p class="text-slate-600 mb-6">
+    iOSの「ショートカット」アプリを使って、iPhoneのヘルスケアデータを毎日自動的にPreCareへ送信する方法を説明します。
+    <br>
+    <span class="text-xs text-slate-500">※ iOS 26準拠の手順です</span>
+  </p>
+
+  <%# サンプルショートカットDLセクション %>
+  <% if @shortcut_icloud_url.present? %>
+    <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+      <h2 class="text-xl font-bold text-slate-800 mb-3">サンプルショートカットをダウンロード</h2>
+      <p class="text-sm text-slate-600 mb-4">
+        あらかじめ設定されたショートカットをインポートできます。インポート時にAPIトークンとサーバーURLを入力してください。
+      </p>
+      <%= link_to @shortcut_icloud_url, class: "inline-flex items-center gap-2 btn-primary py-3 px-6 rounded-xl font-bold text-lg transition-all", target: "_blank", rel: "noopener noreferrer" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        ショートカットを入手
+      <% end %>
+
+      <div class="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4">
+        <p class="text-sm font-medium text-slate-700 mb-2">インポート時の質問:</p>
+        <ol class="text-sm text-slate-600 list-decimal list-inside space-y-1">
+          <li><strong>APIトークン</strong>: マイページで生成したトークンを入力</li>
+          <li><strong>サーバーURL</strong>: 通常はデフォルト値のままでOK</li>
+        </ol>
+      </div>
+    </div>
+  <% end %>
+
+  <%# 完成イメージ %>
+  <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+    <h2 class="text-xl font-bold text-slate-800 mb-3">完成イメージ</h2>
+    <p class="text-sm text-slate-600 mb-4">以下のようなショートカットを作成します。各ブロックが「アクション」で、上から順に実行されます。</p>
+
+    <div class="sc-editor rounded-2xl p-4 space-y-2">
+      <%# ヘルスケア取得アクション %>
+      <div class="sc-action sc-action-health">
+        <div class="sc-action-icon">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </div>
+        <div class="sc-action-body">
+          <span class="sc-action-title">ヘルスケアサンプルを検索</span>
+          <span class="sc-action-detail">体重 / 歩数 / 心拍数 / 血圧 / 体温</span>
+        </div>
+      </div>
+      <div class="sc-output">
+        <span class="sc-output-pill sc-pill-health">体重の結果</span>
+        <span class="sc-output-pill sc-pill-health">歩数の結果</span>
+        <span class="sc-output-pill sc-pill-health">...</span>
+      </div>
+
+      <%# 入力を要求アクション %>
+      <div class="sc-action sc-action-scripting">
+        <div class="sc-action-icon">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+        </div>
+        <div class="sc-action-body">
+          <span class="sc-action-title">入力を要求</span>
+          <span class="sc-action-detail">体調スコア (1-5) / メモ</span>
+        </div>
+      </div>
+      <div class="sc-output">
+        <span class="sc-output-pill sc-pill-scripting">体調スコアの結果</span>
+        <span class="sc-output-pill sc-pill-scripting">メモの結果</span>
+      </div>
+
+      <%# URLの内容を取得アクション %>
+      <div class="sc-action sc-action-web">
+        <div class="sc-action-icon">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/></svg>
+        </div>
+        <div class="sc-action-body">
+          <span class="sc-action-title">URLの内容を取得</span>
+          <span class="sc-action-detail">POST / JSON / Bearer認証</span>
+        </div>
+      </div>
+
+      <%# 通知アクション %>
+      <div class="sc-action sc-action-scripting">
+        <div class="sc-action-icon">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        </div>
+        <div class="sc-action-body">
+          <span class="sc-action-title">通知を表示</span>
+          <span class="sc-action-detail">「データを送信しました」</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# 手動作成ガイド %>
+  <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+    <h2 class="text-xl font-bold text-slate-800 mb-4">作成手順</h2>
+
+    <%# Step 1 %>
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">1</span>
+        新規ショートカットを作成
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-2">
+        <p>「ショートカット」アプリを開き、右上の「<strong>+</strong>」をタップして新しいショートカットを作成します。</p>
+        <p>上部のショートカット名をタップし「<strong>PreCare 記録</strong>」などに変更してください。</p>
+
+        <div class="sc-editor rounded-2xl p-4 mt-3">
+          <div class="text-center">
+            <p class="text-base font-bold text-white mb-3">PreCare 記録</p>
+            <div class="sc-add-action">
+              <span>アクションを追加</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# Step 2 %>
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">2</span>
+        ヘルスケアデータの取得
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-2">
+        <p>「<strong>アクションを追加</strong>」をタップし、検索欄で「<strong>ヘルスケア</strong>」と入力します。</p>
+        <p>「<strong>ヘルスケアサンプルを検索</strong>」を選んでアクションを追加します。これを<strong>6回繰り返し</strong>、それぞれ以下のように設定してください。</p>
+
+        <div class="sc-editor rounded-2xl p-4 mt-3 space-y-2">
+          <% %w[体重 歩数 心拍数 最高血圧 最低血圧 体温].each_with_index do |name, i| %>
+            <div class="sc-action sc-action-health">
+              <div class="sc-action-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              </div>
+              <div class="sc-action-body">
+                <span class="sc-action-title">ヘルスケアサンプルを検索</span>
+                <span class="sc-action-detail">種類: <strong><%= name %></strong> / ソート: 開始日（新しい順） / 制限: 1件</span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <p class="mt-3"><strong>各アクションの設定方法:</strong></p>
+        <ol class="list-decimal list-inside space-y-1 ml-2">
+          <li>アクションをタップして展開</li>
+          <li>「<strong>種類</strong>」をタップ → 上の表の種類を選択</li>
+          <li>「<strong>並び順</strong>」→「開始日」「新しい順」に設定</li>
+          <li>「<strong>制限</strong>」をオンにして「<strong>1</strong>」件に設定</li>
+        </ol>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+          <p class="text-xs text-blue-800">
+            <strong>ヒント:</strong>
+            各アクションの下に表示される<span class="sc-output-pill sc-pill-health text-xs" style="display:inline; padding: 1px 6px;">ヘルスケアサンプルの結果</span>が、そのアクションの<strong>出力結果</strong>です。後のStep 4で値を設定する際に、この出力結果を選んでデータを渡します。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <%# Step 3 %>
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">3</span>
+        体調スコアとメモの入力欄を追加
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-2">
+        <p>検索欄で「<strong>入力を要求</strong>」と入力し、アクションを<strong>2回</strong>追加します。</p>
+
+        <div class="sc-editor rounded-2xl p-4 mt-3 space-y-2">
+          <div class="sc-action sc-action-scripting">
+            <div class="sc-action-icon">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+            </div>
+            <div class="sc-action-body">
+              <span class="sc-action-title">入力を要求</span>
+              <span class="sc-action-detail">プロンプト: 「今日の体調は？(1〜5)」/ 入力タイプ: <strong>数字</strong></span>
+            </div>
+          </div>
+          <div class="sc-action sc-action-scripting">
+            <div class="sc-action-icon">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+            </div>
+            <div class="sc-action-body">
+              <span class="sc-action-title">入力を要求</span>
+              <span class="sc-action-detail">プロンプト: 「メモ（任意）」/ 入力タイプ: <strong>テキスト</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <p class="mt-2 text-xs text-slate-500">※ ショートカット実行時にiPhoneの画面に入力ダイアログが表示されます</p>
+      </div>
+    </div>
+
+    <%# Step 4 %>
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">4</span>
+        APIリクエストの送信設定
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-2">
+        <p>検索欄で「<strong>URL</strong>」と入力し、「<strong>URLの内容を取得</strong>」アクションを追加します。</p>
+
+        <div class="sc-editor rounded-2xl p-4 mt-3">
+          <div class="sc-action sc-action-web">
+            <div class="sc-action-icon">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/></svg>
+            </div>
+            <div class="sc-action-body">
+              <span class="sc-action-title">URLの内容を取得</span>
+              <span class="sc-action-detail"><%= @api_endpoint %></span>
+            </div>
+          </div>
+
+          <div class="sc-settings mt-2">
+            <div class="sc-setting-row">
+              <span class="sc-setting-label">方法</span>
+              <span class="sc-setting-value">POST</span>
+            </div>
+            <div class="sc-setting-row">
+              <span class="sc-setting-label">ヘッダー</span>
+              <span class="sc-setting-value">Authorization: Bearer <em>トークン</em></span>
+            </div>
+            <div class="sc-setting-row">
+              <span class="sc-setting-label">本文</span>
+              <span class="sc-setting-value">JSON</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="mt-3"><strong>設定手順:</strong></p>
+        <ol class="list-decimal list-inside space-y-1 ml-2">
+          <li>URL欄にAPIエンドポイントを入力:
+            <code class="mono text-xs bg-slate-100 px-2 py-0.5 rounded break-all"><%= @api_endpoint %></code>
+          </li>
+          <li>アクションをタップして「<strong>詳細を表示</strong>」を開く</li>
+          <li>「方法」を「<strong>POST</strong>」に変更</li>
+          <li>「<strong>ヘッダー</strong>」に以下を追加:
+            <div class="bg-slate-50 rounded-lg p-2 mt-1 ml-2">
+              <span class="text-xs">キー: </span><code class="mono text-xs bg-white px-1 rounded">Authorization</code><br>
+              <span class="text-xs">値: </span><code class="mono text-xs bg-white px-1 rounded">Bearer <em>あなたのAPIトークン</em></code>
+            </div>
+          </li>
+          <li>「本文」を「<strong>JSON</strong>」に変更</li>
+          <li>以下のキーと値を追加（次の表を参照）</li>
+        </ol>
+
+        <p class="mt-4"><strong>JSON本文の設定:</strong></p>
+        <p class="text-xs text-slate-500 mb-2">各「値」欄をタップすると、前のアクションの出力結果を選択できます。</p>
+
+        <div class="overflow-x-auto mt-2">
+          <table class="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
+            <caption class="sr-only">JSON本文のキーと値の設定</caption>
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">キー</th>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">値の設定方法</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr>
+                <td class="px-3 py-2 mono text-xs">health_record[recorded_at]</td>
+                <td class="px-3 py-2">
+                  <span class="sc-output-pill sc-pill-date text-xs">現在の日付</span>を選択<br>
+                  <span class="text-xs text-slate-500">→ タップして「日付のフォーマット」を <code class="mono">yyyy-MM-dd</code> に変更</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2 mono text-xs">health_record[weight]</td>
+                <td class="px-3 py-2"><span class="sc-output-pill sc-pill-health text-xs">体重の検索結果</span>を選択</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2 mono text-xs">health_record[steps]</td>
+                <td class="px-3 py-2"><span class="sc-output-pill sc-pill-health text-xs">歩数の検索結果</span>を選択</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2 mono text-xs">health_record[heart_rate]</td>
+                <td class="px-3 py-2"><span class="sc-output-pill sc-pill-health text-xs">心拍数の検索結果</span>を選択</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2 mono text-xs">health_record[systolic_pressure]</td>
+                <td class="px-3 py-2"><span class="sc-output-pill sc-pill-health text-xs">最高血圧の検索結果</span>を選択</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2 mono text-xs">health_record[diastolic_pressure]</td>
+                <td class="px-3 py-2"><span class="sc-output-pill sc-pill-health text-xs">最低血圧の検索結果</span>を選択</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2 mono text-xs">health_record[body_temperature]</td>
+                <td class="px-3 py-2"><span class="sc-output-pill sc-pill-health text-xs">体温の検索結果</span>を選択</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2 mono text-xs">health_record[mood]</td>
+                <td class="px-3 py-2"><span class="sc-output-pill sc-pill-scripting text-xs">入力を要求の結果</span>を選択<br><span class="text-xs text-slate-500">（体調スコア側の「入力を要求」を選択）</span></td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2 mono text-xs">health_record[notes]</td>
+                <td class="px-3 py-2"><span class="sc-output-pill sc-pill-scripting text-xs">入力を要求の結果</span>を選択<br><span class="text-xs text-slate-500">（メモ側の「入力を要求」を選択）</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+          <p class="text-xs text-blue-800">
+            <strong>出力結果の選択方法:</strong>
+            値の入力欄をタップすると、前のアクションの出力結果が一覧表示されます。各項目にはアクションのアイコンと名前が表示されるので、対応するものをタップして選んでください。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <%# Step 5 %>
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">5</span>
+        完了通知を追加
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-2">
+        <p>検索欄で「<strong>通知</strong>」と入力し、「<strong>通知を表示</strong>」アクションを追加します。</p>
+
+        <div class="sc-editor rounded-2xl p-4 mt-3">
+          <div class="sc-action sc-action-scripting">
+            <div class="sc-action-icon">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            </div>
+            <div class="sc-action-body">
+              <span class="sc-action-title">通知を表示</span>
+              <span class="sc-action-detail">本文: 「PreCareにデータを送信しました」</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# Step 6 %>
+    <div class="mb-4">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">6</span>
+        毎日自動実行の設定（任意）
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-2">
+        <p>毎日決まった時刻に自動実行するには、「<strong>オートメーション</strong>」タブで設定します。</p>
+
+        <ol class="list-decimal list-inside space-y-2 ml-2">
+          <li>ショートカットアプリの下部にある「<strong>オートメーション</strong>」タブをタップ</li>
+          <li>右上の「<strong>+</strong>」→「<strong>時刻</strong>」を選択</li>
+          <li>実行時刻を設定（例: 毎日 22:00）</li>
+          <li>「<strong>すぐに実行</strong>」を選択</li>
+          <li>作成した「PreCare 記録」ショートカットを選択</li>
+        </ol>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
+          <p class="text-xs text-amber-800">
+            <strong>注意:</strong>
+            「入力を要求」アクションを含むショートカットは、自動実行時にiPhoneの画面に入力ダイアログが表示されます。<strong>完全に自動化</strong>したい場合はStep 3を省略してください（体調スコアとメモは送信されません）。
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# APIリファレンス %>
+  <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+    <details class="accordion">
+      <summary class="flex items-center justify-between cursor-pointer">
+        <h2 class="text-xl font-bold text-slate-800">APIリファレンス</h2>
+        <svg class="accordion-arrow w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </summary>
+
+      <div class="mt-4">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
+          <p class="text-sm text-slate-600 mb-1">
+            <span class="font-medium">エンドポイント:</span>
+            <code class="mono text-xs bg-white px-2 py-1 rounded">POST <%= @api_endpoint %></code>
+          </p>
+          <p class="text-sm text-slate-600">
+            <span class="font-medium">認証:</span>
+            <code class="mono text-xs bg-white px-2 py-1 rounded">Authorization: Bearer &lt;APIトークン&gt;</code>
+          </p>
+        </div>
+
+        <h3 class="text-base font-bold text-slate-700 mb-2">送信可能なパラメータ</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
+            <caption class="sr-only">APIパラメータ一覧</caption>
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">パラメータ</th>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">型</th>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">必須</th>
+                <th class="px-3 py-2 text-left font-medium text-slate-700">説明</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr>
+                <td class="px-3 py-2 mono text-xs">health_record[recorded_at]</td>
+                <td class="px-3 py-2">date</td>
+                <td class="px-3 py-2"><span class="text-red-500 font-medium">必須</span></td>
+                <td class="px-3 py-2">記録日（yyyy-MM-dd）</td>
+              </tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[weight]</td><td class="px-3 py-2">decimal</td><td class="px-3 py-2">任意</td><td class="px-3 py-2">体重（kg）</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[mood]</td><td class="px-3 py-2">integer</td><td class="px-3 py-2">任意</td><td class="px-3 py-2">体調スコア（1-5）</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[sleep_hours]</td><td class="px-3 py-2">decimal</td><td class="px-3 py-2">任意</td><td class="px-3 py-2">睡眠時間</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[exercise_minutes]</td><td class="px-3 py-2">integer</td><td class="px-3 py-2">任意</td><td class="px-3 py-2">運動時間（分）</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[steps]</td><td class="px-3 py-2">integer</td><td class="px-3 py-2">任意</td><td class="px-3 py-2">歩数</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[heart_rate]</td><td class="px-3 py-2">integer</td><td class="px-3 py-2">任意</td><td class="px-3 py-2">心拍数（bpm）</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[systolic_pressure]</td><td class="px-3 py-2">integer</td><td class="px-3 py-2">任意</td><td class="px-3 py-2">最高血圧（mmHg）</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[diastolic_pressure]</td><td class="px-3 py-2">integer</td><td class="px-3 py-2">任意</td><td class="px-3 py-2">最低血圧（mmHg）</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[body_temperature]</td><td class="px-3 py-2">decimal</td><td class="px-3 py-2">任意</td><td class="px-3 py-2">体温</td></tr>
+              <tr><td class="px-3 py-2 mono text-xs">health_record[notes]</td><td class="px-3 py-2">text</td><td class="px-3 py-2">任意</td><td class="px-3 py-2">メモ</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <%# トラブルシューティング %>
+  <div class="card rounded-2xl p-6 sm:p-8 mb-6">
+    <details class="accordion">
+      <summary class="flex items-center justify-between cursor-pointer">
+        <h2 class="text-xl font-bold text-slate-800">トラブルシューティング</h2>
+        <svg class="accordion-arrow w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </summary>
+
+      <div class="mt-4 space-y-4">
+        <div>
+          <h3 class="text-base font-medium text-slate-700 mb-1">401 Unauthorized</h3>
+          <p class="text-sm text-slate-600">APIトークンが正しくありません。マイページでトークンを確認し、<code class="mono text-xs bg-slate-100 px-1 rounded">Bearer </code>の後にスペースを1つ入れてからトークンを設定してください。トークンを再生成した場合は、ショートカット内のトークンも更新してください。</p>
+        </div>
+
+        <div>
+          <h3 class="text-base font-medium text-slate-700 mb-1">422 Unprocessable Entity</h3>
+          <p class="text-sm text-slate-600">送信データにバリデーションエラーがあります。<code class="mono text-xs bg-slate-100 px-1 rounded">recorded_at</code>が正しい日付形式（yyyy-MM-dd）か、<code class="mono text-xs bg-slate-100 px-1 rounded">mood</code>が1-5の範囲内かを確認してください。</p>
+        </div>
+
+        <div>
+          <h3 class="text-base font-medium text-slate-700 mb-1">ヘルスケアデータが取得できない</h3>
+          <p class="text-sm text-slate-600">iPhoneの「<strong>設定</strong>」→「<strong>プライバシーとセキュリティ</strong>」→「<strong>ヘルスケア</strong>」→「<strong>ショートカット</strong>」で、必要なデータへのアクセスが許可されているか確認してください。</p>
+        </div>
+
+        <div>
+          <h3 class="text-base font-medium text-slate-700 mb-1">同じ日に複数回送信した場合</h3>
+          <p class="text-sm text-slate-600">同じ日付の記録が既に存在する場合はデータが更新されます。重複して作成されることはありません。</p>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="text-center">
+    <%= link_to mypage_path, class: "inline-flex items-center gap-2 btn-secondary py-3 px-6 rounded-xl font-bold transition-all" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      マイページに戻る
+    <% end %>
+  </div>
+</div>
