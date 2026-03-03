@@ -1,7 +1,7 @@
 module Api
   module V1
     class BaseController < ApplicationController
-      protect_from_forgery with: :null_session
+      skip_forgery_protection
       skip_before_action :ensure_nickname_set
 
       rescue_from ActiveRecord::RecordNotFound, with: :not_found
@@ -13,6 +13,7 @@ module Api
         return if user_signed_in?
 
         authenticate_with_token!
+        render json: { error: '認証に失敗しました' }, status: :unauthorized unless @current_user
       end
 
       def current_user
@@ -21,14 +22,10 @@ module Api
 
       def authenticate_with_token!
         token = request.headers['Authorization']&.match(/\ABearer (.+)\z/)&.captures&.first
-        if token.present?
-          user = User.find_by_api_token(token)
-          if user
-            @current_user = user
-            return
-          end
-        end
-        render json: { error: '認証に失敗しました' }, status: :unauthorized
+        return unless token.present?
+
+        user = User.find_by_api_token(token)
+        @current_user = user if user
       end
 
       def not_found
