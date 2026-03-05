@@ -3,10 +3,16 @@ module Api
     class HealthRecordsController < BaseController
       def create
         recorded_at = params[:recorded_at].present? ? Date.parse(params[:recorded_at]) : Date.current
+
+        attrs = health_record_params
+        if params[:sleep_seconds].present?
+          attrs[:sleep_minutes] = (params[:sleep_seconds].to_f / 60).round
+        end
+
         result = HealthRecord.create_or_merge_for_date(
           user: current_user,
           recorded_at: recorded_at,
-          attributes: health_record_params
+          attributes: attrs
         )
 
         record = result[:record]
@@ -24,10 +30,12 @@ module Api
       private
 
       def health_record_params
-        params.permit(
-          :weight, :sleep_hours, :exercise_minutes, :mood, :notes, :steps,
+        raw = params.permit(
+          :weight, :sleep_minutes, :exercise_minutes, :mood, :notes, :steps,
           :heart_rate, :systolic_pressure, :diastolic_pressure, :body_temperature
         )
+        raw[:weight] = raw[:weight].to_f.round(1) if raw[:weight].present?
+        raw
       end
 
       def record_json(record, merged)
@@ -37,7 +45,8 @@ module Api
           merged: merged,
           weight: record.weight,
           mood: record.mood,
-          sleep_hours: record.sleep_hours,
+          sleep_minutes: record.sleep_minutes,
+          sleep_duration: record.sleep_duration_text,
           exercise_minutes: record.exercise_minutes,
           steps: record.steps,
           heart_rate: record.heart_rate,

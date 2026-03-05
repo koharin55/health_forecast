@@ -12,7 +12,7 @@ class HealthRecordExportService
   ].freeze
 
   COLUMNS = %i[
-    recorded_at mood weight sleep_hours exercise_minutes steps
+    recorded_at mood weight sleep_minutes exercise_minutes steps
     heart_rate systolic_pressure diastolic_pressure body_temperature notes
     weather_description weather_temperature weather_humidity weather_pressure
   ].freeze

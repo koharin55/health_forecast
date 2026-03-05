@@ -174,7 +174,7 @@ class AiReportService
     {
       count: records.count,
       avg_mood: records.where.not(mood: nil).average(:mood)&.round(2),
-      avg_sleep: records.where.not(sleep_hours: nil).average(:sleep_hours)&.round(1),
+      avg_sleep: records.where.not(sleep_minutes: nil).average(:sleep_minutes)&.round(0),
       avg_exercise: records.where.not(exercise_minutes: nil).average(:exercise_minutes)&.round(0),
       notes: records.where.not(notes: [nil, ""]).pluck(:notes).last(5)
     }
@@ -209,7 +209,7 @@ class AiReportService
     records.map do |r|
       parts = ["- #{r.recorded_at.strftime('%m/%d')}:"]
       parts << "体調#{r.mood}/5" if r.mood.present?
-      parts << "睡眠#{r.sleep_hours}h" if r.sleep_hours.present?
+      parts << "睡眠#{r.sleep_duration_text}" if r.sleep_minutes.present?
       parts << "運動#{r.exercise_minutes}分" if r.exercise_minutes.present?
       parts << "体重#{r.weight}kg" if r.weight.present?
       parts << "血圧#{r.systolic_pressure}/#{r.diastolic_pressure}" if r.systolic_pressure.present?
@@ -226,7 +226,7 @@ class AiReportService
     parts = []
     parts << "- 記録数: #{data[:count]}件"
     parts << "- 平均体調スコア: #{data[:avg_mood]}/5" if data[:avg_mood]
-    parts << "- 平均睡眠時間: #{data[:avg_sleep]}時間" if data[:avg_sleep]
+    parts << "- 平均睡眠時間: #{HealthRecord.format_minutes_to_duration(data[:avg_sleep])}" if data[:avg_sleep]
     parts << "- 平均運動時間: #{data[:avg_exercise]}分" if data[:avg_exercise]
     if data[:notes]&.any?
       parts << "- 最近のメモ:"
@@ -292,7 +292,7 @@ class AiReportService
     {
       record_count: records.count,
       avg_mood: records.where.not(mood: nil).average(:mood)&.round(2),
-      avg_sleep: records.where.not(sleep_hours: nil).average(:sleep_hours)&.round(1),
+      avg_sleep: records.where.not(sleep_minutes: nil).average(:sleep_minutes)&.round(0),
       total_exercise: records.where.not(exercise_minutes: nil).sum(:exercise_minutes)
     }
   end

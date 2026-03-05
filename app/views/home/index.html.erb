@@ -90,12 +90,9 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div class="mb-3 sm:mb-0">
             <p class="text-xs sm:text-sm text-slate-600 font-medium mb-1">平均睡眠</p>
-            <% avg_sleep = @recent_records.where.not(sleep_hours: nil).average(:sleep_hours) %>
+            <% avg_sleep_min = @recent_records.where.not(sleep_minutes: nil).average(:sleep_minutes) %>
             <p class="text-2xl sm:text-4xl font-bold text-slate-900 mono">
-              <%= avg_sleep.present? ? avg_sleep.round(1).to_s : "➖" %>
-              <% if avg_sleep.present? %>
-                <span class="text-base sm:text-xl text-slate-600">h</span>
-              <% end %>
+              <%= HealthRecord.format_minutes_to_duration(avg_sleep_min) || "➖" %>
             </p>
           </div>
           <div class="icon-gradient w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center">
@@ -223,7 +220,7 @@
       document.addEventListener('turbo:load', () => {
         // データ準備
         const weightData = <%= raw @recent_records.where.not(weight: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.weight } }.to_json %>;
-        const sleepData = <%= raw @recent_records.where.not(sleep_hours: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.sleep_hours } }.to_json %>;
+        const sleepData = <%= raw @recent_records.where.not(sleep_minutes: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: (r.sleep_minutes / 60.0).round(2) } }.to_json %>;
         const moodData = <%= raw @recent_records.where.not(mood: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.mood } }.to_json %>;
         const exerciseData = <%= raw @recent_records.where.not(exercise_minutes: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.exercise_minutes } }.to_json %>;
         const bloodPressureData = <%= raw @recent_records.where.not(systolic_pressure: nil, diastolic_pressure: nil).reverse.map { |r| { x: r.recorded_at.to_s, systolic: r.systolic_pressure, diastolic: r.diastolic_pressure } }.to_json %>;
@@ -527,7 +524,7 @@
               </div>
               <div>
                 <span class="text-slate-500">睡眠:</span>
-                <span class="font-semibold"><%= record.sleep_hours.present? ? "#{record.sleep_hours}h" : "➖" %></span>
+                <span class="font-semibold"><%= record.sleep_duration_text || "➖" %></span>
               </div>
               <div>
                 <span class="text-slate-500">体重:</span>
@@ -578,7 +575,7 @@
                   <%= record.body_temperature.present? ? "#{record.body_temperature}℃" : "➖" %>
                 </td>
                 <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-900 mono text-center">
-                  <%= record.sleep_hours.present? ? "#{record.sleep_hours}h" : "➖" %>
+                  <%= record.sleep_duration_text || "➖" %>
                 </td>
                 <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-900 mono text-center">
                   <%= record.weight.present? ? "#{record.weight}" : "➖" %>

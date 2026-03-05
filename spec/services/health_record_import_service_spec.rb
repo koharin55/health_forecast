@@ -3,14 +3,14 @@ require 'rails_helper'
 RSpec.describe HealthRecordImportService do
   let(:user) { create(:user) }
   let(:bom) { "\xEF\xBB\xBF" }
-  let(:header) { "記録日,体調スコア,体重(kg),睡眠時間(h),運動時間(分),歩数,心拍数(bpm),最高血圧(mmHg),最低血圧(mmHg),体温(℃),メモ,天気,気温(℃),湿度(%),気圧(hPa)" }
+  let(:header) { "記録日,体調スコア,体重(kg),睡眠時間(分),運動時間(分),歩数,心拍数(bpm),最高血圧(mmHg),最低血圧(mmHg),体温(℃),メモ,天気,気温(℃),湿度(%),気圧(hPa)" }
 
   describe '#import' do
     context '正常系: 新規レコードのインポート' do
       let(:csv_content) do
         <<~CSV
           #{header}
-          2026-01-15,4,65.5,7.5,30,8000,70,120,80,36.5,良い日だった,,,
+          2026-01-15,4,65.5,450,30,8000,70,120,80,36.5,良い日だった,,,
         CSV
       end
 
@@ -26,7 +26,7 @@ RSpec.describe HealthRecordImportService do
         expect(record).to be_present
         expect(record.mood).to eq(4)
         expect(record.weight).to eq(65.5)
-        expect(record.sleep_hours).to eq(7.5)
+        expect(record.sleep_minutes).to eq(450)
         expect(record.exercise_minutes).to eq(30)
         expect(record.steps).to eq(8000)
         expect(record.heart_rate).to eq(70)
@@ -39,8 +39,8 @@ RSpec.describe HealthRecordImportService do
       it '複数レコードをインポートする' do
         csv = <<~CSV
           #{header}
-          2026-01-15,4,65.5,7.5,,,,,,,,,,
-          2026-01-16,3,66.0,8.0,,,,,,,,,,
+          2026-01-15,4,65.5,450,,,,,,,,,,
+          2026-01-16,3,66.0,480,,,,,,,,,,
         CSV
 
         service = described_class.new(user, csv)
@@ -55,7 +55,7 @@ RSpec.describe HealthRecordImportService do
       it 'BOM付きCSVを正しく処理する' do
         csv = bom + <<~CSV
           #{header}
-          2026-01-15,4,65.5,7.5,,,,,,,,,,
+          2026-01-15,4,65.5,450,,,,,,,,,,
         CSV
 
         service = described_class.new(user, csv)
@@ -116,7 +116,7 @@ RSpec.describe HealthRecordImportService do
       it '行番号付きでエラーを報告する' do
         csv = <<~CSV
           #{header}
-          2026-01-15,4,65.5,7.5,,,,,,,,,,
+          2026-01-15,4,65.5,450,,,,,,,,,,
           2026-01-16,9,65.5,7.5,,,,,,,,,,
         CSV
 
