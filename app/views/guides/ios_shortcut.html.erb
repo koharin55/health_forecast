@@ -44,20 +44,45 @@
     <p class="text-sm text-slate-600 mb-4">以下のようなショートカットを作成します。各ブロックが「アクション」で、上から順に実行されます。</p>
 
     <div class="sc-editor rounded-2xl p-4 space-y-2">
-      <%# ヘルスケア取得アクション %>
+      <%# バイタル取得アクション %>
       <div class="sc-action sc-action-health">
         <div class="sc-action-icon">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
         </div>
         <div class="sc-action-body">
           <span class="sc-action-title">ヘルスケアサンプルを検索</span>
-          <span class="sc-action-detail">体重 / 歩数 / 心拍数 / 血圧 / 体温</span>
+          <span class="sc-action-detail">体重 / 歩数 / 心拍数 / 最高血圧 / 最低血圧 / 体温</span>
         </div>
       </div>
       <div class="sc-output">
         <span class="sc-output-pill sc-pill-health">体重の結果</span>
         <span class="sc-output-pill sc-pill-health">歩数の結果</span>
-        <span class="sc-output-pill sc-pill-health">...</span>
+        <span class="sc-output-pill sc-pill-health">他4件…</span>
+      </div>
+
+      <%# 睡眠取得アクション %>
+      <div class="sc-action sc-action-sleep">
+        <div class="sc-action-icon">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </div>
+        <div class="sc-action-body">
+          <span class="sc-action-title">ヘルスケアサンプルを検索</span>
+          <span class="sc-action-detail">睡眠（コア）/ 睡眠（深い）/ 睡眠（REM）× 各1回</span>
+        </div>
+      </div>
+
+      <%# 睡眠計算アクション %>
+      <div class="sc-action sc-action-math">
+        <div class="sc-action-icon">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div class="sc-action-body">
+          <span class="sc-action-title">数値を計算</span>
+          <span class="sc-action-detail">コア秒数 + 深い秒数 + REM秒数 → sleep_seconds</span>
+        </div>
+      </div>
+      <div class="sc-output">
+        <span class="sc-output-pill sc-pill-math">sleep_seconds</span>
       </div>
 
       <%# 入力を要求アクション %>
@@ -82,7 +107,7 @@
         </div>
         <div class="sc-action-body">
           <span class="sc-action-title">URLの内容を取得</span>
-          <span class="sc-action-detail">POST / JSON / Bearer認証</span>
+          <span class="sc-action-detail">POST / JSON / Bearer認証 / sleep_seconds含む</span>
         </div>
       </div>
 
@@ -128,14 +153,14 @@
     <div class="mb-8">
       <h3 class="text-lg font-bold text-slate-800 mb-2">
         <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">2</span>
-        ヘルスケアデータの取得
+        バイタルデータの取得
       </h3>
       <div class="ml-9 text-sm text-slate-600 space-y-2">
         <p>「<strong>アクションを追加</strong>」をタップし、検索欄で「<strong>ヘルスケア</strong>」と入力します。</p>
         <p>「<strong>ヘルスケアサンプルを検索</strong>」を選んでアクションを追加します。これを<strong>6回繰り返し</strong>、それぞれ以下のように設定してください。</p>
 
         <div class="sc-editor rounded-2xl p-4 mt-3 space-y-2">
-          <% %w[体重 歩数 心拍数 最高血圧 最低血圧 体温].each_with_index do |name, i| %>
+          <% %w[体重 歩数 心拍数 最高血圧 最低血圧 体温].each do |name| %>
             <div class="sc-action sc-action-health">
               <div class="sc-action-icon">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
@@ -150,7 +175,7 @@
 
         <p class="mt-3"><strong>各アクションの設定方法:</strong></p>
         <ol class="list-decimal list-inside space-y-1 ml-2">
-          <li>アクションをタップして展開</li>
+          <li>アクションをタップして展開（iOS 26では下部からスライドアップするパネルで設定）</li>
           <li>「<strong>種類</strong>」をタップ → 上の表の種類を選択</li>
           <li>「<strong>並び順</strong>」→「開始日」「新しい順」に設定</li>
           <li>「<strong>制限</strong>」をオンにして「<strong>1</strong>」件に設定</li>
@@ -159,16 +184,106 @@
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
           <p class="text-xs text-blue-800">
             <strong>ヒント:</strong>
-            各アクションの下に表示される<span class="sc-output-pill sc-pill-health text-xs" style="display:inline; padding: 1px 6px;">ヘルスケアサンプルの結果</span>が、そのアクションの<strong>出力結果</strong>です。後のStep 4で値を設定する際に、この出力結果を選んでデータを渡します。
+            各アクションの下に表示される<span class="sc-output-pill sc-pill-health text-xs" style="display:inline; padding: 1px 6px;">ヘルスケアサンプルの結果</span>が出力結果です。後のStep 5でJSON値を設定する際に使います。出力のラベルをタップ→「名前を変更」すると識別しやすくなります。
           </p>
         </div>
       </div>
     </div>
 
-    <%# Step 3 %>
+    <%# Step 3（新規）: 睡眠データ %>
     <div class="mb-8">
       <h3 class="text-lg font-bold text-slate-800 mb-2">
-        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">3</span>
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-100 text-purple-700 text-sm font-bold mr-2">3</span>
+        睡眠データの取得と計算
+      </h3>
+      <div class="ml-9 text-sm text-slate-600 space-y-2">
+        <p>iPhoneのヘルスケアはApple Watchの睡眠を「<strong>コア・深い・REM・Awake</strong>」に分類して秒単位で記録しています。Awakeを除く3フェーズの合計秒数をPreCareへ送信します。</p>
+
+        <p class="mt-2"><strong>① 睡眠フェーズを3つ取得する</strong></p>
+        <p class="text-xs text-slate-500 mb-2">「ヘルスケアサンプルを検索」を<strong>3回</strong>追加し、それぞれ設定します。</p>
+
+        <div class="sc-editor rounded-2xl p-4 mt-2 space-y-2">
+          <% [["睡眠（コア）", "浅い睡眠フェーズ"], ["睡眠（深い）", "深い睡眠フェーズ"], ["睡眠（REM）", "REM睡眠フェーズ"]].each do |type, desc| %>
+            <div class="sc-action sc-action-sleep">
+              <div class="sc-action-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+              </div>
+              <div class="sc-action-body">
+                <span class="sc-action-title">ヘルスケアサンプルを検索</span>
+                <span class="sc-action-detail">種類: <strong><%= type %></strong>（<%= desc %>）/ 日付: 昨日 / 制限: オフ</span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <p class="mt-3"><strong>各アクションの設定ポイント（バイタルとの違い）:</strong></p>
+        <ol class="list-decimal list-inside space-y-1 ml-2">
+          <li>「<strong>種類</strong>」→ 検索欄に「<strong>睡眠</strong>」と入力 → 「睡眠（コア）」「睡眠（深い）」「睡眠（REM）」を選択</li>
+          <li>「<strong>日付</strong>」→「<strong>昨日</strong>」に設定（前日の夜間睡眠を取得）</li>
+          <li>「<strong>制限</strong>」は<strong>オフ</strong>（1晩で複数セグメントになることがあるため、全件取得）</li>
+          <li>出力のラベルをタップ→「<strong>名前を変更</strong>」→「コア睡眠」「深い睡眠」「REM睡眠」と設定</li>
+        </ol>
+
+        <p class="mt-4"><strong>② 各フェーズの合計秒数を計算する</strong></p>
+        <p class="text-xs text-slate-500 mb-2">「統計を計算」アクションを<strong>3回</strong>追加します。</p>
+
+        <div class="sc-editor rounded-2xl p-4 mt-2 space-y-2">
+          <% [["コア睡眠", "コア秒数"], ["深い睡眠", "深い秒数"], ["REM睡眠", "REM秒数"]].each do |phase, var| %>
+            <div class="sc-action sc-action-math">
+              <div class="sc-action-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </div>
+              <div class="sc-action-body">
+                <span class="sc-action-title">統計を計算</span>
+                <span class="sc-action-detail">入力: <strong><%= phase %>の結果</strong>の「期間」/ 操作: <strong>合計</strong> → 変数「<%= var %>」に保存</span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <p class="mt-3"><strong>「統計を計算」の設定手順:</strong></p>
+        <ol class="list-decimal list-inside space-y-1 ml-2">
+          <li>検索欄で「<strong>統計</strong>」と入力→「統計を計算」を選択</li>
+          <li>入力欄をタップ → 前のアクションの出力（例: 「コア睡眠の結果」）を選択 → 「<strong>期間</strong>」を選択</li>
+          <li>「操作」→「<strong>合計</strong>」を選択</li>
+          <li>出力のラベルをタップ →「名前を変更」→「コア秒数」と設定（残り2つも同様）</li>
+        </ol>
+
+        <p class="mt-4"><strong>③ 3フェーズを合算して sleep_seconds を作る</strong></p>
+        <div class="sc-editor rounded-2xl p-4 mt-2">
+          <div class="sc-action sc-action-math">
+            <div class="sc-action-icon">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            </div>
+            <div class="sc-action-body">
+              <span class="sc-action-title">数値を計算</span>
+              <span class="sc-action-detail">コア秒数 + 深い秒数 + REM秒数 → 変数「sleep_seconds」に保存</span>
+            </div>
+          </div>
+          <div class="sc-output mt-1">
+            <span class="sc-output-pill sc-pill-math">sleep_seconds</span>
+          </div>
+        </div>
+
+        <p class="mt-3"><strong>「数値を計算」の設定手順:</strong></p>
+        <ol class="list-decimal list-inside space-y-1 ml-2">
+          <li>検索欄で「<strong>数値を計算</strong>」と入力→選択</li>
+          <li>数式欄に「<span class="sc-output-pill sc-pill-math text-xs" style="display:inline; padding:1px 6px;">コア秒数</span> + <span class="sc-output-pill sc-pill-math text-xs" style="display:inline; padding:1px 6px;">深い秒数</span> + <span class="sc-output-pill sc-pill-math text-xs" style="display:inline; padding:1px 6px;">REM秒数</span>」を設定（各変数をタップして選択）</li>
+          <li>出力ラベルを「<strong>sleep_seconds</strong>」に変更</li>
+        </ol>
+
+        <div class="bg-purple-50 border border-purple-200 rounded-lg p-3 mt-3">
+          <p class="text-xs text-purple-800">
+            <strong>補足:</strong> Apple Watchで睡眠追跡していない場合はこのStep 3を省略できます。sleep_secretsを送信しなくてもPreCareへの記録は問題なく行われます。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <%# Step 4（旧Step 3）: 体調スコア・メモ %>
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">4</span>
         体調スコアとメモの入力欄を追加
       </h3>
       <div class="ml-9 text-sm text-slate-600 space-y-2">
@@ -199,10 +314,10 @@
       </div>
     </div>
 
-    <%# Step 4 %>
+    <%# Step 5（旧Step 4）: APIリクエスト %>
     <div class="mb-8">
       <h3 class="text-lg font-bold text-slate-800 mb-2">
-        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">4</span>
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">5</span>
         APIリクエストの送信設定
       </h3>
       <div class="ml-9 text-sm text-slate-600 space-y-2">
@@ -274,7 +389,10 @@
               </tr>
               <tr>
                 <td class="px-3 py-2 mono text-xs">weight</td>
-                <td class="px-3 py-2"><span class="sc-output-pill sc-pill-health text-xs">体重の検索結果</span>を選択</td>
+                <td class="px-3 py-2">
+                  <span class="sc-output-pill sc-pill-health text-xs">体重の検索結果</span>を選択<br>
+                  <span class="text-xs text-slate-500">※ 小数が多桁でも自動的に小数第1位（例: 65.3）に丸めて保存されます</span>
+                </td>
               </tr>
               <tr>
                 <td class="px-3 py-2 mono text-xs">steps</td>
@@ -297,6 +415,13 @@
                 <td class="px-3 py-2"><span class="sc-output-pill sc-pill-health text-xs">体温の検索結果</span>を選択</td>
               </tr>
               <tr>
+                <td class="px-3 py-2 mono text-xs">sleep_seconds</td>
+                <td class="px-3 py-2">
+                  <span class="sc-output-pill sc-pill-math text-xs">sleep_seconds</span>を選択<br>
+                  <span class="text-xs text-slate-500">Step 3で計算した合計秒数（コア+深い+REM）。サーバー側で分に変換して「X時間Y分」形式で保存されます。</span>
+                </td>
+              </tr>
+              <tr>
                 <td class="px-3 py-2 mono text-xs">mood</td>
                 <td class="px-3 py-2"><span class="sc-output-pill sc-pill-scripting text-xs">入力を要求の結果</span>を選択<br><span class="text-xs text-slate-500">（体調スコア側の「入力を要求」を選択）</span></td>
               </tr>
@@ -317,10 +442,10 @@
       </div>
     </div>
 
-    <%# Step 5 %>
+    <%# Step 6（旧Step 5）: 通知 %>
     <div class="mb-8">
       <h3 class="text-lg font-bold text-slate-800 mb-2">
-        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">5</span>
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">6</span>
         完了通知を追加
       </h3>
       <div class="ml-9 text-sm text-slate-600 space-y-2">
@@ -340,10 +465,10 @@
       </div>
     </div>
 
-    <%# Step 6 %>
+    <%# Step 7（旧Step 6）: 自動実行 %>
     <div class="mb-4">
       <h3 class="text-lg font-bold text-slate-800 mb-2">
-        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">6</span>
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-sm font-bold mr-2">7</span>
         毎日自動実行の設定（任意）
       </h3>
       <div class="ml-9 text-sm text-slate-600 space-y-2">
@@ -360,7 +485,7 @@
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
           <p class="text-xs text-amber-800">
             <strong>注意:</strong>
-            「入力を要求」アクションを含むショートカットは、自動実行時にiPhoneの画面に入力ダイアログが表示されます。<strong>完全に自動化</strong>したい場合はStep 3を省略してください（体調スコアとメモは送信されません）。
+            「入力を要求」アクションを含むショートカットは、自動実行時にiPhoneの画面に入力ダイアログが表示されます。<strong>完全に自動化</strong>したい場合はStep 4を省略してください（体調スコアとメモは送信されません）。
           </p>
         </div>
       </div>
