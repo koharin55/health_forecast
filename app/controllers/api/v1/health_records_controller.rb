@@ -8,6 +8,9 @@ module Api
         if params[:sleep_seconds].present?
           attrs[:sleep_minutes] = (params[:sleep_seconds].to_f / 60).round
         end
+        if params[:exercise_seconds].present?
+          attrs[:exercise_minutes] = (params[:exercise_seconds].to_f / 60).round
+        end
 
         result = HealthRecord.create_or_merge_for_date(
           user: current_user,

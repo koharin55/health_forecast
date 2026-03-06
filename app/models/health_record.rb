@@ -108,11 +108,7 @@ class HealthRecord < ApplicationRecord
   end
 
   def sleep_duration_text
-    return nil if sleep_minutes.nil?
-
-    hours = sleep_minutes / 60
-    mins  = sleep_minutes % 60
-    mins.zero? ? "#{hours}時間" : "#{hours}時間#{mins}分"
+    self.class.format_minutes_to_duration(sleep_minutes)
   end
 
   def self.format_minutes_to_duration(minutes)

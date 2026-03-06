@@ -117,7 +117,7 @@ RSpec.describe HealthRecordImportService do
         csv = <<~CSV
           #{header}
           2026-01-15,4,65.5,450,,,,,,,,,,
-          2026-01-16,9,65.5,7.5,,,,,,,,,,
+          2026-01-16,9,65.5,450,,,,,,,,,,
         CSV
 
         service = described_class.new(user, csv)
@@ -131,7 +131,7 @@ RSpec.describe HealthRecordImportService do
       it '記録日が空の場合エラーを報告する' do
         csv = <<~CSV
           #{header}
-          ,4,65.5,7.5,,,,,,,,,,
+          ,4,65.5,450,,,,,,,,,,
         CSV
 
         service = described_class.new(user, csv)
@@ -168,7 +168,7 @@ RSpec.describe HealthRecordImportService do
       it '解析不能な日付はエラーとして報告する' do
         csv = <<~CSV
           #{header}
-          invalid-date,4,65.5,7.5,,,,,,,,,,
+          invalid-date,4,65.5,450,,,,,,,,,,
         CSV
 
         service = described_class.new(user, csv)
@@ -199,7 +199,7 @@ RSpec.describe HealthRecordImportService do
       it '天候データが正しくインポートされる' do
         csv = <<~CSV
           #{header}
-          2026-01-15,4,65.5,7.5,30,8000,70,120,80,36.5,良い日だった,晴れ,18.5,55,1013.2
+          2026-01-15,4,65.5,450,30,8000,70,120,80,36.5,良い日だった,晴れ,18.5,55,1013.2
         CSV
 
         service = described_class.new(user, csv)
@@ -216,7 +216,7 @@ RSpec.describe HealthRecordImportService do
       it '天候データが空でもインポートできる' do
         csv = <<~CSV
           #{header}
-          2026-01-15,4,65.5,7.5,30,8000,70,120,80,36.5,良い日だった,,,,
+          2026-01-15,4,65.5,450,30,8000,70,120,80,36.5,良い日だった,,,,
         CSV
 
         service = described_class.new(user, csv)

@@ -57,6 +57,15 @@ RSpec.describe 'Api::V1::HealthRecords', type: :request do
         expect(json['sleep_minutes']).to eq(452)
       end
 
+      it 'converts exercise_seconds to exercise_minutes' do
+        post '/api/v1/health_records',
+          params: { exercise_seconds: 1830 }.to_json,
+          headers: headers
+
+        json = JSON.parse(response.body)
+        expect(json['exercise_minutes']).to eq(31)
+      end
+
       it 'fetches weather data for new records' do
         expect_any_instance_of(HealthRecord).to receive(:fetch_and_set_weather!)
 
