@@ -82,10 +82,7 @@
             <div class="bg-white bg-opacity-50 rounded-lg p-3">
               <div class="text-xs text-slate-500 mb-1">睡眠</div>
               <div class="text-lg font-bold text-slate-800 mono">
-                <%= record.sleep_hours.present? ? "#{record.sleep_hours}" : "➖" %>
-                <% if record.sleep_hours.present? %>
-                  <span class="text-xs text-slate-500 font-normal">h</span>
-                <% end %>
+                <%= record.sleep_duration_text || "➖" %>
               </div>
             </div>
 
@@ -191,7 +188,7 @@
                   <%= record.body_temperature.present? ? "#{record.body_temperature}℃" : "➖" %>
                 </td>
                 <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-900 mono text-center">
-                  <%= record.sleep_hours.present? ? "#{record.sleep_hours}h" : "➖" %>
+                  <%= record.sleep_duration_text || "➖" %>
                 </td>
                 <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-900 mono text-center">
                   <%= record.weight.present? ? record.weight : "➖" %>

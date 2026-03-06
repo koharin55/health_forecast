@@ -7,7 +7,7 @@ class HealthRecordImportService
     "記録日" => :recorded_at,
     "体調スコア" => :mood,
     "体重(kg)" => :weight,
-    "睡眠時間(h)" => :sleep_hours,
+    "睡眠時間(分)" => :sleep_minutes,
     "運動時間(分)" => :exercise_minutes,
     "歩数" => :steps,
     "心拍数(bpm)" => :heart_rate,
@@ -117,10 +117,10 @@ class HealthRecordImportService
     case column
     when :recorded_at
       Date.parse(value)
-    when :mood, :exercise_minutes, :steps, :heart_rate,
+    when :mood, :sleep_minutes, :exercise_minutes, :steps, :heart_rate,
          :systolic_pressure, :diastolic_pressure, :weather_humidity
       value.to_i
-    when :weight, :sleep_hours, :body_temperature,
+    when :weight, :body_temperature,
          :weather_temperature, :weather_pressure
       value.to_f
     when :notes, :weather_description

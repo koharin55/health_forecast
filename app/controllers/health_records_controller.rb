@@ -118,7 +118,7 @@ class HealthRecordsController < ApplicationController
   end
 
   def health_record_params
-    params.require(:health_record).permit(:recorded_at, :weight, :sleep_hours, :exercise_minutes, :mood, :notes, :steps, :heart_rate, :systolic_pressure, :diastolic_pressure, :body_temperature)
+    params.require(:health_record).permit(:recorded_at, :weight, :sleep_minutes, :exercise_minutes, :mood, :notes, :steps, :heart_rate, :systolic_pressure, :diastolic_pressure, :body_temperature)
   end
 
   def fetch_weather_for_record(record)

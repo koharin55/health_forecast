@@ -1,6 +1,6 @@
 class HealthRecord < ApplicationRecord
   MERGEABLE_ATTRIBUTES = %w[
-    weight sleep_hours exercise_minutes mood notes steps
+    weight sleep_minutes exercise_minutes mood notes steps
     heart_rate systolic_pressure diastolic_pressure body_temperature
   ].freeze
 
@@ -9,7 +9,7 @@ class HealthRecord < ApplicationRecord
   validates :recorded_at, presence: true
   validates :mood, inclusion: { in: 1..5, allow_nil: true }
   validates :weight, numericality: { greater_than: 0, allow_nil: true }
-  validates :sleep_hours, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
+  validates :sleep_minutes, numericality: { only_integer: true, greater_than_or_equal_to: 0, allow_nil: true }
   validates :exercise_minutes, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
   validates :steps, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
   validates :heart_rate, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
@@ -105,6 +105,22 @@ class HealthRecord < ApplicationRecord
     else
       :high
     end
+  end
+
+  def sleep_duration_text
+    return nil if sleep_minutes.nil?
+
+    hours = sleep_minutes / 60
+    mins  = sleep_minutes % 60
+    mins.zero? ? "#{hours}時間" : "#{hours}時間#{mins}分"
+  end
+
+  def self.format_minutes_to_duration(minutes)
+    return nil if minutes.nil?
+
+    hours = minutes.to_i / 60
+    mins  = minutes.to_i % 60
+    mins.zero? ? "#{hours}時間" : "#{hours}時間#{mins}分"
   end
 
   def self.create_or_merge_for_date(user:, recorded_at:, attributes:)

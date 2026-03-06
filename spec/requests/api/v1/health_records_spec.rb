@@ -17,7 +17,7 @@ RSpec.describe 'Api::V1::HealthRecords', type: :request do
           weight: 65.5,
           steps: 8000,
           mood: 4,
-          sleep_hours: 7.5
+          sleep_seconds: 27000
         }
       end
 
@@ -35,7 +35,26 @@ RSpec.describe 'Api::V1::HealthRecords', type: :request do
         expect(json['weight']).to eq('65.5')
         expect(json['steps']).to eq(8000)
         expect(json['mood']).to eq(4)
+        expect(json['sleep_minutes']).to eq(450)
         expect(json['merged']).to be false
+      end
+
+      it 'rounds weight to 1 decimal place' do
+        post '/api/v1/health_records',
+          params: { weight: 65.456789 }.to_json,
+          headers: headers
+
+        json = JSON.parse(response.body)
+        expect(json['weight']).to eq('65.5')
+      end
+
+      it 'converts sleep_seconds to sleep_minutes' do
+        post '/api/v1/health_records',
+          params: { sleep_seconds: 27090 }.to_json,
+          headers: headers
+
+        json = JSON.parse(response.body)
+        expect(json['sleep_minutes']).to eq(452)
       end
 
       it 'fetches weather data for new records' do

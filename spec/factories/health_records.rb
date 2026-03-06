@@ -4,7 +4,7 @@ FactoryBot.define do
     recorded_at { Date.current }
     mood { 3 }
     weight { 65.0 }
-    sleep_hours { 7.5 }
+    sleep_minutes { 450 } # 7時間30分
 
     trait :with_blood_pressure do
       systolic_pressure { 120 }
