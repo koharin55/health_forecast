@@ -60,14 +60,25 @@
         <span class="sc-output-pill sc-pill-health">他4件…</span>
       </div>
 
-      <%# 睡眠取得アクション（簡略化）%>
+      <%# 睡眠取得アクション %>
       <div class="sc-action sc-action-sleep">
         <div class="sc-action-icon">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
         </div>
         <div class="sc-action-body">
           <span class="sc-action-title">ヘルスケアサンプルを検索</span>
-          <span class="sc-action-detail">睡眠 / 起床中・就寝中を除くフィルター / 期間の合計 / 昨日</span>
+          <span class="sc-action-detail">睡眠 / 起床中・就寝中を除くフィルター / 昨日</span>
+        </div>
+      </div>
+
+      <%# 睡眠統計アクション %>
+      <div class="sc-action sc-action-math">
+        <div class="sc-action-icon">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div class="sc-action-body">
+          <span class="sc-action-title">統計を計算</span>
+          <span class="sc-action-detail">入力: 睡眠の検索結果 / 期間の合計 → sleep_seconds</span>
         </div>
       </div>
       <div class="sc-output">
@@ -81,7 +92,18 @@
         </div>
         <div class="sc-action-body">
           <span class="sc-action-title">ヘルスケアサンプルを検索</span>
-          <span class="sc-action-detail">Apple 運動時間 / 今日 / 合計</span>
+          <span class="sc-action-detail">Apple 運動時間 / 今日</span>
+        </div>
+      </div>
+
+      <%# 運動時間統計アクション %>
+      <div class="sc-action sc-action-math">
+        <div class="sc-action-icon">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div class="sc-action-body">
+          <span class="sc-action-title">統計を計算</span>
+          <span class="sc-action-detail">入力: Apple 運動時間の検索結果 / 合計 → exercise_minutes</span>
         </div>
       </div>
       <div class="sc-output">
@@ -202,17 +224,26 @@
       <div class="ml-9 text-sm text-slate-600 space-y-2">
 
         <%# 3-1: 睡眠 %>
-        <p class="font-semibold text-slate-700">3-1. 睡眠データ（1アクション）</p>
-        <p>iOS 16以降のApple Watchは睡眠を「<strong>コア・深い・REM・起床中（Awake）・就寝中（InBed）</strong>」のステージで記録します。「起床中」と「就寝中」を除く2つのフィルターと「期間の合計」を組み合わせることで、従来7アクション必要だった処理を<strong>1アクション</strong>に簡略化できます。</p>
+        <p class="font-semibold text-slate-700">3-1. 睡眠データ（2アクション）</p>
+        <p>iOS 16以降のApple Watchは睡眠を「<strong>コア・深い・REM・起床中（Awake）・就寝中（InBed）</strong>」のステージで記録します。「ヘルスケアサンプルを検索」でフィルタリングし、「統計を計算」で合計することで、従来7アクション必要だった処理を<strong>2アクション</strong>に簡略化できます。</p>
 
-        <div class="sc-editor rounded-2xl p-4 mt-2">
+        <div class="sc-editor rounded-2xl p-4 mt-2 space-y-2">
           <div class="sc-action sc-action-sleep">
             <div class="sc-action-icon">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
             </div>
             <div class="sc-action-body">
               <span class="sc-action-title">ヘルスケアサンプルを検索</span>
-              <span class="sc-action-detail">種類: 睡眠 / フィルター: 起床中・就寝中を除く / 集計: 期間の合計 / 日付: 昨日</span>
+              <span class="sc-action-detail">種類: 睡眠 / フィルター: 起床中・就寝中を除く / 日付: 昨日</span>
+            </div>
+          </div>
+          <div class="sc-action sc-action-math">
+            <div class="sc-action-icon">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div class="sc-action-body">
+              <span class="sc-action-title">統計を計算</span>
+              <span class="sc-action-detail">入力: 睡眠の検索結果 / 操作: 合計 / フィールド: 期間</span>
             </div>
           </div>
           <div class="sc-output mt-1">
@@ -220,9 +251,8 @@
           </div>
         </div>
 
-        <p class="mt-3"><strong>設定手順:</strong></p>
+        <p class="mt-3"><strong>① ヘルスケアサンプルを検索 の設定:</strong></p>
         <ol class="list-decimal list-inside space-y-1 ml-2">
-          <li>検索欄で「<strong>ヘルスケアサンプルを検索</strong>」を追加</li>
           <li>「<strong>種類</strong>」→ 検索欄に「<strong>睡眠</strong>」と入力 →「<strong>睡眠</strong>」を選択</li>
           <li>「<strong>フィルターを追加</strong>」を2回タップし、以下2条件を設定（<strong>すべての条件に一致</strong>）:
             <ul class="list-disc list-inside ml-4 mt-1 space-y-0.5">
@@ -230,8 +260,14 @@
               <li>「睡眠ステージ」「<strong>次と等しくない</strong>」「<strong>就寝中</strong>」</li>
             </ul>
           </li>
-          <li>「<strong>集計</strong>」→「<strong>合計</strong>」に変更 →「<strong>期間</strong>」を選択</li>
           <li>「<strong>日付</strong>」→「<strong>昨日</strong>」に設定（前日の夜間睡眠を取得）</li>
+        </ol>
+
+        <p class="mt-3"><strong>② 統計を計算 の設定:</strong></p>
+        <ol class="list-decimal list-inside space-y-1 ml-2">
+          <li>検索欄で「<strong>統計を計算</strong>」を追加</li>
+          <li>入力欄をタップ → 前のアクションの出力（睡眠の検索結果）を選択 →「<strong>期間</strong>」を選択</li>
+          <li>「操作」→「<strong>合計</strong>」を選択</li>
           <li>出力ラベルをタップ →「名前を変更」→「<strong>sleep_seconds</strong>」に設定</li>
         </ol>
 
@@ -245,17 +281,26 @@
         </div>
 
         <%# 3-2: 運動時間 %>
-        <p class="font-semibold text-slate-700 mt-5">3-2. 運動時間（1アクション）</p>
-        <p>Apple Watchのアクティビティリングの「<strong>運動</strong>」値（Apple 運動時間）を取得します。本日の合計運動時間が<strong>分単位</strong>で返ります。</p>
+        <p class="font-semibold text-slate-700 mt-5">3-2. 運動時間（2アクション）</p>
+        <p>Apple Watchのアクティビティリングの「<strong>運動</strong>」値（Apple 運動時間）を取得します。睡眠と同様に「ヘルスケアサンプルを検索」＋「統計を計算」の2アクションで本日の合計運動時間（<strong>分単位</strong>）を取得します。</p>
 
-        <div class="sc-editor rounded-2xl p-4 mt-2">
+        <div class="sc-editor rounded-2xl p-4 mt-2 space-y-2">
           <div class="sc-action sc-action-health">
             <div class="sc-action-icon">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
             <div class="sc-action-body">
               <span class="sc-action-title">ヘルスケアサンプルを検索</span>
-              <span class="sc-action-detail">種類: Apple 運動時間 / 集計: 合計 / 日付: 今日</span>
+              <span class="sc-action-detail">種類: Apple 運動時間 / 日付: 今日</span>
+            </div>
+          </div>
+          <div class="sc-action sc-action-math">
+            <div class="sc-action-icon">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div class="sc-action-body">
+              <span class="sc-action-title">統計を計算</span>
+              <span class="sc-action-detail">入力: Apple 運動時間の検索結果 / 操作: 合計</span>
             </div>
           </div>
           <div class="sc-output mt-1">
@@ -263,18 +308,23 @@
           </div>
         </div>
 
-        <p class="mt-3"><strong>設定手順:</strong></p>
+        <p class="mt-3"><strong>① ヘルスケアサンプルを検索 の設定:</strong></p>
         <ol class="list-decimal list-inside space-y-1 ml-2">
-          <li>検索欄で「<strong>ヘルスケアサンプルを検索</strong>」を追加</li>
           <li>「<strong>種類</strong>」→ 検索欄に「<strong>運動時間</strong>」と入力 →「<strong>Apple 運動時間</strong>」を選択</li>
-          <li>「<strong>集計</strong>」→「<strong>合計</strong>」に変更</li>
           <li>「<strong>日付</strong>」→「<strong>今日</strong>」に設定</li>
+        </ol>
+
+        <p class="mt-3"><strong>② 統計を計算 の設定:</strong></p>
+        <ol class="list-decimal list-inside space-y-1 ml-2">
+          <li>検索欄で「<strong>統計を計算</strong>」を追加</li>
+          <li>入力欄をタップ → 前のアクションの出力（Apple 運動時間の検索結果）を選択</li>
+          <li>「操作」→「<strong>合計</strong>」を選択</li>
           <li>出力ラベルをタップ →「名前を変更」→「<strong>exercise_minutes</strong>」に設定</li>
         </ol>
 
         <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-3">
           <p class="text-xs text-green-800">
-            <strong>補足:</strong> Apple 運動時間はApple WatchのアクティビティリングのMove(運動)値で、<strong>分単位の整数</strong>として返ります。睡眠データ（sleep_seconds）と異なり秒変換は不要です。Apple Watchを使用していない場合はこの手順を省略できます。
+            <strong>補足:</strong> Apple 運動時間の「統計を計算」で返る値は<strong>分単位の整数</strong>です。睡眠（期間→秒）と異なり秒変換は不要で、そのまま <code class="mono">exercise_minutes</code> として送信します。Apple Watchを使用していない場合はこの手順を省略できます。
           </p>
         </div>
 
