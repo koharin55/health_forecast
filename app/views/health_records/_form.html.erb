@@ -50,9 +50,18 @@
 
   <!-- 睡眠時間 & 体重 -->
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-    <div>
-      <%= form.label :sleep_minutes, "睡眠時間（分）", class: "block text-base sm:text-sm font-bold text-slate-700 mb-3" %>
-      <%= form.number_field :sleep_minutes, step: 1, min: 0, placeholder: "450", inputmode: "numeric", class: "input-field w-full px-4 py-4 rounded-2xl text-slate-900 mono text-lg" %>
+    <div data-controller="sleep-duration">
+      <label class="block text-base sm:text-sm font-bold text-slate-700 mb-3">睡眠時間</label>
+      <%= form.hidden_field :sleep_minutes, data: { sleep_duration_target: "hidden" } %>
+      <div class="flex items-center gap-2">
+        <select data-sleep-duration-target="hours" data-action="change->sleep-duration#update" class="input-field px-4 py-4 rounded-2xl text-slate-900 mono text-lg">
+          <% (0..12).each do |h| %>
+            <option value="<%= h %>"><%= h %>時間</option>
+          <% end %>
+        </select>
+        <input type="number" data-sleep-duration-target="minutes" data-action="input->sleep-duration#update" min="0" max="59" inputmode="numeric" placeholder="00" class="input-field w-24 px-4 py-4 rounded-2xl text-slate-900 mono text-lg">
+        <span class="text-slate-600 text-sm font-medium">分</span>
+      </div>
     </div>
 
     <div>
