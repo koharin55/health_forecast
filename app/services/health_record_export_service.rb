@@ -6,7 +6,7 @@ class HealthRecordExportService
   BOM = "\xEF\xBB\xBF"
 
   HEADERS = %w[
-    記録日 体調スコア 体重(kg) 睡眠時間(h) 運動時間(分) 歩数
+    記録日 体調スコア 体重(kg) 睡眠時間(分) 運動時間(分) 歩数
     心拍数(bpm) 最高血圧(mmHg) 最低血圧(mmHg) 体温(℃) メモ
     天気 気温(℃) 湿度(%) 気圧(hPa)
   ].freeze

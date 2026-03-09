@@ -25,7 +25,7 @@ RSpec.describe HealthRecordExportService do
         expect(header).to include('記録日')
         expect(header).to include('体調スコア')
         expect(header).to include('体重(kg)')
-        expect(header).to include('睡眠時間(h)')
+        expect(header).to include('睡眠時間(分)')
         expect(header).to include('運動時間(分)')
         expect(header).to include('歩数')
         expect(header).to include('心拍数(bpm)')
