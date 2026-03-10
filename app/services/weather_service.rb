@@ -51,15 +51,17 @@ class WeatherService
 
   # 現在の天気を取得
   def fetch_current_weather
-    params = {
-      latitude: @latitude,
-      longitude: @longitude,
-      current: "temperature_2m,relative_humidity_2m,surface_pressure,weather_code",
-      timezone: TIMEZONE
-    }
+    Rails.cache.fetch(cache_key("current"), expires_in: 30.minutes) do
+      params = {
+        latitude: @latitude,
+        longitude: @longitude,
+        current: "temperature_2m,relative_humidity_2m,surface_pressure,weather_code",
+        timezone: TIMEZONE
+      }
 
-    response = make_request(params)
-    parse_current_weather(response)
+      response = make_request(params)
+      parse_current_weather(response)
+    end
   rescue Net::OpenTimeout, Net::ReadTimeout => e
     Rails.logger.error("WeatherService timeout: #{e.message}")
     raise TimeoutError, "天気情報の取得がタイムアウトしました"
@@ -88,20 +90,22 @@ class WeatherService
   def fetch_forecast_days(days: 3)
     return [] if days < 1 || days > 7
 
-    start_date = Date.current + 1
-    end_date = Date.current + days
+    Rails.cache.fetch(cache_key("forecast_days/#{days}/#{Date.current}"), expires_in: 1.hour) do
+      start_date = Date.current + 1
+      end_date = Date.current + days
 
-    params = {
-      latitude: @latitude,
-      longitude: @longitude,
-      daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
-      start_date: start_date.to_s,
-      end_date: end_date.to_s,
-      timezone: TIMEZONE
-    }
+      params = {
+        latitude: @latitude,
+        longitude: @longitude,
+        daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
+        start_date: start_date.to_s,
+        end_date: end_date.to_s,
+        timezone: TIMEZONE
+      }
 
-    response = make_request(params)
-    parse_multi_day_weather(response)
+      response = make_request(params)
+      parse_multi_day_weather(response)
+    end || []
   rescue StandardError => e
     Rails.logger.error("WeatherService forecast_days error: #{e.message}")
     []
@@ -135,6 +139,10 @@ class WeatherService
   end
 
   private
+
+  def cache_key(suffix)
+    "weather_service/#{suffix}/#{@latitude}/#{@longitude}"
+  end
 
   def make_request(params)
     uri = URI(BASE_URL)
@@ -172,17 +180,19 @@ class WeatherService
   end
 
   def fetch_forecast_weather(date)
-    params = {
-      latitude: @latitude,
-      longitude: @longitude,
-      daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
-      start_date: date.to_s,
-      end_date: date.to_s,
-      timezone: TIMEZONE
-    }
+    Rails.cache.fetch(cache_key("forecast/#{date}"), expires_in: 1.hour) do
+      params = {
+        latitude: @latitude,
+        longitude: @longitude,
+        daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
+        start_date: date.to_s,
+        end_date: date.to_s,
+        timezone: TIMEZONE
+      }
 
-    response = make_request(params)
-    parse_daily_weather(response)
+      response = make_request(params)
+      parse_daily_weather(response)
+    end
   rescue StandardError => e
     Rails.logger.error("WeatherService forecast error: #{e.message}")
     nil
@@ -196,17 +206,19 @@ class WeatherService
       return nil
     end
 
-    params = {
-      latitude: @latitude,
-      longitude: @longitude,
-      daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
-      start_date: date.to_s,
-      end_date: date.to_s,
-      timezone: TIMEZONE
-    }
+    Rails.cache.fetch(cache_key("historical/#{date}"), expires_in: 24.hours) do
+      params = {
+        latitude: @latitude,
+        longitude: @longitude,
+        daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
+        start_date: date.to_s,
+        end_date: date.to_s,
+        timezone: TIMEZONE
+      }
 
-    response = make_request(params)
-    parse_daily_weather(response)
+      response = make_request(params)
+      parse_daily_weather(response)
+    end
   rescue StandardError => e
     Rails.logger.error("WeatherService historical error: #{e.message}")
     nil
