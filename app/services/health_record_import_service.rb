@@ -110,6 +110,12 @@ class HealthRecordImportService
 
       attributes[column] = cast_value(column, value.strip)
     end
+
+    if attributes[:weather_description] && attributes[:weather_code].nil?
+      code = WeatherService.code_from_description(attributes[:weather_description])
+      attributes[:weather_code] = code if code
+    end
+
     attributes
   end
 
