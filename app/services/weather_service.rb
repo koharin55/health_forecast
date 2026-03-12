@@ -51,6 +51,8 @@ class WeatherService
 
   # 現在の天気を取得
   def fetch_current_weather
+    return nil if Rails.cache.exist?(cache_key("error"))
+
     Rails.cache.fetch(cache_key("current"), expires_in: 30.minutes) do
       params = {
         latitude: @latitude,
@@ -64,12 +66,14 @@ class WeatherService
     end
   rescue Net::OpenTimeout, Net::ReadTimeout => e
     Rails.logger.error("WeatherService timeout: #{e.message}")
+    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
     raise TimeoutError, "天気情報の取得がタイムアウトしました"
   rescue JSON::ParserError => e
     Rails.logger.error("WeatherService JSON parse error: #{e.message}")
     raise ApiError, "天気情報の解析に失敗しました"
   rescue StandardError => e
     Rails.logger.error("WeatherService error: #{e.message}")
+    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
     raise ApiError, "天気情報の取得に失敗しました: #{e.message}"
   end
 
@@ -89,6 +93,7 @@ class WeatherService
   # 複数日の天気予報を取得（最大7日先まで）
   def fetch_forecast_days(days: 3)
     return [] if days < 1 || days > 7
+    return [] if Rails.cache.exist?(cache_key("error"))
 
     Rails.cache.fetch(cache_key("forecast_days/#{days}/#{Date.current}"), expires_in: 1.hour) do
       start_date = Date.current + 1
@@ -108,6 +113,7 @@ class WeatherService
     end || []
   rescue StandardError => e
     Rails.logger.error("WeatherService forecast_days error: #{e.message}")
+    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
     []
   end
 
