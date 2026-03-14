@@ -53,7 +53,7 @@ class WeatherService
   def fetch_current_weather
     return nil if Rails.cache.exist?(cache_key("error"))
 
-    Rails.cache.fetch(cache_key("current"), expires_in: 30.minutes) do
+    Rails.cache.fetch(cache_key("current"), expires_in: 1.hour) do
       params = {
         latitude: @latitude,
         longitude: @longitude,
@@ -95,7 +95,7 @@ class WeatherService
     return [] if days < 1 || days > 7
     return [] if Rails.cache.exist?(cache_key("error"))
 
-    Rails.cache.fetch(cache_key("forecast_days/#{days}/#{Date.current}"), expires_in: 1.hour) do
+    Rails.cache.fetch(cache_key("forecast_days/#{days}/#{Date.current}"), expires_in: 6.hours) do
       start_date = Date.current + 1
       end_date = Date.current + days
 
@@ -186,7 +186,9 @@ class WeatherService
   end
 
   def fetch_forecast_weather(date)
-    Rails.cache.fetch(cache_key("forecast/#{date}"), expires_in: 1.hour) do
+    return nil if Rails.cache.exist?(cache_key("error"))
+
+    Rails.cache.fetch(cache_key("forecast/#{date}"), expires_in: 6.hours) do
       params = {
         latitude: @latitude,
         longitude: @longitude,
@@ -201,6 +203,7 @@ class WeatherService
     end
   rescue StandardError => e
     Rails.logger.error("WeatherService forecast error: #{e.message}")
+    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
     nil
   end
 
@@ -211,6 +214,8 @@ class WeatherService
       Rails.logger.warn("WeatherService: Date #{date} is more than 92 days ago, skipping")
       return nil
     end
+
+    return nil if Rails.cache.exist?(cache_key("error"))
 
     Rails.cache.fetch(cache_key("historical/#{date}"), expires_in: 24.hours) do
       params = {
@@ -227,6 +232,7 @@ class WeatherService
     end
   rescue StandardError => e
     Rails.logger.error("WeatherService historical error: #{e.message}")
+    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
     nil
   end
 
