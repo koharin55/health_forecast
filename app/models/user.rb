@@ -69,6 +69,12 @@ class User < ApplicationRecord
 
     return { success_count: 0, error_count: 0, empty: true } if records.empty?
 
+    service = WeatherService.new(latitude: latitude, longitude: longitude)
+
+    # 過去日を1回のAPI呼び出しで一括プリフェッチしてキャッシュに保存
+    past_dates = records.map(&:recorded_at).select { |d| d < Date.current }
+    service.prefetch_historical_weather(past_dates) if past_dates.any?
+
     success_count = 0
     error_count = 0
 

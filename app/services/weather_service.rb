@@ -117,6 +117,38 @@ class WeatherService
     []
   end
 
+  # 複数日の過去天気を一括プリフェッチしてキャッシュに保存（バックフィル用）
+  def prefetch_historical_weather(dates)
+    return if dates.empty?
+    return if Rails.cache.exist?(cache_key("error"))
+
+    uncached_dates = dates.select { |d| d < Date.current }
+                          .reject { |d| Rails.cache.exist?(cache_key("historical/#{d}")) }
+    return if uncached_dates.empty?
+
+    start_date = uncached_dates.min
+    end_date   = uncached_dates.max
+
+    params = {
+      latitude: @latitude,
+      longitude: @longitude,
+      daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
+      start_date: start_date.to_s,
+      end_date: end_date.to_s,
+      timezone: TIMEZONE
+    }
+
+    response = make_request(params)
+    weather_map = parse_multi_day_weather_map(response)
+
+    weather_map.each do |date, weather|
+      Rails.cache.write(cache_key("historical/#{date}"), weather, expires_in: 24.hours)
+    end
+  rescue StandardError => e
+    Rails.logger.error("WeatherService prefetch error: #{e.message}")
+    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
+  end
+
   # 天気コードから説明を取得
   def self.weather_description(code)
     WEATHER_CODES[code] || "不明"
@@ -264,5 +296,9 @@ class WeatherService
         weather_description: self.class.weather_description(daily["weather_code"]&.[](i))
       }
     end
+  end
+
+  def parse_multi_day_weather_map(response)
+    parse_multi_day_weather(response).index_by { |w| w[:date] }
   end
 end
