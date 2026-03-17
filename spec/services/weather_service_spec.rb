@@ -57,6 +57,154 @@ RSpec.describe WeatherService do
         expect { service.fetch_current_weather }.to raise_error(WeatherService::TimeoutError)
       end
     end
+
+    # エラーキャッシュのキー形式は WeatherService#cache_key 参照:
+    # "weather_service/error/<scope>/<latitude>/<longitude>"
+    context 'when forecast_days error cache exists' do
+      before do
+        allow(Rails.cache).to receive(:exist?).and_return(false)
+        allow(Rails.cache).to receive(:exist?)
+          .with("weather_service/error/forecast_days/#{latitude}/#{longitude}")
+          .and_return(true)
+        # test環境はnull_storeのため、fetchブロックが毎回実行されAPIが呼ばれる
+        stub_request(:get, /api\.open-meteo\.com/)
+          .to_return(
+            status: 200,
+            body: { "current" => { "temperature_2m" => 15.0, "relative_humidity_2m" => 60,
+                                   "surface_pressure" => 1010.0, "weather_code" => 0 } }.to_json,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+      end
+
+      it 'is not blocked and returns weather data' do
+        expect(service.fetch_current_weather).not_to be_nil
+      end
+    end
+
+    context 'when historical error cache exists' do
+      before do
+        allow(Rails.cache).to receive(:exist?).and_return(false)
+        allow(Rails.cache).to receive(:exist?)
+          .with("weather_service/error/historical/#{latitude}/#{longitude}")
+          .and_return(true)
+        # test環境はnull_storeのため、fetchブロックが毎回実行されAPIが呼ばれる
+        stub_request(:get, /api\.open-meteo\.com/)
+          .to_return(
+            status: 200,
+            body: { "current" => { "temperature_2m" => 15.0, "relative_humidity_2m" => 60,
+                                   "surface_pressure" => 1010.0, "weather_code" => 0 } }.to_json,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+      end
+
+      it 'is not blocked and returns weather data' do
+        expect(service.fetch_current_weather).not_to be_nil
+      end
+    end
+
+    context 'when current weather error cache exists' do
+      before do
+        allow(Rails.cache).to receive(:exist?)
+          .with("weather_service/error/current/#{latitude}/#{longitude}")
+          .and_return(true)
+      end
+
+      it 'returns nil without calling the API' do
+        expect(service.fetch_current_weather).to be_nil
+        expect(a_request(:get, /api\.open-meteo\.com/)).not_to have_been_made
+      end
+    end
+  end
+
+  describe '#fetch_weather_for_date' do
+    let(:current_response) do
+      { "current" => { "temperature_2m" => 12.0, "relative_humidity_2m" => 55,
+                       "surface_pressure" => 1015.0, "weather_code" => 3 } }
+    end
+    let(:daily_response) do
+      { "daily" => { "time" => [Date.current.to_s], "temperature_2m_mean" => [10.0],
+                     "relative_humidity_2m_mean" => [50], "surface_pressure_mean" => [1012.0],
+                     "weather_code" => [1] } }
+    end
+
+    context 'when date is today' do
+      it 'fetches current weather' do
+        stub_request(:get, /api\.open-meteo\.com/)
+          .to_return(status: 200, body: current_response.to_json,
+                     headers: { 'Content-Type' => 'application/json' })
+        result = service.fetch_weather_for_date(Date.current)
+        expect(result[:temperature]).to eq(12.0)
+      end
+    end
+
+    context 'when date is in the future' do
+      it 'fetches forecast weather' do
+        stub_request(:get, /api\.open-meteo\.com/)
+          .to_return(status: 200, body: daily_response.to_json,
+                     headers: { 'Content-Type' => 'application/json' })
+        result = service.fetch_weather_for_date(Date.current + 1)
+        expect(result[:weather_code]).to eq(1)
+      end
+    end
+
+    context 'when date is in the past' do
+      it 'fetches historical weather' do
+        stub_request(:get, /api\.open-meteo\.com/)
+          .to_return(status: 200, body: daily_response.to_json,
+                     headers: { 'Content-Type' => 'application/json' })
+        result = service.fetch_weather_for_date(Date.current - 1)
+        expect(result[:weather_code]).to eq(1)
+      end
+    end
+  end
+
+  describe '#fetch_forecast_days' do
+    let(:forecast_response) do
+      dates = (1..3).map { |i| (Date.current + i).to_s }
+      { "daily" => { "time" => dates, "temperature_2m_mean" => [15.0, 16.0, 14.0],
+                     "relative_humidity_2m_mean" => [55, 60, 50],
+                     "surface_pressure_mean" => [1010.0, 1012.0, 1015.0],
+                     "weather_code" => [1, 3, 0] } }
+    end
+
+    context 'when API returns valid response' do
+      before do
+        stub_request(:get, /api\.open-meteo\.com/)
+          .to_return(status: 200, body: forecast_response.to_json,
+                     headers: { 'Content-Type' => 'application/json' })
+      end
+
+      it 'returns array of forecast weather hashes' do
+        result = service.fetch_forecast_days(days: 3)
+        expect(result.size).to eq(3)
+        expect(result.first[:weather_code]).to eq(1)
+        expect(result.first[:date]).to eq(Date.current + 1)
+        expect(result.first[:fetched_at]).to be_present
+      end
+    end
+
+    context 'when days is out of range' do
+      it 'returns empty array for 0 days' do
+        expect(service.fetch_forecast_days(days: 0)).to eq([])
+      end
+
+      it 'returns empty array for more than MAX_FORECAST_DAYS' do
+        expect(service.fetch_forecast_days(days: WeatherService::MAX_FORECAST_DAYS + 1)).to eq([])
+      end
+    end
+
+    context 'when forecast_days error cache exists' do
+      before do
+        allow(Rails.cache).to receive(:exist?)
+          .with("weather_service/error/forecast_days/#{latitude}/#{longitude}")
+          .and_return(true)
+      end
+
+      it 'returns empty array without calling the API' do
+        expect(service.fetch_forecast_days(days: 3)).to eq([])
+        expect(a_request(:get, /api\.open-meteo\.com/)).not_to have_been_made
+      end
+    end
   end
 
   describe '.weather_description' do

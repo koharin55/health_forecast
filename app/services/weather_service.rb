@@ -40,6 +40,13 @@ class WeatherService
     99 => "雷雨（強い雹）"
   }.freeze
 
+  CURRENT_WEATHER_TTL = 1.hour
+  FORECAST_TTL        = 6.hours
+  HISTORICAL_TTL      = 24.hours
+  ERROR_BACKOFF_TTL   = 5.minutes
+  MAX_FORECAST_DAYS   = 7
+  MAX_HISTORICAL_DAYS = 92
+
   class Error < StandardError; end
   class ApiError < Error; end
   class TimeoutError < Error; end
@@ -51,9 +58,9 @@ class WeatherService
 
   # 現在の天気を取得
   def fetch_current_weather
-    return nil if Rails.cache.exist?(cache_key("error"))
+    return nil if Rails.cache.exist?(cache_key("error/current"))
 
-    Rails.cache.fetch(cache_key("current"), expires_in: 1.hour) do
+    Rails.cache.fetch(cache_key("current"), expires_in: CURRENT_WEATHER_TTL) do
       params = {
         latitude: @latitude,
         longitude: @longitude,
@@ -66,14 +73,15 @@ class WeatherService
     end
   rescue Net::OpenTimeout, Net::ReadTimeout => e
     Rails.logger.error("WeatherService timeout: #{e.message}")
-    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
+    Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
     raise TimeoutError, "天気情報の取得がタイムアウトしました"
   rescue JSON::ParserError => e
     Rails.logger.error("WeatherService JSON parse error: #{e.message}")
+    Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
     raise ApiError, "天気情報の解析に失敗しました"
   rescue StandardError => e
     Rails.logger.error("WeatherService error: #{e.message}")
-    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
+    Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
     raise ApiError, "天気情報の取得に失敗しました: #{e.message}"
   end
 
@@ -92,10 +100,10 @@ class WeatherService
 
   # 複数日の天気予報を取得（最大7日先まで）
   def fetch_forecast_days(days: 3)
-    return [] if days < 1 || days > 7
-    return [] if Rails.cache.exist?(cache_key("error"))
+    return [] if days < 1 || days > MAX_FORECAST_DAYS
+    return [] if Rails.cache.exist?(cache_key("error/forecast_days"))
 
-    Rails.cache.fetch(cache_key("forecast_days/#{days}/#{Date.current}"), expires_in: 6.hours) do
+    Rails.cache.fetch(cache_key("forecast_days/#{days}/#{Date.current}"), expires_in: FORECAST_TTL) do
       start_date = Date.current + 1
       end_date = Date.current + days
 
@@ -110,17 +118,17 @@ class WeatherService
 
       response = make_request(params)
       parse_multi_day_weather(response)
-    end || []
+    end
   rescue StandardError => e
     Rails.logger.error("WeatherService forecast_days error: #{e.message}")
-    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
+    Rails.cache.write(cache_key("error/forecast_days"), true, expires_in: ERROR_BACKOFF_TTL)
     []
   end
 
   # 複数日の過去天気を一括プリフェッチしてキャッシュに保存（バックフィル用）
   def prefetch_historical_weather(dates)
     return if dates.empty?
-    return if Rails.cache.exist?(cache_key("error"))
+    return if Rails.cache.exist?(cache_key("error/prefetch"))
 
     uncached_dates = dates.select { |d| d < Date.current }
                           .reject { |d| Rails.cache.exist?(cache_key("historical/#{d}")) }
@@ -142,11 +150,11 @@ class WeatherService
     weather_map = parse_multi_day_weather_map(response)
 
     weather_map.each do |date, weather|
-      Rails.cache.write(cache_key("historical/#{date}"), weather, expires_in: 24.hours)
+      Rails.cache.write(cache_key("historical/#{date}"), weather, expires_in: HISTORICAL_TTL)
     end
   rescue StandardError => e
     Rails.logger.error("WeatherService prefetch error: #{e.message}")
-    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
+    Rails.cache.write(cache_key("error/prefetch"), true, expires_in: ERROR_BACKOFF_TTL)
   end
 
   # 天気コードから説明を取得
@@ -218,9 +226,9 @@ class WeatherService
   end
 
   def fetch_forecast_weather(date)
-    return nil if Rails.cache.exist?(cache_key("error"))
+    return nil if Rails.cache.exist?(cache_key("error/forecast"))
 
-    Rails.cache.fetch(cache_key("forecast/#{date}"), expires_in: 6.hours) do
+    Rails.cache.fetch(cache_key("forecast/#{date}"), expires_in: FORECAST_TTL) do
       params = {
         latitude: @latitude,
         longitude: @longitude,
@@ -235,21 +243,20 @@ class WeatherService
     end
   rescue StandardError => e
     Rails.logger.error("WeatherService forecast error: #{e.message}")
-    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
+    Rails.cache.write(cache_key("error/forecast"), true, expires_in: ERROR_BACKOFF_TTL)
     nil
   end
 
   def fetch_historical_weather(date)
-    # 92日前までのデータを取得可能
     days_ago = (Date.current - date).to_i
-    if days_ago > 92
-      Rails.logger.warn("WeatherService: Date #{date} is more than 92 days ago, skipping")
+    if days_ago > MAX_HISTORICAL_DAYS
+      Rails.logger.warn("WeatherService: Date #{date} is more than #{MAX_HISTORICAL_DAYS} days ago, skipping")
       return nil
     end
 
-    return nil if Rails.cache.exist?(cache_key("error"))
+    return nil if Rails.cache.exist?(cache_key("error/historical"))
 
-    Rails.cache.fetch(cache_key("historical/#{date}"), expires_in: 24.hours) do
+    Rails.cache.fetch(cache_key("historical/#{date}"), expires_in: HISTORICAL_TTL) do
       params = {
         latitude: @latitude,
         longitude: @longitude,
@@ -264,7 +271,7 @@ class WeatherService
     end
   rescue StandardError => e
     Rails.logger.error("WeatherService historical error: #{e.message}")
-    Rails.cache.write(cache_key("error"), true, expires_in: 5.minutes)
+    Rails.cache.write(cache_key("error/historical"), true, expires_in: ERROR_BACKOFF_TTL)
     nil
   end
 
@@ -293,7 +300,8 @@ class WeatherService
         humidity: daily["relative_humidity_2m_mean"]&.[](i)&.to_i,
         pressure: daily["surface_pressure_mean"]&.[](i),
         weather_code: daily["weather_code"]&.[](i),
-        weather_description: self.class.weather_description(daily["weather_code"]&.[](i))
+        weather_description: self.class.weather_description(daily["weather_code"]&.[](i)),
+        fetched_at: Time.current
       }
     end
   end
