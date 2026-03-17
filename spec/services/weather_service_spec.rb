@@ -58,6 +58,25 @@ RSpec.describe WeatherService do
       end
     end
 
+    context 'when API returns 429 rate limit' do
+      before do
+        stub_request(:get, /api\.open-meteo\.com/)
+          .to_return(status: 429, body: 'Too Many Requests')
+      end
+
+      it 'returns nil when both endpoints are rate limited' do
+        expect(service.fetch_current_weather).to be_nil
+      end
+
+      it 'writes error cache with RATE_LIMIT_BACKOFF_TTL for current endpoint' do
+        allow(Rails.cache).to receive(:write).and_call_original
+        service.fetch_current_weather
+        expect(Rails.cache).to have_received(:write)
+          .with("weather_service/error/current/#{latitude}/#{longitude}", true,
+                expires_in: WeatherService::RATE_LIMIT_BACKOFF_TTL)
+      end
+    end
+
     context 'when current endpoint returns no data but daily fallback succeeds' do
       let(:daily_fallback_response) do
         { "daily" => { "time" => [Date.current.to_s], "temperature_2m_mean" => [18.0],

@@ -40,17 +40,19 @@ class WeatherService
     99 => "雷雨（強い雹）"
   }.freeze
 
-  CURRENT_WEATHER_TTL = 1.hour
-  DAILY_FALLBACK_TTL  = 2.hours
-  FORECAST_TTL        = 6.hours
-  HISTORICAL_TTL      = 24.hours
-  ERROR_BACKOFF_TTL   = 5.minutes
-  MAX_FORECAST_DAYS   = 7
-  MAX_HISTORICAL_DAYS = 92
+  CURRENT_WEATHER_TTL    = 1.hour
+  DAILY_FALLBACK_TTL     = 2.hours
+  FORECAST_TTL           = 6.hours
+  HISTORICAL_TTL         = 24.hours
+  ERROR_BACKOFF_TTL      = 5.minutes
+  RATE_LIMIT_BACKOFF_TTL = 1.hour
+  MAX_FORECAST_DAYS      = 7
+  MAX_HISTORICAL_DAYS    = 92
 
   class Error < StandardError; end
   class ApiError < Error; end
   class TimeoutError < Error; end
+  class RateLimitError < ApiError; end
 
   def initialize(latitude:, longitude:)
     @latitude = latitude
@@ -99,6 +101,10 @@ class WeatherService
       response = make_request(params)
       parse_multi_day_weather(response)
     end
+  rescue RateLimitError => e
+    Rails.logger.warn("WeatherService forecast_days rate limited: #{e.message}")
+    Rails.cache.write(cache_key("error/forecast_days"), true, expires_in: RATE_LIMIT_BACKOFF_TTL)
+    []
   rescue StandardError => e
     Rails.logger.error("WeatherService forecast_days error: #{e.message}")
     Rails.cache.write(cache_key("error/forecast_days"), true, expires_in: ERROR_BACKOFF_TTL)
@@ -132,6 +138,9 @@ class WeatherService
     weather_map.each do |date, weather|
       Rails.cache.write(cache_key("historical/#{date}"), weather, expires_in: HISTORICAL_TTL)
     end
+  rescue RateLimitError => e
+    Rails.logger.warn("WeatherService prefetch rate limited: #{e.message}")
+    Rails.cache.write(cache_key("error/prefetch"), true, expires_in: RATE_LIMIT_BACKOFF_TTL)
   rescue StandardError => e
     Rails.logger.error("WeatherService prefetch error: #{e.message}")
     Rails.cache.write(cache_key("error/prefetch"), true, expires_in: ERROR_BACKOFF_TTL)
@@ -180,6 +189,10 @@ class WeatherService
       response = make_request(params)
       parse_current_weather(response)
     end
+  rescue RateLimitError => e
+    Rails.logger.warn("WeatherService rate limited: #{e.message}")
+    Rails.cache.write(cache_key("error/current"), true, expires_in: RATE_LIMIT_BACKOFF_TTL)
+    nil
   rescue Net::OpenTimeout, Net::ReadTimeout => e
     Rails.logger.error("WeatherService timeout: #{e.message}")
     Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
@@ -211,6 +224,10 @@ class WeatherService
       response = make_request(params)
       parse_daily_weather(response)
     end
+  rescue RateLimitError => e
+    Rails.logger.warn("WeatherService daily fallback rate limited: #{e.message}")
+    Rails.cache.write(cache_key("error/current_fallback"), true, expires_in: RATE_LIMIT_BACKOFF_TTL)
+    nil
   rescue StandardError => e
     Rails.logger.error("WeatherService daily fallback error: #{e.message}")
     Rails.cache.write(cache_key("error/current_fallback"), true, expires_in: ERROR_BACKOFF_TTL)
@@ -234,6 +251,10 @@ class WeatherService
     request["Accept"] = "application/json"
 
     response = http.request(request)
+
+    if response.code == "429"
+      raise RateLimitError, "API rate limit exceeded (429)"
+    end
 
     unless response.is_a?(Net::HTTPSuccess)
       raise ApiError, "API returned status #{response.code}"
@@ -272,6 +293,10 @@ class WeatherService
       response = make_request(params)
       parse_daily_weather(response)
     end
+  rescue RateLimitError => e
+    Rails.logger.warn("WeatherService forecast rate limited: #{e.message}")
+    Rails.cache.write(cache_key("error/forecast"), true, expires_in: RATE_LIMIT_BACKOFF_TTL)
+    nil
   rescue StandardError => e
     Rails.logger.error("WeatherService forecast error: #{e.message}")
     Rails.cache.write(cache_key("error/forecast"), true, expires_in: ERROR_BACKOFF_TTL)
@@ -300,6 +325,10 @@ class WeatherService
       response = make_request(params)
       parse_daily_weather(response)
     end
+  rescue RateLimitError => e
+    Rails.logger.warn("WeatherService historical rate limited: #{e.message}")
+    Rails.cache.write(cache_key("error/historical"), true, expires_in: RATE_LIMIT_BACKOFF_TTL)
+    nil
   rescue StandardError => e
     Rails.logger.error("WeatherService historical error: #{e.message}")
     Rails.cache.write(cache_key("error/historical"), true, expires_in: ERROR_BACKOFF_TTL)
