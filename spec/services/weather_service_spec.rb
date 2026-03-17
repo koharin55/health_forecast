@@ -42,8 +42,8 @@ RSpec.describe WeatherService do
           .to_return(status: 500, body: 'Internal Server Error')
       end
 
-      it 'raises ApiError' do
-        expect { service.fetch_current_weather }.to raise_error(WeatherService::ApiError)
+      it 'returns nil when both current and daily fallback endpoints fail' do
+        expect(service.fetch_current_weather).to be_nil
       end
     end
 
@@ -53,8 +53,31 @@ RSpec.describe WeatherService do
           .to_timeout
       end
 
-      it 'raises TimeoutError' do
-        expect { service.fetch_current_weather }.to raise_error(WeatherService::TimeoutError)
+      it 'returns nil when both current and daily fallback endpoints fail' do
+        expect(service.fetch_current_weather).to be_nil
+      end
+    end
+
+    context 'when current endpoint returns no data but daily fallback succeeds' do
+      let(:daily_fallback_response) do
+        { "daily" => { "time" => [Date.current.to_s], "temperature_2m_mean" => [18.0],
+                       "relative_humidity_2m_mean" => [55], "surface_pressure_mean" => [1013.0],
+                       "weather_code" => [1] } }
+      end
+
+      before do
+        # 1回目（current）は 500 エラー、2回目以降（daily fallback）は正常
+        stub_request(:get, /api\.open-meteo\.com/)
+          .to_return(status: 500, body: 'Internal Server Error').then
+          .to_return(status: 200, body: daily_fallback_response.to_json,
+                     headers: { 'Content-Type' => 'application/json' })
+      end
+
+      it 'returns daily weather data as fallback' do
+        result = service.fetch_current_weather
+        expect(result).not_to be_nil
+        expect(result[:temperature]).to eq(18.0)
+        expect(result[:weather_code]).to eq(1)
       end
     end
 
@@ -103,9 +126,38 @@ RSpec.describe WeatherService do
     end
 
     context 'when current weather error cache exists' do
+      let(:daily_fallback_response) do
+        { "daily" => { "time" => [Date.current.to_s], "temperature_2m_mean" => [20.0],
+                       "relative_humidity_2m_mean" => [65], "surface_pressure_mean" => [1008.0],
+                       "weather_code" => [3] } }
+      end
+
       before do
+        allow(Rails.cache).to receive(:exist?).and_return(false)
         allow(Rails.cache).to receive(:exist?)
           .with("weather_service/error/current/#{latitude}/#{longitude}")
+          .and_return(true)
+        stub_request(:get, /api\.open-meteo\.com/)
+          .to_return(status: 200, body: daily_fallback_response.to_json,
+                     headers: { 'Content-Type' => 'application/json' })
+      end
+
+      it 'skips current endpoint and returns daily fallback data' do
+        result = service.fetch_current_weather
+        expect(result).not_to be_nil
+        expect(result[:weather_code]).to eq(3)
+        expect(result[:temperature]).to eq(20.0)
+      end
+    end
+
+    context 'when both current and daily fallback error caches exist' do
+      before do
+        allow(Rails.cache).to receive(:exist?).and_return(false)
+        allow(Rails.cache).to receive(:exist?)
+          .with("weather_service/error/current/#{latitude}/#{longitude}")
+          .and_return(true)
+        allow(Rails.cache).to receive(:exist?)
+          .with("weather_service/error/current_fallback/#{latitude}/#{longitude}")
           .and_return(true)
       end
 

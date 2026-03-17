@@ -41,6 +41,7 @@ class WeatherService
   }.freeze
 
   CURRENT_WEATHER_TTL = 1.hour
+  DAILY_FALLBACK_TTL  = 2.hours
   FORECAST_TTL        = 6.hours
   HISTORICAL_TTL      = 24.hours
   ERROR_BACKOFF_TTL   = 5.minutes
@@ -56,33 +57,12 @@ class WeatherService
     @longitude = longitude
   end
 
-  # 現在の天気を取得
+  # 現在の天気を取得（current エンドポイント失敗時は daily でフォールバック）
   def fetch_current_weather
-    return nil if Rails.cache.exist?(cache_key("error/current"))
+    result = try_fetch_current_weather
+    return result if result
 
-    Rails.cache.fetch(cache_key("current"), expires_in: CURRENT_WEATHER_TTL) do
-      params = {
-        latitude: @latitude,
-        longitude: @longitude,
-        current: "temperature_2m,relative_humidity_2m,surface_pressure,weather_code",
-        timezone: TIMEZONE
-      }
-
-      response = make_request(params)
-      parse_current_weather(response)
-    end
-  rescue Net::OpenTimeout, Net::ReadTimeout => e
-    Rails.logger.error("WeatherService timeout: #{e.message}")
-    Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
-    raise TimeoutError, "天気情報の取得がタイムアウトしました"
-  rescue JSON::ParserError => e
-    Rails.logger.error("WeatherService JSON parse error: #{e.message}")
-    Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
-    raise ApiError, "天気情報の解析に失敗しました"
-  rescue StandardError => e
-    Rails.logger.error("WeatherService error: #{e.message}")
-    Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
-    raise ApiError, "天気情報の取得に失敗しました: #{e.message}"
+    fetch_daily_fallback_for_today
   end
 
   # 指定日の天気を取得（過去データ対応）
@@ -185,6 +165,57 @@ class WeatherService
   end
 
   private
+
+  def try_fetch_current_weather
+    return nil if Rails.cache.exist?(cache_key("error/current"))
+
+    Rails.cache.fetch(cache_key("current"), expires_in: CURRENT_WEATHER_TTL, skip_nil: true) do
+      params = {
+        latitude: @latitude,
+        longitude: @longitude,
+        current: "temperature_2m,relative_humidity_2m,surface_pressure,weather_code",
+        timezone: TIMEZONE
+      }
+
+      response = make_request(params)
+      parse_current_weather(response)
+    end
+  rescue Net::OpenTimeout, Net::ReadTimeout => e
+    Rails.logger.error("WeatherService timeout: #{e.message}")
+    Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
+    nil
+  rescue JSON::ParserError => e
+    Rails.logger.error("WeatherService JSON parse error: #{e.message}")
+    Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
+    nil
+  rescue StandardError => e
+    Rails.logger.error("WeatherService error: #{e.message}")
+    Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
+    nil
+  end
+
+  def fetch_daily_fallback_for_today
+    return nil if Rails.cache.exist?(cache_key("error/current_fallback"))
+
+    Rails.logger.info("WeatherService: current endpoint unavailable, using daily fallback")
+    Rails.cache.fetch(cache_key("current_fallback/#{Date.current}"), expires_in: DAILY_FALLBACK_TTL, skip_nil: true) do
+      params = {
+        latitude: @latitude,
+        longitude: @longitude,
+        daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
+        start_date: Date.current.to_s,
+        end_date: Date.current.to_s,
+        timezone: TIMEZONE
+      }
+
+      response = make_request(params)
+      parse_daily_weather(response)
+    end
+  rescue StandardError => e
+    Rails.logger.error("WeatherService daily fallback error: #{e.message}")
+    Rails.cache.write(cache_key("error/current_fallback"), true, expires_in: ERROR_BACKOFF_TTL)
+    nil
+  end
 
   def cache_key(suffix)
     "weather_service/#{suffix}/#{@latitude}/#{@longitude}"
