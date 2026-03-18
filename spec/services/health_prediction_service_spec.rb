@@ -14,40 +14,36 @@ RSpec.describe HealthPredictionService do
     end
 
     context 'when user has location configured' do
+      # OWM /forecast list形式: 各日の正午エントリ
+      # Day1: temp=15.0, humidity=70, pressure=995.0, OWM500(→WMO61:弱い雨)
+      # Day2: temp=18.0, humidity=60, pressure=1010.0, OWM804(→WMO3:曇り)
+      # Day3: temp=20.0, humidity=50, pressure=1020.0, OWM800(→WMO0:快晴)
       let(:forecast_response) do
-        {
-          "daily" => {
-            "time" => [
-              (Date.current + 1).to_s,
-              (Date.current + 2).to_s,
-              (Date.current + 3).to_s
-            ],
-            "temperature_2m_mean" => [15.0, 18.0, 20.0],
-            "relative_humidity_2m_mean" => [70, 60, 50],
-            "surface_pressure_mean" => [995.0, 1010.0, 1020.0],
-            "weather_code" => [61, 3, 0]
-          }
-        }
+        entries = [
+          [Date.current + 1, 15.0, 70, 995.0, 500],
+          [Date.current + 2, 18.0, 60, 1010.0, 804],
+          [Date.current + 3, 20.0, 50, 1020.0, 800]
+        ].map do |date, temp, humidity, pressure, owm_code|
+          ts = Time.zone.parse("#{date} 12:00:00").to_i
+          { "dt" => ts, "main" => { "temp" => temp, "humidity" => humidity, "pressure" => pressure },
+            "weather" => [{ "id" => owm_code }] }
+        end
+        { "list" => entries }
       end
 
       let(:current_weather_response) do
-        {
-          "current" => {
-            "temperature_2m" => 18.0,
-            "relative_humidity_2m" => 55,
-            "surface_pressure" => 1015.0,
-            "weather_code" => 1
-          }
-        }
+        # OWM /weather 形式: OWM 801 → WMO 1 (晴れ)
+        { "main" => { "temp" => 18.0, "humidity" => 55, "pressure" => 1015.0 },
+          "weather" => [{ "id" => 801 }] }
       end
 
       before do
-        stub_request(:get, /api\.open-meteo\.com/)
-          .with(query: hash_including("daily"))
+        allow_any_instance_of(WeatherService).to receive(:owm_api_key).and_return("test_api_key")
+        # /forecast も /weather も同じホスト。fetch_forecast_daysは/forecast、fetch_current_weatherは/weather
+        stub_request(:get, /api\.openweathermap\.org\/data\/2\.5\/forecast/)
           .to_return(status: 200, body: forecast_response.to_json, headers: { 'Content-Type' => 'application/json' })
 
-        stub_request(:get, /api\.open-meteo\.com/)
-          .with(query: hash_including("current"))
+        stub_request(:get, /api\.openweathermap\.org\/data\/2\.5\/weather/)
           .to_return(status: 200, body: current_weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
       end
 
@@ -95,7 +91,8 @@ RSpec.describe HealthPredictionService do
 
     context 'when API returns error' do
       before do
-        stub_request(:get, /api\.open-meteo\.com/)
+        allow_any_instance_of(WeatherService).to receive(:owm_api_key).and_return("test_api_key")
+        stub_request(:get, /api\.openweathermap\.org/)
           .to_return(status: 500, body: 'Internal Server Error')
       end
 
@@ -106,31 +103,19 @@ RSpec.describe HealthPredictionService do
   end
 
   describe '#predict_for_date' do
+    # OWM /forecast list形式: Date.tomorrow 正午エントリ
+    # OWM 500 → WMO 61 (弱い雨)
     let(:forecast_response) do
-      {
-        "daily" => {
-          "time" => [(Date.current + 1).to_s],
-          "temperature_2m_mean" => [15.0],
-          "relative_humidity_2m_mean" => [70],
-          "surface_pressure_mean" => [995.0],
-          "weather_code" => [61]
-        }
-      }
-    end
-
-    let(:current_weather_response) do
-      {
-        "current" => {
-          "temperature_2m" => 18.0,
-          "relative_humidity_2m" => 55,
-          "surface_pressure" => 1015.0,
-          "weather_code" => 1
-        }
-      }
+      ts = Time.zone.parse("#{Date.tomorrow} 12:00:00").to_i
+      { "list" => [
+        { "dt" => ts, "main" => { "temp" => 15.0, "humidity" => 70, "pressure" => 995.0 },
+          "weather" => [{ "id" => 500 }] }
+      ] }
     end
 
     before do
-      stub_request(:get, /api\.open-meteo\.com/)
+      allow_any_instance_of(WeatherService).to receive(:owm_api_key).and_return("test_api_key")
+      stub_request(:get, /api\.openweathermap\.org/)
         .to_return(status: 200, body: forecast_response.to_json, headers: { 'Content-Type' => 'application/json' })
     end
 
@@ -163,31 +148,18 @@ RSpec.describe HealthPredictionService do
   end
 
   describe 'risk level determination' do
+    # OWM /forecast list形式: Date.tomorrow 正午エントリ
     let(:forecast_response) do
-      {
-        "daily" => {
-          "time" => [(Date.current + 1).to_s],
-          "temperature_2m_mean" => [temp],
-          "relative_humidity_2m_mean" => [humidity],
-          "surface_pressure_mean" => [pressure],
-          "weather_code" => [weather_code]
-        }
-      }
-    end
-
-    let(:current_weather_response) do
-      {
-        "current" => {
-          "temperature_2m" => 18.0,
-          "relative_humidity_2m" => 55,
-          "surface_pressure" => 1015.0,
-          "weather_code" => 1
-        }
-      }
+      ts = Time.zone.parse("#{Date.tomorrow} 12:00:00").to_i
+      { "list" => [
+        { "dt" => ts, "main" => { "temp" => temp, "humidity" => humidity, "pressure" => pressure },
+          "weather" => [{ "id" => owm_code }] }
+      ] }
     end
 
     before do
-      stub_request(:get, /api\.open-meteo\.com/)
+      allow_any_instance_of(WeatherService).to receive(:owm_api_key).and_return("test_api_key")
+      stub_request(:get, /api\.openweathermap\.org/)
         .to_return(status: 200, body: forecast_response.to_json, headers: { 'Content-Type' => 'application/json' })
     end
 
@@ -195,7 +167,7 @@ RSpec.describe HealthPredictionService do
       let(:temp) { 15.0 }
       let(:humidity) { 80 }
       let(:pressure) { 985.0 }
-      let(:weather_code) { 95 }
+      let(:owm_code) { 200 }   # 雷雨 → WMO 95
 
       it 'returns high or critical risk level' do
         prediction = service.predict_for_date(Date.tomorrow)
@@ -208,7 +180,7 @@ RSpec.describe HealthPredictionService do
       let(:temp) { 22.0 }
       let(:humidity) { 45 }
       let(:pressure) { 1025.0 }
-      let(:weather_code) { 0 }
+      let(:owm_code) { 800 }   # 快晴 → WMO 0
 
       it 'returns low risk level' do
         prediction = service.predict_for_date(Date.tomorrow)

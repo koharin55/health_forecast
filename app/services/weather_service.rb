@@ -4,9 +4,10 @@ require "net/http"
 require "json"
 
 class WeatherService
-  BASE_URL = "https://api.open-meteo.com/v1/forecast"
+  OWM_BASE_URL     = "https://api.openweathermap.org/data/2.5"
+  ARCHIVE_BASE_URL = "https://archive-api.open-meteo.com/v1/archive"
   TIMEZONE = "Asia/Tokyo"
-  TIMEOUT = 10
+  TIMEOUT  = 10
 
   # WMO天気コードと日本語説明のマッピング
   WEATHER_CODES = {
@@ -40,26 +41,40 @@ class WeatherService
     99 => "雷雨（強い雹）"
   }.freeze
 
+  # OWMコード → WMOコード変換テーブル
+  OWM_TO_WMO = {
+    200..232 => 95,
+    300..321 => 51,
+    500 => 61, 501 => 63, 502..504 => 65,
+    511 => 66, 520 => 80, 521 => 81, 522..531 => 82,
+    600 => 71, 601 => 73, 602 => 75,
+    611..616 => 77, 620 => 71, 621 => 73, 622 => 75,
+    701 => 45, 711 => 45, 721 => 45, 731..781 => 3, 741 => 45,
+    800 => 0,
+    801 => 1, 802 => 2, 803..804 => 3
+  }.freeze
+
   CURRENT_WEATHER_TTL    = 1.hour
   DAILY_FALLBACK_TTL     = 2.hours
   FORECAST_TTL           = 6.hours
   HISTORICAL_TTL         = 24.hours
   ERROR_BACKOFF_TTL      = 5.minutes
   RATE_LIMIT_BACKOFF_TTL = 1.hour
-  MAX_FORECAST_DAYS      = 7
+  MAX_FORECAST_DAYS      = 5
   MAX_HISTORICAL_DAYS    = 92
 
   class Error < StandardError; end
   class ApiError < Error; end
   class TimeoutError < Error; end
   class RateLimitError < ApiError; end
+  class ConfigurationError < Error; end
 
   def initialize(latitude:, longitude:)
     @latitude = latitude
     @longitude = longitude
   end
 
-  # 現在の天気を取得（current エンドポイント失敗時は daily でフォールバック）
+  # 現在の天気を取得（/weather 失敗時は /forecast でフォールバック）
   def fetch_current_weather
     result = try_fetch_current_weather
     return result if result
@@ -72,34 +87,20 @@ class WeatherService
     if date == Date.current
       fetch_current_weather
     elsif date > Date.current
-      # 未来の日付は予報データを取得
       fetch_forecast_weather(date)
     else
-      # 過去の日付は過去データを取得
       fetch_historical_weather(date)
     end
   end
 
-  # 複数日の天気予報を取得（最大7日先まで）
+  # 複数日の天気予報を取得（最大5日先まで）
   def fetch_forecast_days(days: 3)
     return [] if days < 1 || days > MAX_FORECAST_DAYS
     return [] if Rails.cache.exist?(cache_key("error/forecast_days"))
 
     Rails.cache.fetch(cache_key("forecast_days/#{days}/#{Date.current}"), expires_in: FORECAST_TTL) do
-      start_date = Date.current + 1
-      end_date = Date.current + days
-
-      params = {
-        latitude: @latitude,
-        longitude: @longitude,
-        daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
-        start_date: start_date.to_s,
-        end_date: end_date.to_s,
-        timezone: TIMEZONE
-      }
-
-      response = make_request(params)
-      parse_multi_day_weather(response)
+      response = make_owm_request("/forecast", { lat: @latitude, lon: @longitude })
+      parse_owm_multi_day_forecasts(response, days)
     end
   rescue RateLimitError => e
     Rails.logger.warn("WeatherService forecast_days rate limited: #{e.message}")
@@ -132,7 +133,7 @@ class WeatherService
       timezone: TIMEZONE
     }
 
-    response = make_request(params)
+    response = make_archive_request(params)
     weather_map = parse_multi_day_weather_map(response)
 
     weather_map.each do |date, weather|
@@ -179,26 +180,15 @@ class WeatherService
     return nil if Rails.cache.exist?(cache_key("error/current"))
 
     Rails.cache.fetch(cache_key("current"), expires_in: CURRENT_WEATHER_TTL, skip_nil: true) do
-      params = {
-        latitude: @latitude,
-        longitude: @longitude,
-        current: "temperature_2m,relative_humidity_2m,surface_pressure,weather_code",
-        timezone: TIMEZONE
-      }
-
-      response = make_request(params)
-      parse_current_weather(response)
+      response = make_owm_request("/weather", { lat: @latitude, lon: @longitude })
+      parse_owm_current(response)
     end
   rescue RateLimitError => e
     Rails.logger.warn("WeatherService rate limited: #{e.message}")
     Rails.cache.write(cache_key("error/current"), true, expires_in: RATE_LIMIT_BACKOFF_TTL)
     nil
-  rescue Net::OpenTimeout, Net::ReadTimeout => e
+  rescue TimeoutError => e
     Rails.logger.error("WeatherService timeout: #{e.message}")
-    Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
-    nil
-  rescue JSON::ParserError => e
-    Rails.logger.error("WeatherService JSON parse error: #{e.message}")
     Rails.cache.write(cache_key("error/current"), true, expires_in: ERROR_BACKOFF_TTL)
     nil
   rescue StandardError => e
@@ -212,17 +202,8 @@ class WeatherService
 
     Rails.logger.info("WeatherService: current endpoint unavailable, using daily fallback")
     Rails.cache.fetch(cache_key("current_fallback/#{Date.current}"), expires_in: DAILY_FALLBACK_TTL, skip_nil: true) do
-      params = {
-        latitude: @latitude,
-        longitude: @longitude,
-        daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
-        start_date: Date.current.to_s,
-        end_date: Date.current.to_s,
-        timezone: TIMEZONE
-      }
-
-      response = make_request(params)
-      parse_daily_weather(response)
+      response = make_owm_request("/forecast", { lat: @latitude, lon: @longitude })
+      parse_owm_forecast_for_date(response, Date.current)
     end
   rescue RateLimitError => e
     Rails.logger.warn("WeatherService daily fallback rate limited: #{e.message}")
@@ -234,64 +215,12 @@ class WeatherService
     nil
   end
 
-  def cache_key(suffix)
-    "weather_service/#{suffix}/#{@latitude}/#{@longitude}"
-  end
-
-  def make_request(params)
-    uri = URI(BASE_URL)
-    uri.query = URI.encode_www_form(params)
-
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    http.open_timeout = TIMEOUT
-    http.read_timeout = TIMEOUT
-
-    request = Net::HTTP::Get.new(uri)
-    request["Accept"] = "application/json"
-
-    response = http.request(request)
-
-    if response.code == "429"
-      raise RateLimitError, "API rate limit exceeded (429)"
-    end
-
-    unless response.is_a?(Net::HTTPSuccess)
-      raise ApiError, "API returned status #{response.code}"
-    end
-
-    JSON.parse(response.body)
-  end
-
-  def parse_current_weather(response)
-    current = response["current"]
-    return nil unless current
-
-    {
-      temperature: current["temperature_2m"],
-      humidity: current["relative_humidity_2m"],
-      pressure: current["surface_pressure"],
-      weather_code: current["weather_code"],
-      weather_description: self.class.weather_description(current["weather_code"]),
-      fetched_at: Time.current
-    }
-  end
-
   def fetch_forecast_weather(date)
     return nil if Rails.cache.exist?(cache_key("error/forecast"))
 
     Rails.cache.fetch(cache_key("forecast/#{date}"), expires_in: FORECAST_TTL) do
-      params = {
-        latitude: @latitude,
-        longitude: @longitude,
-        daily: "temperature_2m_mean,relative_humidity_2m_mean,surface_pressure_mean,weather_code",
-        start_date: date.to_s,
-        end_date: date.to_s,
-        timezone: TIMEZONE
-      }
-
-      response = make_request(params)
-      parse_daily_weather(response)
+      response = make_owm_request("/forecast", { lat: @latitude, lon: @longitude })
+      parse_owm_forecast_for_date(response, date)
     end
   rescue RateLimitError => e
     Rails.logger.warn("WeatherService forecast rate limited: #{e.message}")
@@ -321,8 +250,7 @@ class WeatherService
         end_date: date.to_s,
         timezone: TIMEZONE
       }
-
-      response = make_request(params)
+      response = make_archive_request(params)
       parse_daily_weather(response)
     end
   rescue RateLimitError => e
@@ -335,6 +263,116 @@ class WeatherService
     nil
   end
 
+  def cache_key(suffix)
+    "weather_service/#{suffix}/#{@latitude}/#{@longitude}"
+  end
+
+  def owm_api_key
+    Rails.application.credentials.openweathermap_api_key || ENV["OPENWEATHERMAP_API_KEY"]
+  end
+
+  def make_owm_request(endpoint, params = {})
+    raise ConfigurationError, "OpenWeatherMap APIキーが設定されていません" unless owm_api_key
+
+    uri = URI("#{OWM_BASE_URL}#{endpoint}")
+    uri.query = URI.encode_www_form(params.merge(appid: owm_api_key, units: "metric"))
+    perform_get_request(uri)
+  end
+
+  def make_archive_request(params)
+    uri = URI(ARCHIVE_BASE_URL)
+    uri.query = URI.encode_www_form(params)
+    perform_get_request(uri)
+  end
+
+  def perform_get_request(uri)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.open_timeout = TIMEOUT
+    http.read_timeout = TIMEOUT
+
+    request = Net::HTTP::Get.new(uri)
+    request["Accept"] = "application/json"
+
+    response = http.request(request)
+
+    raise RateLimitError, "API rate limit exceeded (429)" if response.code == "429"
+    raise ApiError, "API returned status #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+
+    JSON.parse(response.body)
+  rescue Net::OpenTimeout, Net::ReadTimeout => e
+    raise TimeoutError, e.message
+  rescue JSON::ParserError => e
+    raise ApiError, "Invalid JSON response: #{e.message}"
+  end
+
+  # OWM /weather レスポンス → WeatherHash
+  def parse_owm_current(response)
+    main = response["main"]
+    return nil unless main
+
+    owm_code = response.dig("weather", 0, "id")
+    wmo_code = owm_code_to_wmo(owm_code)
+    {
+      temperature: main["temp"]&.round(1),
+      humidity: main["humidity"],
+      pressure: main["pressure"]&.round(1),
+      weather_code: wmo_code,
+      weather_description: self.class.weather_description(wmo_code),
+      fetched_at: Time.current
+    }
+  end
+
+  # OWM /forecast レスポンス(3時間刻み) → 指定日の日次データに集約
+  def parse_owm_forecast_for_date(response, target_date)
+    entries = response["list"]&.select { |e|
+      Time.at(e["dt"]).in_time_zone(TIMEZONE).to_date == target_date
+    }
+    return nil if entries.blank?
+
+    aggregate_owm_entries(entries, target_date)
+  end
+
+  # OWM /forecast → 複数日の配列
+  def parse_owm_multi_day_forecasts(response, days)
+    (1..days).filter_map do |i|
+      date = Date.current + i
+      result = parse_owm_forecast_for_date(response, date)
+      result&.merge(date: date)
+    end
+  end
+
+  # 日次集約ロジック（数値は平均、weather_codeは正午に最も近いエントリを採用）
+  def aggregate_owm_entries(entries, date)
+    temps      = entries.map { |e| e.dig("main", "temp") }.compact
+    humidities = entries.map { |e| e.dig("main", "humidity") }.compact
+    pressures  = entries.map { |e| e.dig("main", "pressure") }.compact
+    noon       = Time.zone.parse("#{date} 12:00:00")
+    noon_entry = entries.min_by { |e| (Time.at(e["dt"]).in_time_zone(TIMEZONE) - noon).abs }
+    owm_code   = noon_entry&.dig("weather", 0, "id")
+    wmo_code   = owm_code_to_wmo(owm_code)
+    {
+      temperature: temps.any? ? (temps.sum / temps.size).round(1) : nil,
+      humidity:    humidities.any? ? (humidities.sum / humidities.size).round : nil,
+      pressure:    pressures.any? ? (pressures.sum / pressures.size).round(1) : nil,
+      weather_code: wmo_code,
+      weather_description: self.class.weather_description(wmo_code),
+      fetched_at: Time.current
+    }
+  end
+
+  # OWMコード → WMOコード変換
+  # Integer キーを優先して検索し、次にRange キーを検索する。
+  # これにより、731..781 の Range に含まれる 741（霧）等の個別マッピングが正しく機能する。
+  def owm_code_to_wmo(owm_code)
+    return nil unless owm_code
+
+    OWM_TO_WMO[owm_code] ||
+      OWM_TO_WMO.find { |k, _| k.is_a?(Range) && k.include?(owm_code) }&.last ||
+      3
+  end
+
+  # Open-Meteo Archive APIレスポンス → 日次データ（historical用）
   def parse_daily_weather(response)
     daily = response["daily"]
     return nil unless daily && daily["time"]&.any?
