@@ -187,7 +187,7 @@ class AiReportService
       latitude: @user.latitude,
       longitude: @user.longitude
     )
-    service.fetch_forecast_days(days: 7)
+    service.fetch_forecast_days(days: WeatherService::MAX_FORECAST_DAYS)
   rescue WeatherService::Error => e
     Rails.logger.warn("AiReportService forecast fetch failed: #{e.message}")
     []

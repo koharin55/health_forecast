@@ -113,19 +113,16 @@ RSpec.describe HealthRecord, type: :model do
 
     context 'when user has location configured' do
       let(:weather_response) do
+        # OWM /weather レスポンス形式: OWM 801 (few clouds) → WMO 1 (晴れ)
         {
-          "current" => {
-            "time" => "2026-02-02T12:00",
-            "temperature_2m" => 8.5,
-            "relative_humidity_2m" => 45,
-            "surface_pressure" => 1013.2,
-            "weather_code" => 1
-          }
+          "main" => { "temp" => 8.5, "humidity" => 45, "pressure" => 1013.2 },
+          "weather" => [{ "id" => 801 }]
         }
       end
 
       before do
-        stub_request(:get, /api\.open-meteo\.com/)
+        allow_any_instance_of(WeatherService).to receive(:owm_api_key).and_return("test_api_key")
+        stub_request(:get, /api\.openweathermap\.org/)
           .to_return(status: 200, body: weather_response.to_json, headers: { 'Content-Type' => 'application/json' })
       end
 
@@ -136,7 +133,7 @@ RSpec.describe HealthRecord, type: :model do
         expect(record.weather_temperature).to eq(8.5)
         expect(record.weather_humidity).to eq(45)
         expect(record.weather_pressure).to eq(1013.2)
-        expect(record.weather_code).to eq(1)
+        expect(record.weather_code).to eq(1)        # OWM 801 → WMO 1
         expect(record.weather_description).to eq("晴れ")
       end
     end
@@ -155,7 +152,8 @@ RSpec.describe HealthRecord, type: :model do
 
     context 'when API returns error' do
       before do
-        stub_request(:get, /api\.open-meteo\.com/)
+        allow_any_instance_of(WeatherService).to receive(:owm_api_key).and_return("test_api_key")
+        stub_request(:get, /api\.openweathermap\.org/)
           .to_return(status: 500, body: 'Internal Server Error')
       end
 

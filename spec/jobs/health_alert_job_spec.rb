@@ -11,31 +11,19 @@ RSpec.describe HealthAlertJob, type: :job do
     let(:user) { create(:user, :with_location) }
     let!(:push_subscription) { create(:push_subscription, user: user) }
 
+    # OWM /forecast list形式: Date.tomorrow 正午エントリ
+    # OWM 500 → WMO 61 (弱い雨)
     let(:forecast_response) do
-      {
-        "daily" => {
-          "time" => [(Date.current + 1).to_s],
-          "temperature_2m_mean" => [15.0],
-          "relative_humidity_2m_mean" => [80],
-          "surface_pressure_mean" => [pressure],
-          "weather_code" => [61]
-        }
-      }
-    end
-
-    let(:current_weather_response) do
-      {
-        "current" => {
-          "temperature_2m" => 18.0,
-          "relative_humidity_2m" => 55,
-          "surface_pressure" => 1015.0,
-          "weather_code" => 1
-        }
-      }
+      ts = Time.zone.parse("#{Date.tomorrow} 12:00:00").to_i
+      { "list" => [
+        { "dt" => ts, "main" => { "temp" => 15.0, "humidity" => 80, "pressure" => pressure },
+          "weather" => [{ "id" => 500 }] }
+      ] }
     end
 
     before do
-      stub_request(:get, /api\.open-meteo\.com/)
+      allow_any_instance_of(WeatherService).to receive(:owm_api_key).and_return("test_api_key")
+      stub_request(:get, /api\.openweathermap\.org/)
         .to_return(status: 200, body: forecast_response.to_json, headers: { 'Content-Type' => 'application/json' })
     end
 

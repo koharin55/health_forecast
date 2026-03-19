@@ -13,6 +13,8 @@ RSpec.describe AiReportService do
     context 'when API key is not configured' do
       before do
         allow(Rails.application.credentials).to receive(:dig).with(:gemini_api_key).and_return(nil)
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("GEMINI_API_KEY").and_return(nil)
       end
 
       it 'raises ConfigurationError' do
