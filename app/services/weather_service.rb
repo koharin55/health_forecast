@@ -203,7 +203,8 @@ class WeatherService
     Rails.logger.info("WeatherService: current endpoint unavailable, using daily fallback")
     Rails.cache.fetch(cache_key("current_fallback/#{Date.current}"), expires_in: DAILY_FALLBACK_TTL, skip_nil: true) do
       response = make_owm_request("/forecast", { lat: @latitude, lon: @longitude })
-      parse_owm_forecast_for_date(response, Date.current)
+      # 当日エントリを優先。夜間など当日エントリがない場合はリスト先頭（最近傍）エントリを代替使用
+      parse_owm_forecast_for_date(response, Date.current) || parse_owm_first_entry(response)
     end
   rescue RateLimitError => e
     Rails.logger.warn("WeatherService daily fallback rate limited: #{e.message}")
@@ -331,6 +332,15 @@ class WeatherService
     return nil if entries.blank?
 
     aggregate_owm_entries(entries, target_date)
+  end
+
+  # OWM /forecast の先頭エントリを単体で変換（夜間フォールバック用）
+  def parse_owm_first_entry(response)
+    entry = response["list"]&.first
+    return nil unless entry
+
+    date = Time.at(entry["dt"]).in_time_zone(TIMEZONE).to_date
+    aggregate_owm_entries([entry], date)
   end
 
   # OWM /forecast → 複数日の配列
