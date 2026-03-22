@@ -134,7 +134,7 @@ class HealthRecord < ApplicationRecord
           next if value.nil?
 
           if TAKE_LARGER_ATTRIBUTES.include?(key_s)
-            merge_attrs[key_s] = value if record[key_s].nil? || value > record[key_s]
+            merge_attrs[key_s] = value if record[key_s].nil? || value.to_f > record[key_s].to_f
           else
             merge_attrs[key_s] = value if record[key_s].nil?
           end
