@@ -203,18 +203,78 @@ RSpec.describe HealthRecord, type: :model do
         expect(result[:record].steps).to eq(8000)     # nilだったので補完
       end
 
-      it 'does not update when all attributes already have values' do
+      it 'does not overwrite weight even if new value is larger' do
         existing_record.update!(steps: 5000)
 
         result = described_class.create_or_merge_for_date(
           user: user,
           recorded_at: today,
-          attributes: { weight: 70.0, steps: 10000 }
+          attributes: { weight: 70.0, steps: 3000 }
         )
 
         expect(result[:merged]).to be true
-        expect(result[:record].weight).to eq(60.0)
-        expect(result[:record].steps).to eq(5000)
+        expect(result[:record].weight).to eq(60.0)   # 既存値を保持
+        expect(result[:record].steps).to eq(5000)    # 新値が小さいので保持
+      end
+
+      context 'with TAKE_LARGER_ATTRIBUTES (steps, exercise_minutes, sleep_minutes)' do
+        it 'overwrites steps when new value is larger' do
+          existing_record.update!(steps: 5000)
+
+          result = described_class.create_or_merge_for_date(
+            user: user,
+            recorded_at: today,
+            attributes: { steps: 10000 }
+          )
+
+          expect(result[:record].steps).to eq(10000)
+        end
+
+        it 'does not overwrite steps when new value is smaller' do
+          existing_record.update!(steps: 9000)
+
+          result = described_class.create_or_merge_for_date(
+            user: user,
+            recorded_at: today,
+            attributes: { steps: 5000 }
+          )
+
+          expect(result[:record].steps).to eq(9000)
+        end
+
+        it 'overwrites exercise_minutes when new value is larger' do
+          existing_record.update!(exercise_minutes: 20)
+
+          result = described_class.create_or_merge_for_date(
+            user: user,
+            recorded_at: today,
+            attributes: { exercise_minutes: 45 }
+          )
+
+          expect(result[:record].exercise_minutes).to eq(45)
+        end
+
+        it 'overwrites sleep_minutes when new value is larger' do
+          existing_record.update!(sleep_minutes: 360)
+
+          result = described_class.create_or_merge_for_date(
+            user: user,
+            recorded_at: today,
+            attributes: { sleep_minutes: 480 }
+          )
+
+          expect(result[:record].sleep_minutes).to eq(480)
+        end
+
+        it 'fills nil exercise_minutes even if existing is nil' do
+          result = described_class.create_or_merge_for_date(
+            user: user,
+            recorded_at: today,
+            attributes: { exercise_minutes: 30 }
+          )
+
+          expect(result[:record].exercise_minutes).to eq(30)
+        end
       end
 
       it 'ignores non-mergeable attributes' do

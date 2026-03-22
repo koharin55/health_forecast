@@ -119,6 +119,9 @@ class HealthRecord < ApplicationRecord
     mins.zero? ? "#{hours}時間" : "#{hours}時間#{mins}分"
   end
 
+  # 後から送られてきた値が既存値より大きければ上書きする属性
+  TAKE_LARGER_ATTRIBUTES = %w[exercise_minutes steps sleep_minutes].freeze
+
   def self.create_or_merge_for_date(user:, recorded_at:, attributes:)
     transaction do
       record = user.health_records.find_by(recorded_at: recorded_at)
@@ -130,7 +133,11 @@ class HealthRecord < ApplicationRecord
           next unless MERGEABLE_ATTRIBUTES.include?(key_s)
           next if value.nil?
 
-          merge_attrs[key_s] = value if record[key_s].nil?
+          if TAKE_LARGER_ATTRIBUTES.include?(key_s)
+            merge_attrs[key_s] = value if record[key_s].nil? || value > record[key_s]
+          else
+            merge_attrs[key_s] = value if record[key_s].nil?
+          end
         end
         record.update!(merge_attrs) if merge_attrs.any?
         { record: record.reload, merged: true }
