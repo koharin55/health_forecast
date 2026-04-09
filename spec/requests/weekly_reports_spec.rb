@@ -158,4 +158,107 @@ RSpec.describe 'WeeklyReports', type: :request do
       end
     end
   end
+
+  describe 'GET /weekly_reports/export' do
+    context '認証済みの場合' do
+      before { sign_in user }
+
+      it 'JSONファイルをダウンロードできる' do
+        create(:weekly_report, user: user)
+
+        get export_weekly_reports_path
+
+        expect(response).to have_http_status(:ok)
+        expect(response.content_type).to include('application/json')
+        expect(response.headers['Content-Disposition']).to include('weekly_reports_')
+        expect(response.headers['Content-Disposition']).to include('.json')
+      end
+
+      it 'レポートがなくても空のJSONを返す' do
+        get export_weekly_reports_path
+
+        data = JSON.parse(response.body)
+        expect(data['reports']).to eq([])
+      end
+    end
+
+    context '未認証の場合' do
+      it 'アクセスできない' do
+        get '/weekly_reports/export'
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe 'GET /weekly_reports/import' do
+    context '認証済みの場合' do
+      before { sign_in user }
+
+      it 'インポートフォームを表示できる' do
+        get import_weekly_reports_path
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('JSONインポート')
+      end
+    end
+
+    context '未認証の場合' do
+      it 'アクセスできない' do
+        get '/weekly_reports/import'
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe 'POST /weekly_reports/import' do
+    before { sign_in user }
+
+    def json_file(content)
+      Rack::Test::UploadedFile.new(
+        StringIO.new(content),
+        'application/json',
+        original_filename: 'weekly_reports.json'
+      )
+    end
+
+    def valid_json
+      JSON.generate({
+        version: 1,
+        exported_at: Time.current.iso8601,
+        reports: [{
+          'week_start' => '2026-01-05',
+          'week_end' => '2026-01-11',
+          'content' => '## 今週の振り返り',
+          'summary_data' => { 'record_count' => 5 },
+          'predictions' => { 'warning_dates' => [] },
+          'tokens_used' => 1500,
+          'created_at' => '2026-01-12T10:00:00Z'
+        }]
+      })
+    end
+
+    it '有効なJSONでインポートできる' do
+      expect {
+        post import_weekly_reports_path, params: { file: json_file(valid_json) }
+      }.to change(WeeklyReport, :count).by(1)
+    end
+
+    it 'インポート後に一覧画面にリダイレクトされる' do
+      post import_weekly_reports_path, params: { file: json_file(valid_json) }
+
+      expect(response).to redirect_to(weekly_reports_path)
+      follow_redirect!
+      expect(response.body).to include('インポートしました')
+    end
+
+    it 'ファイルなしの場合はエラーを表示する' do
+      post import_weekly_reports_path
+
+      expect(response).to redirect_to(import_weekly_reports_path)
+      follow_redirect!
+      expect(response.body).to include('ファイルを選択してください')
+    end
+  end
 end

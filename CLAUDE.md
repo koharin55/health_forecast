@@ -38,6 +38,11 @@ SOLID原則、Rails Way、およびTDD（テスト駆動開発）に従い、保
     -   `yes`: コミットして完了。
     -   `fix`: 指摘に基づき修正し、再度レビューからやり直す。
 
+## Step 4: CLAUDE.md の更新検討
+1.  レビュー指摘事項への対応が完了したら、**今後の開発に活かせる知見がないか検討**します。
+2.  汎用的なコーディングルール・設計パターン・注意点があれば、**自動で追記案を提示**します。
+3.  **ユーザーの確認を得てから** CLAUDE.md を更新します。承認なしに更新してはいけません。
+
 # Rules
 以下のルールは、あなたの行動を規定する最優先事項およびガイドラインです。
 
@@ -279,6 +284,66 @@ class WeatherService
 end
 ```
 
+#### 結果ハッシュパターン（import系サービス）
+- `parse` / `build` 系メソッドが失敗した場合、**必ず `result[:errors]` にメッセージを記録**してから return すること
+- `nil` を返して呼び出し元で無言の `return` をするとユーザーにフィードバックが届かない（サイレント失敗）
+
+```ruby
+# 悪い例（サイレント失敗）
+build_result = build_attributes(row)
+return if build_result.nil?  # エラーが記録されない
+
+# 良い例
+build_result = build_attributes(row)
+if build_result.nil?
+  result[:errors] << "#{index}件目: 日付の形式が正しくありません"
+  return
+end
+```
+
+#### 属性ハッシュへの疑似キー混入禁止
+モデルの属性ハッシュにアンダースコア付き疑似キー（`_created_at` など）を混入させない。
+メタデータは `Struct` で分離すること。
+
+```ruby
+# 悪い例
+{ week_start: ..., _created_at: ... }  # モデルに渡す前に delete が必要で脆い
+
+# 良い例
+BuildResult = Struct.new(:attributes, :created_at)
+BuildResult.new({ week_start: ... }, created_at)
+```
+
+#### created_at の復元（バックアップ/インポート）
+Rails はタイムスタンプを自動管理するため、`created_at` をインポートデータから復元する際は
+`update_columns` を使用し、意図を示すコメントと `rubocop:disable` を付ける。
+
+```ruby
+# created_at はモデル経由で更新できないため update_columns を使用
+# rubocop:disable Rails/SkipsModelValidations
+record.update_columns(created_at: original_created_at)
+# rubocop:enable Rails/SkipsModelValidations
+```
+
+#### 外部データの配列要素は型チェックを行う
+JSONインポートなど外部データの配列を処理する際、各要素が期待する型（Hash など）かどうかを
+必ず確認する。チェックなしで `element['key']` にアクセスすると、`null` や数値が混入した場合に
+`NoMethodError` が発生し 500 エラーになる。
+
+```ruby
+# 悪い例
+reports.each { |r| process(r['week_start']) }  # r が nil や Integer だと NoMethodError
+
+# 良い例（フィルタリング側）
+next unless r.is_a?(Hash) && r['week_start']
+
+# 良い例（処理側）
+unless report_data.is_a?(Hash)
+  result[:errors] << "#{index}件目: 不正なデータ形式です"
+  return
+end
+```
+
 #### 現在のサービスクラス
 - `WeatherService`: Open-Meteo APIから天候データを取得
 - `ZipcodeService`: Zipcloud APIから郵便番号→住所変換
@@ -352,6 +417,38 @@ end
 - 2スペース（タブ禁止）
 - 1行100文字以内を目安
 
+### Rubyイディオム
+
+#### 配列からハッシュを生成する場合
+`each_with_object({})` の代わりに Rails の `index_with` を使用する。
+
+```ruby
+# 悪い例
+FIELDS.each_with_object({}) { |f, h| h[f] = obj.send(f) }
+
+# 良い例
+FIELDS.index_with { |f| obj.public_send(f) }
+```
+
+#### 例外の rescue 順序
+サブクラスと親クラスを同時に rescue しない。広い方だけで十分。
+（例: `Date::Error` は `ArgumentError` のサブクラスのため、両方を書くと lint 警告）
+
+```ruby
+# 悪い例
+rescue Date::Error, ArgumentError
+
+# 良い例
+rescue ArgumentError  # Date::Error もカバーされる
+```
+
+#### Flash メッセージの複数エラー結合
+`\n` は HTML で表示されないため、複数エラーの結合には `" / "` を使用する。
+
+```ruby
+flash[:alert] = errors.first(5).join(" / ")
+```
+
 ### CSSスタイリング
 - Tailwindユーティリティクラスが動作しない場合は`application.css`にカスタムクラスを定義
 - プロジェクト固有クラスを優先使用:
@@ -405,6 +502,36 @@ git commit -m "[fix] ダッシュボードの統計計算エラーを修正"
 ### ファクトリ
 - デフォルトは最小限の有効な状態
 - バリエーションはtraitで定義
+
+## RuboCop
+
+```bash
+# チェック実行
+bundle exec rubocop
+
+# 自動修正
+bundle exec rubocop --autocorrect
+
+# 特定ファイルのみ
+bundle exec rubocop app/services/foo_service.rb
+```
+
+### .rubocop.yml の注意点
+rubocop-rails / rubocop-rspec は `require:` ではなく `plugins:` で指定する（v1.x以降）。
+
+```yaml
+# 正しい書き方
+plugins:
+  - rubocop-rails
+  - rubocop-rspec
+
+# 間違った書き方（警告が出る）
+require:
+  - rubocop-rails
+  - rubocop-rspec
+```
+
+---
 
 ## トラブルシューティング
 
