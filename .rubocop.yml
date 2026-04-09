@@ -1,0 +1,70 @@
+plugins:
+  - rubocop-rails
+  - rubocop-rspec
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.2
+  SuggestExtensions: false
+  Exclude:
+    - 'bin/**/*'
+    - 'db/schema.rb'
+    - 'db/migrate/**/*'
+    - 'node_modules/**/*'
+    - 'vendor/**/*'
+    - 'config/initializers/devise.rb'
+
+# 日本語コメントを許可
+Style/AsciiComments:
+  Enabled: false
+
+# 1行の長さ（プロジェクト規約: 100文字）
+Layout/LineLength:
+  Max: 100
+  Exclude:
+    - 'spec/**/*'
+
+# メソッドの長さを緩和（ビュー関連やサービスクラスで許容）
+Metrics/MethodLength:
+  Max: 20
+
+# クラスの長さを緩和
+Metrics/ClassLength:
+  Max: 150
+
+# ブロックの長さを緩和（テストで長くなりやすい）
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - 'config/routes.rb'
+
+# ABCメトリクスを緩和
+Metrics/AbcSize:
+  Max: 20
+
+# ドキュメントコメントは不要
+Style/Documentation:
+  Enabled: false
+
+# Frozen string literal はオプション
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+# Rails
+Rails/Output:
+  Enabled: true
+
+# RSpec
+RSpec/ExampleLength:
+  Max: 15
+
+RSpec/MultipleExpectations:
+  Max: 5
+
+# 日本語のcontext説明を許可（when/with/withoutの英語規約を適用しない）
+RSpec/ContextWording:
+  Enabled: false
+
+# let! でDBレコードを作成するパターンを許可（変数を直接参照しないケースが多い）
+RSpec/LetSetup:
+  Enabled: false
