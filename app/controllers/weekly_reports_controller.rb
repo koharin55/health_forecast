@@ -69,6 +69,54 @@ class WeeklyReportsController < ApplicationController
     @monthly_tokens = WeeklyReport.monthly_tokens_used(current_user)
   end
 
+  # GET /weekly_reports/export
+  def export
+    service = WeeklyReportExportService.new(current_user)
+    json_data = service.generate_json
+    filename = "weekly_reports_#{Date.current.strftime('%Y%m%d')}.json"
+    send_data json_data, filename: filename, type: 'application/json; charset=utf-8'
+  end
+
+  # GET /weekly_reports/import
+  def import_form
+  end
+
+  # POST /weekly_reports/import
+  def import
+    if params[:file].blank?
+      redirect_to import_weekly_reports_path, alert: "ファイルを選択してください"
+      return
+    end
+
+    uploaded_file = params[:file]
+
+    if uploaded_file.size > WeeklyReportImportService::MAX_FILE_SIZE
+      redirect_to import_weekly_reports_path, alert: "ファイルサイズが大きすぎます（上限: 5MB）"
+      return
+    end
+
+    unless uploaded_file.content_type.in?(%w[application/json text/plain])
+      redirect_to import_weekly_reports_path, alert: "JSONファイルを選択してください"
+      return
+    end
+
+    strategy = params[:duplicate_strategy]
+    strategy = 'skip' unless strategy.in?(%w[skip overwrite])
+
+    file_content = uploaded_file.read
+    service = WeeklyReportImportService.new(current_user, file_content, duplicate_strategy: strategy)
+    result = service.import
+
+    messages = []
+    messages << "#{result[:imported]}件インポートしました" if result[:imported] > 0
+    messages << "#{result[:skipped]}件スキップしました" if result[:skipped] > 0
+    messages << "#{result[:errors].size}件エラーがありました" if result[:errors].any?
+
+    flash[:alert] = result[:errors].first(5).join(" / ") if result[:errors].any?
+
+    redirect_to weekly_reports_path, notice: messages.join("、")
+  end
+
   private
 
   def set_weekly_report

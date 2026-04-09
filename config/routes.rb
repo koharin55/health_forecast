@@ -10,7 +10,13 @@ Rails.application.routes.draw do
         post :import
       end
     end
-    resources :weekly_reports, only: [:index, :show, :new, :create, :destroy]
+    resources :weekly_reports, only: [:index, :show, :new, :create, :destroy] do
+      collection do
+        get  :export
+        get  :import, action: :import_form
+        post :import
+      end
+    end
     resource :mypage, only: [:show], controller: 'mypage' do
       patch :update_profile, on: :member
       patch :update_password, on: :member
