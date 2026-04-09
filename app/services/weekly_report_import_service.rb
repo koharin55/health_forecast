@@ -49,7 +49,7 @@ class WeeklyReportImportService
 
   def cache_existing_reports(reports)
     pairs = reports.filter_map do |r|
-      next unless r['week_start'] && r['week_end']
+      next unless r.is_a?(Hash) && r['week_start'] && r['week_end']
 
       [Date.parse(r['week_start']), Date.parse(r['week_end'])]
     rescue ArgumentError
@@ -65,6 +65,11 @@ class WeeklyReportImportService
   end
 
   def process_entry(report_data, index, result)
+    unless report_data.is_a?(Hash)
+      result[:errors] << "#{index}件目: 不正なデータ形式です（オブジェクトを期待しています）"
+      return
+    end
+
     missing = REQUIRED_FIELDS.select { |f| report_data[f].blank? }
     if missing.any?
       result[:errors] << "#{index}件目: 必須項目(#{missing.join(', ')})が不足しています"

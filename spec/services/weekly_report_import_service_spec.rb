@@ -137,6 +137,30 @@ RSpec.describe WeeklyReportImportService, type: :service do
 
         expect(result[:errors].first).to include('content')
       end
+
+      it 'reports にnullが含まれる場合は500エラーにならずエラーを返す' do
+        json = build_json([nil])
+        result = described_class.new(user, json).import
+
+        expect(result[:errors]).not_to be_empty
+        expect(result[:imported]).to eq(0)
+      end
+
+      it 'reports に数値が含まれる場合は500エラーにならずエラーを返す' do
+        json = build_json([42])
+        result = described_class.new(user, json).import
+
+        expect(result[:errors]).not_to be_empty
+        expect(result[:imported]).to eq(0)
+      end
+
+      it '不正な要素と正常な要素が混在する場合、正常な要素のみインポートされる' do
+        json = build_json([nil, valid_report_data])
+        result = described_class.new(user, json).import
+
+        expect(result[:errors].size).to eq(1)
+        expect(result[:imported]).to eq(1)
+      end
     end
 
     context '他ユーザーへの影響' do
