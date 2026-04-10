@@ -146,7 +146,11 @@ RSpec.describe AiReportService do
         create(:health_record, :complete, user: user, recorded_at: Date.current - 1 - i)
       end
 
-      # WeatherServiceのモック
+      # WeatherServiceのモック（天気予報: OpenWeatherMap）
+      stub_request(:get, /api\.openweathermap\.org/)
+        .to_return(status: 200, body: { list: [] }.to_json)
+
+      # WeatherServiceのモック（過去データ: Open-Meteo）
       stub_request(:get, /api\.open-meteo\.com/)
         .to_return(status: 200, body: { daily: { time: [], temperature_2m_mean: [], relative_humidity_2m_mean: [], surface_pressure_mean: [], weather_code: [] } }.to_json)
 
