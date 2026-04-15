@@ -147,13 +147,25 @@
   </div>
 
   <!-- グラフセクション -->
-  <% if @recent_records.any? %>
+  <%= turbo_frame_tag "charts" do %>
+    <!-- 期間切り替えボタン -->
+    <div class="flex flex-wrap gap-2 mb-4 sm:mb-6">
+      <% HealthRecord::CHART_PERIODS.each do |key, opt| %>
+        <% active = @period == key %>
+        <%= link_to opt[:label].sub("最新記録から", ""),
+                    root_path(period: key),
+                    data: { turbo_frame: "charts" },
+                    class: "px-4 py-2 rounded-xl text-sm font-semibold transition-colors #{active ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'}" %>
+      <% end %>
+    </div>
+
+  <% if @chart_records.any? %>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12">
       <!-- 血圧グラフ -->
       <div class="card rounded-2xl p-4 sm:p-6">
         <h3 class="text-base sm:text-xl font-bold mb-4 sm:mb-6 text-slate-900">
           血圧の推移
-          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2">最近7日間</span>
+          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2"><%= @period_label %></span>
         </h3>
         <div style="height: 200px;">
           <canvas id="bloodPressureChart"></canvas>
@@ -164,7 +176,7 @@
       <div class="card rounded-2xl p-4 sm:p-6">
         <h3 class="text-base sm:text-xl font-bold mb-4 sm:mb-6 text-slate-900">
           体温の推移
-          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2">最近7日間</span>
+          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2"><%= @period_label %></span>
         </h3>
         <div style="height: 200px;">
           <canvas id="bodyTemperatureChart"></canvas>
@@ -175,7 +187,7 @@
       <div class="card rounded-2xl p-4 sm:p-6">
         <h3 class="text-base sm:text-xl font-bold mb-4 sm:mb-6 text-slate-900">
           睡眠時間の推移
-          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2">最近7日間</span>
+          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2"><%= @period_label %></span>
         </h3>
         <div style="height: 200px;">
           <canvas id="sleepChart"></canvas>
@@ -186,7 +198,7 @@
       <div class="card rounded-2xl p-4 sm:p-6">
         <h3 class="text-base sm:text-xl font-bold mb-4 sm:mb-6 text-slate-900">
           体重の推移
-          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2">最近7日間</span>
+          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2"><%= @period_label %></span>
         </h3>
         <div style="height: 200px;">
           <canvas id="weightChart"></canvas>
@@ -197,7 +209,7 @@
       <div class="card rounded-2xl p-4 sm:p-6">
         <h3 class="text-base sm:text-xl font-bold mb-4 sm:mb-6 text-slate-900">
           運動時間の推移
-          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2">最近7日間</span>
+          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2"><%= @period_label %></span>
         </h3>
         <div style="height: 200px;">
           <canvas id="exerciseChart"></canvas>
@@ -208,7 +220,7 @@
       <div class="card rounded-2xl p-4 sm:p-6">
         <h3 class="text-base sm:text-xl font-bold mb-4 sm:mb-6 text-slate-900">
           体調スコアの推移
-          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2">最近7日間</span>
+          <span class="text-xs sm:text-sm font-normal text-slate-500 ml-2"><%= @period_label %></span>
         </h3>
         <div style="height: 200px;">
           <canvas id="moodChart"></canvas>
@@ -217,14 +229,15 @@
     </div>
 
     <script>
-      document.addEventListener('turbo:load', () => {
-        // データ準備
-        const weightData = <%= raw @recent_records.where.not(weight: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.weight } }.to_json %>;
-        const sleepData = <%= raw @recent_records.where.not(sleep_minutes: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: (r.sleep_minutes / 60.0).round(2) } }.to_json %>;
-        const moodData = <%= raw @recent_records.where.not(mood: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.mood } }.to_json %>;
-        const exerciseData = <%= raw @recent_records.where.not(exercise_minutes: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.exercise_minutes } }.to_json %>;
-        const bloodPressureData = <%= raw @recent_records.where.not(systolic_pressure: nil, diastolic_pressure: nil).reverse.map { |r| { x: r.recorded_at.to_s, systolic: r.systolic_pressure, diastolic: r.diastolic_pressure } }.to_json %>;
-        const bodyTemperatureData = <%= raw @recent_records.where.not(body_temperature: nil).reverse.map { |r| { x: r.recorded_at.to_s, y: r.body_temperature } }.to_json %>;
+      (() => {
+        const chartTimeUnit = <%= raw({ daily: 'day', weekly: 'week', monthly: 'month' }[@chart_interval].to_json) %>;
+        // データ準備（集約: <%= @chart_interval %>）
+        const weightData = <%= raw chart_series(@chart_records, :weight, interval: @chart_interval).to_json %>;
+        const sleepData = <%= raw chart_series(@chart_records, :sleep_minutes, interval: @chart_interval) { |v| (v / 60.0).round(2) }.to_json %>;
+        const moodData = <%= raw chart_series(@chart_records, :mood, interval: @chart_interval) { |v| v.round(1) }.to_json %>;
+        const exerciseData = <%= raw chart_series(@chart_records, :exercise_minutes, interval: @chart_interval) { |v| v.round(0) }.to_json %>;
+        const bloodPressureData = <%= raw chart_blood_pressure_series(@chart_records, interval: @chart_interval).to_json %>;
+        const bodyTemperatureData = <%= raw chart_series(@chart_records, :body_temperature, interval: @chart_interval) { |v| v.round(1) }.to_json %>;
 
         // 既存のチャートを破棄
         ['weightChart', 'sleepChart', 'moodChart', 'exerciseChart', 'bloodPressureChart', 'bodyTemperatureChart'].forEach(id => {
@@ -260,7 +273,7 @@
               responsive: true,
               maintainAspectRatio: false,
               scales: {
-                x: { type: 'time', time: { unit: 'day' } },
+                x: { type: 'time', time: { unit: chartTimeUnit } },
                 y: { beginAtZero: false }
               },
               plugins: { legend: { display: false } }
@@ -294,7 +307,7 @@
               responsive: true,
               maintainAspectRatio: false,
               scales: {
-                x: { type: 'time', time: { unit: 'day' } },
+                x: { type: 'time', time: { unit: chartTimeUnit } },
                 y: { beginAtZero: true }
               },
               plugins: { legend: { display: false } }
@@ -328,7 +341,7 @@
               responsive: true,
               maintainAspectRatio: false,
               scales: {
-                x: { type: 'time', time: { unit: 'day' } },
+                x: { type: 'time', time: { unit: chartTimeUnit } },
                 y: { min: 1, max: 5, ticks: { stepSize: 1 } }
               },
               plugins: { legend: { display: false } }
@@ -359,7 +372,7 @@
               responsive: true,
               maintainAspectRatio: false,
               scales: {
-                x: { type: 'time', time: { unit: 'day' } },
+                x: { type: 'time', time: { unit: chartTimeUnit } },
                 y: { beginAtZero: true }
               },
               plugins: { legend: { display: false } }
@@ -411,7 +424,7 @@
               responsive: true,
               maintainAspectRatio: false,
               scales: {
-                x: { type: 'time', time: { unit: 'day' } },
+                x: { type: 'time', time: { unit: chartTimeUnit } },
                 y: {
                   beginAtZero: false,
                   min: 40,
@@ -460,7 +473,7 @@
               responsive: true,
               maintainAspectRatio: false,
               scales: {
-                x: { type: 'time', time: { unit: 'day' } },
+                x: { type: 'time', time: { unit: chartTimeUnit } },
                 y: {
                   beginAtZero: false,
                   min: 34,
@@ -472,8 +485,13 @@
             }
           });
         }
-      });
+      })();
     </script>
+  <% else %>
+    <div class="card rounded-2xl p-8 text-center text-slate-500 mb-8">
+      この期間には記録がありません
+    </div>
+  <% end %>
   <% end %>
 
   <!-- 最近の記録 -->
