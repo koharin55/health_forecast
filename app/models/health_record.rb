@@ -4,6 +4,15 @@ class HealthRecord < ApplicationRecord
     heart_rate systolic_pressure diastolic_pressure body_temperature
   ].freeze
 
+  CHART_PERIODS = {
+    '7d' => { days: 7, label: '最新記録から1週間', interval: :daily },
+    '30d' => { days: 30, label: '最新記録から1ヶ月', interval: :weekly },
+    '90d' => { days: 90, label: '最新記録から3ヶ月', interval: :weekly },
+    '180d' => { days: 180, label: '最新記録から半年', interval: :monthly },
+    '365d' => { days: 365, label: '最新記録から1年', interval: :monthly }
+  }.freeze
+  DEFAULT_CHART_PERIOD = '7d'.freeze
+
   belongs_to :user
 
   validates :recorded_at, presence: true
@@ -43,6 +52,7 @@ class HealthRecord < ApplicationRecord
   }
 
   scope :recent, -> { order(recorded_at: :desc) }
+  scope :within_days, ->(days) { where(recorded_at: days.days.ago.to_date..) }
   scope :for_user, ->(user) { where(user: user) }
   scope :with_weather, -> { where.not(weather_code: nil) }
   scope :with_mood, -> { where.not(mood: nil) }

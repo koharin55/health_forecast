@@ -46,4 +46,49 @@ module HomeHelper
     weekdays = %w[日 月 火 水 木 金 土]
     "#{date.month}/#{date.day}(#{weekdays[date.wday]})"
   end
+
+  # 期間内レコードを集約間隔でバケット化して平均値を算出
+  # field: シンボル（:weight など）、interval: :daily / :weekly / :monthly
+  # 戻り値: [{ x: "2026-04-10", y: 60.5 }, ...]（日付昇順）
+  def chart_series(records, field, interval:, &transform)
+    filtered = records.reject { |r| r.public_send(field).nil? }
+    bucketize(filtered, interval).map { |date, rows| chart_point(date, rows, field, &transform) }
+  end
+
+  # 血圧用：最高血圧・最低血圧の両方を平均化して返す
+  def chart_blood_pressure_series(records, interval:)
+    filtered = records.reject { |r| r.systolic_pressure.nil? || r.diastolic_pressure.nil? }
+    bucketize(filtered, interval).map do |date, rows|
+      {
+        x: date.to_s,
+        systolic: average_of(rows, :systolic_pressure).round(1),
+        diastolic: average_of(rows, :diastolic_pressure).round(1)
+      }
+    end
+  end
+
+  private
+
+  def chart_point(date, rows, field, &transform)
+    avg = average_of(rows, field)
+    y = transform ? transform.call(avg) : avg.round(2)
+    { x: date.to_s, y: y }
+  end
+
+  def average_of(rows, field)
+    rows.sum { |r| r.public_send(field).to_f } / rows.size
+  end
+
+  def bucketize(records, interval)
+    records.group_by { |r| bucket_key(r.recorded_at.to_date, interval) }.sort_by(&:first)
+  end
+
+  def bucket_key(date, interval)
+    case interval
+    when :daily   then date
+    when :weekly  then date.beginning_of_week
+    when :monthly then date.beginning_of_month
+    else raise ArgumentError, "unknown interval: #{interval}"
+    end
+  end
 end
