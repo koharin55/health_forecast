@@ -449,6 +449,20 @@ rescue ArgumentError  # Date::Error もカバーされる
 flash[:alert] = errors.first(5).join(" / ")
 ```
 
+#### Turbo Frame リクエストの最適化
+Turbo Frame で部分更新する場合、コントローラーで `turbo_frame_request?` を判定し
+`render partial:` でパーシャルのみ返すこと。
+単純な早期 `return` ではテンプレート全体が評価され、未設定のインスタンス変数で
+`NoMethodError` が発生する。
+
+```ruby
+# 悪い例（テンプレート全体が評価され @records が nil で NoMethodError）
+return if turbo_frame_request?
+
+# 良い例（パーシャルのみレンダリング）
+return render partial: 'charts' if turbo_frame_request?
+```
+
 ### CSSスタイリング
 - Tailwindユーティリティクラスが動作しない場合は`application.css`にカスタムクラスを定義
 - プロジェクト固有クラスを優先使用:
