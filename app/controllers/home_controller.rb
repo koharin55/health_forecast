@@ -1,16 +1,22 @@
 class HomeController < ApplicationController
   def index
+    assign_chart_records
+    return render partial: 'charts' if turbo_frame_request?
+
+    assign_dashboard_records
+  end
+
+  private
+
+  def assign_dashboard_records
     @recent_records = current_user.health_records.recent.limit(7)
     @latest_record = @recent_records.first
     @total_records = current_user.health_records.count
-    assign_chart_records
     @current_weather = fetch_current_weather
     @prediction_service = HealthPredictionService.new(current_user)
     @predictions = fetch_predictions
     @latest_report = current_user.weekly_reports.recent.first
   end
-
-  private
 
   def assign_chart_records
     periods = HealthRecord::CHART_PERIODS
@@ -48,7 +54,7 @@ class HomeController < ApplicationController
     return [] unless current_user.location_configured?
 
     @prediction_service.predict_next_days(days: 4)
-  rescue StandardError => e
+  rescue HealthPredictionService::Error => e
     Rails.logger.error("HomeController#fetch_predictions error: #{e.message}")
     []
   end
