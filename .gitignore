@@ -44,3 +44,6 @@
 # Ignore Claude Code local settings and plans.
 .claude/settings.local.json
 .claude/plans/
+
+# Ignore local MCP server configuration (environment-specific).
+.mcp.json
