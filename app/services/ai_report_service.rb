@@ -113,12 +113,18 @@ class AiReportService
     forecast_data = fetch_forecast_data
     analysis_data = fetch_analysis_data
 
+    today = Date.today
+    today_wday = %w[日 月 火 水 木 金 土][today.wday]
+
     <<~PROMPT
       あなたは健康管理アドバイザーです。
       以下のデータを分析し、週次ヘルスレポートを生成してください。
 
+      ## レポート生成日
+      #{today.strftime('%Y年%m月%d日')}（#{today_wday}曜日）
+
       ## 対象期間
-      #{week_start.strftime('%Y年%m月%d日')}〜#{week_end.strftime('%m月%d日')}
+      #{week_start.strftime('%Y年%m月%d日')}〜#{week_end.strftime('%Y年%m月%d日')}
 
       ## 今週の健康記録データ
       #{format_health_records(health_records)}
@@ -154,7 +160,7 @@ class AiReportService
       - データがない項目は「記録なし」と明記
       - 具体的な数値を引用して説得力を持たせる
       - 前向きで実行可能なアドバイスを心がける
-      - 日付表示は「2/5(水)」のような形式で
+      - 日付表示は「2/5(水)」のような形式で（曜日はデータに含まれているものをそのまま使用すること。自己計算しないこと）
     PROMPT
   end
 
@@ -207,7 +213,8 @@ class AiReportService
     return "記録なし" if records.empty?
 
     records.map do |r|
-      parts = ["- #{r.recorded_at.strftime('%m/%d')}:"]
+      wday = %w[日 月 火 水 木 金 土][r.recorded_at.wday]
+      parts = ["- #{r.recorded_at.strftime('%m/%d')}(#{wday}):"]
       parts << "体調#{r.mood}/5" if r.mood.present?
       parts << "睡眠#{r.sleep_duration_text}" if r.sleep_minutes.present?
       parts << "運動#{r.exercise_minutes}分" if r.exercise_minutes.present?
