@@ -114,6 +114,81 @@ RSpec.describe 'WeeklyReports', type: :request do
         expect(response.body).to include('未来の日付は指定できません')
       end
     end
+
+    context 'APIエラー' do
+      let(:week_start) { Date.current - AiReportService::DEFAULT_PERIOD_DAYS }
+      let(:week_end)   { Date.current - 1 }
+
+      before do
+        allow(Rails.application.credentials).to receive(:dig).with(:gemini_api_key).and_return('test_api_key')
+        AiReportService::DEFAULT_PERIOD_DAYS.times do |i|
+          create(:health_record, user: user, recorded_at: week_end - i)
+        end
+        stub_request(:get, /api\.openweathermap\.org/).to_return(status: 200, body: {}.to_json)
+        stub_request(:get, /api\.open-meteo\.com/).to_return(status: 200, body: {}.to_json)
+        stub_request(:get, /archive-api\.open-meteo\.com/).to_return(status: 200, body: {}.to_json)
+      end
+
+      shared_examples 'レポート生成フォームにリダイレクト' do
+        it 'フォームにリダイレクトされる' do
+          post weekly_reports_path, params: { week_start: week_start.to_s, week_end: week_end.to_s }
+          expect(response).to redirect_to(new_weekly_report_path(week_start: week_start, week_end: week_end))
+        end
+      end
+
+      context 'HTTPステータス503の場合' do
+        before do
+          mock_client = double('Gemini')
+          allow(Gemini).to receive(:new).and_return(mock_client)
+          allow(mock_client).to receive(:generate_content)
+            .and_raise(StandardError.new('the server responded with status 503'))
+        end
+
+        include_examples 'レポート生成フォームにリダイレクト'
+
+        it 'HTTP 503 を含むエラーメッセージを表示する' do
+          post weekly_reports_path, params: { week_start: week_start.to_s, week_end: week_end.to_s }
+          follow_redirect!
+          expect(response.body).to include('HTTP 503')
+        end
+      end
+
+      context 'HTTPステータス429の場合' do
+        before do
+          mock_client = double('Gemini')
+          allow(Gemini).to receive(:new).and_return(mock_client)
+          allow(mock_client).to receive(:generate_content)
+            .and_raise(StandardError.new('the server responded with status 429'))
+        end
+
+        include_examples 'レポート生成フォームにリダイレクト'
+
+        it 'レート制限エラーメッセージを表示する' do
+          post weekly_reports_path, params: { week_start: week_start.to_s, week_end: week_end.to_s }
+          follow_redirect!
+          expect(response.body).to include('リクエスト上限')
+        end
+      end
+
+      context 'finishReasonがSAFETYの場合' do
+        before do
+          mock_client = double('Gemini')
+          allow(Gemini).to receive(:new).and_return(mock_client)
+          allow(mock_client).to receive(:generate_content).and_return(
+            'candidates' => [{ 'finishReason' => 'SAFETY' }],
+            'usageMetadata' => { 'totalTokenCount' => 10 }
+          )
+        end
+
+        include_examples 'レポート生成フォームにリダイレクト'
+
+        it 'SAFETYを含むエラーメッセージを表示する' do
+          post weekly_reports_path, params: { week_start: week_start.to_s, week_end: week_end.to_s }
+          follow_redirect!
+          expect(response.body).to include('SAFETY')
+        end
+      end
+    end
   end
 
   describe 'DELETE /weekly_reports/:id' do

@@ -42,8 +42,8 @@ class WeeklyReportsController < ApplicationController
                 alert: "AI機能が設定されていません。管理者にお問い合わせください。"
   rescue AiReportService::ApiError => e
     Rails.logger.error("WeeklyReportsController: #{e.message}")
-    redirect_to authenticated_root_path,
-                alert: "レポートの生成に失敗しました。しばらく経ってから再度お試しください。"
+    redirect_to new_weekly_report_path(week_start: @week_start, week_end: @week_end),
+                alert: api_error_message(e.message)
   rescue ActiveRecord::RecordNotUnique
     redirect_to_existing_report
   rescue ActiveRecord::RecordInvalid => e
@@ -139,6 +139,21 @@ class WeeklyReportsController < ApplicationController
       redirect_to existing_report, notice: "同じ期間のレポートは既に生成済みです"
     else
       redirect_to authenticated_root_path, notice: "同じ期間のレポートは既に生成済みです"
+    end
+  end
+
+  def api_error_message(message)
+    case message
+    when /status 401/, /status 403/
+      "APIキーが無効です。設定を確認してください。"
+    when /status 429/
+      "APIのリクエスト上限に達しました。しばらく経ってから再度お試しください。"
+    when /status (\d{3})/
+      "AIサービスとの通信に失敗しました（HTTP #{$1}）。しばらく経ってから再度お試しください。"
+    when /reason: (\w+)/
+      "AIレポートの生成が途中で停止しました（#{$1}）。対象期間を短くして再度お試しください。"
+    else
+      "レポートの生成に失敗しました。しばらく経ってから再度お試しください。"
     end
   end
 end
