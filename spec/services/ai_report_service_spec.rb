@@ -124,20 +124,19 @@ RSpec.describe AiReportService do
 
   describe '#generate_weekly_report' do
     let(:gemini_response) do
-      [
-        {
-          'candidates' => [
-            {
-              'content' => {
-                'parts' => [
-                  { 'text' => '## 📊 今週の振り返り\n\nテストレポート内容' }
-                ]
-              }
-            }
-          ],
-          'usageMetadata' => { 'totalTokenCount' => 500 }
-        }
-      ]
+      {
+        'candidates' => [
+          {
+            'content' => {
+              'parts' => [
+                { 'text' => '## 📊 今週の振り返り\n\nテストレポート内容' }
+              ]
+            },
+            'finishReason' => 'STOP'
+          }
+        ],
+        'usageMetadata' => { 'totalTokenCount' => 500 }
+      }
     end
 
     before do
@@ -157,7 +156,7 @@ RSpec.describe AiReportService do
       # Gemini APIのモック
       mock_client = double('Gemini')
       allow(Gemini).to receive(:new).and_return(mock_client)
-      allow(mock_client).to receive(:stream_generate_content).and_return(gemini_response)
+      allow(mock_client).to receive(:generate_content).and_return(gemini_response)
     end
 
     it 'creates a weekly report' do
@@ -202,7 +201,7 @@ RSpec.describe AiReportService do
       before do
         mock_client = double('Gemini')
         allow(Gemini).to receive(:new).and_return(mock_client)
-        allow(mock_client).to receive(:stream_generate_content).and_raise(StandardError.new('API Error'))
+        allow(mock_client).to receive(:generate_content).and_raise(StandardError.new('API Error'))
       end
 
       it 'raises ApiError' do
@@ -221,6 +220,46 @@ RSpec.describe AiReportService do
 
       it 'raises ActiveRecord::RecordInvalid' do
         expect { service.generate_weekly_report }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+    end
+
+    context 'when API returns safety-filtered response' do
+      before do
+        safety_response = {
+          'candidates' => [{ 'finishReason' => 'SAFETY' }],
+          'usageMetadata' => { 'totalTokenCount' => 100 }
+        }
+        mock_client = double('Gemini')
+        allow(Gemini).to receive(:new).and_return(mock_client)
+        allow(mock_client).to receive(:generate_content).and_return(safety_response)
+      end
+
+      it 'raises ApiError' do
+        expect { service.generate_weekly_report }.to raise_error(
+          AiReportService::ApiError,
+          /正常に完了しませんでした/
+        )
+      end
+    end
+
+    context 'when response has no usageMetadata' do
+      before do
+        no_metadata_response = {
+          'candidates' => [
+            {
+              'content' => { 'parts' => [{ 'text' => '## 📊 今週の振り返り\n\nテストレポート内容' }] },
+              'finishReason' => 'STOP'
+            }
+          ]
+        }
+        mock_client = double('Gemini')
+        allow(Gemini).to receive(:new).and_return(mock_client)
+        allow(mock_client).to receive(:generate_content).and_return(no_metadata_response)
+      end
+
+      it 'sets tokens_used to nil' do
+        report = service.generate_weekly_report
+        expect(report.tokens_used).to be_nil
       end
     end
   end

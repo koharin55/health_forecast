@@ -232,8 +232,12 @@ RSpec.describe "Mypage", type: :request do
     context "when nickname is set" do
       before do
         sign_in user
+        stub_request(:get, /api\.openweathermap\.org/)
+          .to_return(status: 200, body: { weather: [], main: {}, wind: {} }.to_json,
+                     headers: { 'Content-Type' => 'application/json' })
         stub_request(:get, /api\.open-meteo\.com/)
-          .to_return(status: 200, body: { current: {} }.to_json, headers: { 'Content-Type' => 'application/json' })
+          .to_return(status: 200, body: { current: {} }.to_json,
+                     headers: { 'Content-Type' => 'application/json' })
       end
 
       it "allows access to dashboard" do

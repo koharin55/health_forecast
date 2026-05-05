@@ -82,15 +82,14 @@ class AiReportService
         service: "generative-language-api",
         api_key: api_key
       },
-      options: { model: GEMINI_MODEL, server_sent_events: true }
+      options: { model: GEMINI_MODEL, server_sent_events: false }
     )
   end
 
   def call_gemini_api(prompt)
-    result = client.stream_generate_content({
+    client.generate_content({
       contents: { role: "user", parts: { text: prompt } }
     })
-    result
   rescue StandardError => e
     Rails.logger.error("AiReportService API error: #{e.message}")
     raise ApiError, "AIレポートの生成に失敗しました: #{e.message}"
@@ -99,12 +98,15 @@ class AiReportService
   def parse_response(response)
     return "" if response.blank?
 
-    # stream_generate_contentは配列で返ってくる
-    text_parts = response.map do |chunk|
-      chunk.dig("candidates", 0, "content", "parts", 0, "text")
-    end.compact
+    candidate = response.dig("candidates", 0)
+    finish_reason = candidate&.dig("finishReason")
 
-    text_parts.join("")
+    if finish_reason.present? && finish_reason != "STOP"
+      Rails.logger.warn("AiReportService: unexpected finishReason=#{finish_reason}")
+      raise ApiError, "AIレポートの生成が正常に完了しませんでした (reason: #{finish_reason})"
+    end
+
+    candidate&.dig("content", "parts", 0, "text") || ""
   end
 
   def build_prompt(week_start, week_end)
@@ -187,16 +189,20 @@ class AiReportService
   end
 
   def fetch_forecast_data
-    return [] unless @user.location_configured?
-
-    service = WeatherService.new(
-      latitude: @user.latitude,
-      longitude: @user.longitude
-    )
-    service.fetch_forecast_days(days: WeatherService::MAX_FORECAST_DAYS)
-  rescue WeatherService::Error => e
-    Rails.logger.warn("AiReportService forecast fetch failed: #{e.message}")
-    []
+    @forecast_data ||= begin
+      if @user.location_configured?
+        service = WeatherService.new(
+          latitude: @user.latitude,
+          longitude: @user.longitude
+        )
+        service.fetch_forecast_days(days: WeatherService::MAX_FORECAST_DAYS)
+      else
+        []
+      end
+    rescue WeatherService::Error => e
+      Rails.logger.warn("AiReportService forecast fetch failed: #{e.message}")
+      []
+    end
   end
 
   def fetch_analysis_data
@@ -287,9 +293,7 @@ class AiReportService
   def extract_tokens_used(response)
     return nil if response.blank?
 
-    # 最後のチャンクにトークン情報が含まれる
-    last_chunk = response.last
-    last_chunk&.dig("usageMetadata", "totalTokenCount")
+    response.dig("usageMetadata", "totalTokenCount")
   end
 
   def build_summary_data(week_start, week_end)
