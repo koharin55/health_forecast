@@ -62,7 +62,7 @@ puts "📊 Creating 30 days of health records..."
   user.health_records.create!(
     recorded_at: date,
     weight: weight.round(1),
-    sleep_hours: sleep_hours,
+    sleep_minutes: sleep_minutes,
     exercise_minutes: exercise_minutes,
     steps: steps,
     heart_rate: heart_rate,
