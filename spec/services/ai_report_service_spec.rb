@@ -9,6 +9,20 @@ RSpec.describe AiReportService do
     allow(Rails.application.credentials).to receive(:dig).with(:gemini_api_key).and_return('test_api_key')
   end
 
+  describe 'Gemini client configuration' do
+    it 'passes GEMINI_MODEL with non-streaming mode to the Gemini client' do
+      allow(Gemini).to receive(:new).and_return(instance_double(Gemini::Controllers::Client))
+
+      service.send(:client)
+
+      expect(Gemini).to have_received(:new).with(
+        hash_including(
+          options: hash_including(model: described_class::GEMINI_MODEL, server_sent_events: false)
+        )
+      )
+    end
+  end
+
   describe '#initialize' do
     context 'when API key is not configured' do
       before do
