@@ -284,6 +284,24 @@ class WeatherService
 end
 ```
 
+#### 外部APIクライアントの設定値はテストで固定する
+モデル名・ストリーミング有無など、障害に直結するクライアント設定は
+`Gemini.new` 等の呼び出し引数をテストで検証する。
+定数の値そのものを `eq('...')` で比較するテストは実装の写しになるため書かない。
+
+```ruby
+allow(Gemini).to receive(:new).and_return(instance_double(Gemini::Controllers::Client))
+service.send(:client)
+expect(Gemini).to have_received(:new).with(
+  hash_including(options: hash_including(model: described_class::GEMINI_MODEL, server_sent_events: false))
+)
+```
+- スタブには `double` ではなく `instance_double`（RuboCop `RSpec/VerifiedDoubles`）を使う
+
+#### AIモデルの変更手順
+- 採用前に公式ドキュメント（models / pricing / deprecations）で正式版・無料枠の有無を確認する
+- 変更後は `rails runner` で実APIを1回呼び、`modelVersion` とレスポンス構造を確認する（外部API接続のため事前にユーザー確認）
+
 #### 結果ハッシュパターン（import系サービス）
 - `parse` / `build` 系メソッドが失敗した場合、**必ず `result[:errors]` にメッセージを記録**してから return すること
 - `nil` を返して呼び出し元で無言の `return` をするとユーザーにフィードバックが届かない（サイレント失敗）
@@ -650,5 +668,5 @@ export RAILS_ENV=production
 
 ---
 
-**最終更新**: 2026-02-21
-**バージョン**: 1.2.0
+**最終更新**: 2026-10-12
+**バージョン**: 1.3.0
