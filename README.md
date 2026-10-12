@@ -40,7 +40,7 @@ PreCareは、日々の健康データを記録・可視化し、AIを活用し�
    - ダッシュボードに現在の天気を表示
 
 4. **AI週次レポート**
-   - Gemini API（gemini-2.5-flash）を使用したAI分析
+   - Gemini API（gemini-3.8-flash）を使用したAI分析
    - 今週の振り返り（体調・睡眠・運動の傾向サマリー）
    - 傾向分析（過去データからのパターン発見）
    - 翌週の体調予測（天気予報との連携）
@@ -108,7 +108,7 @@ PreCareは、日々の健康データを記録・可視化し、AIを活用し�
 - **ページネーション**: Pagy
 - **データ分析**: Groupdate
 - **AI/機械学習**:
-  - Gemini API（gemini-2.5-flash モデル）
+  - Gemini API（gemini-3.8-flash モデル）
   - gemini-ai gem
 - **Markdown**: Redcarpet gem（レポート表示用）
 - **外部API**:
@@ -311,7 +311,7 @@ Content-Type: application/json
 
 ### 週次AIレポート
 
-Gemini AI（gemini-2.5-flash）を活用し、1週間分の健康記録・天気データ・体調予測を分析して自動生成されるレポートです。今週の振り返り、傾向分析、翌週の体調予測、具体的なアドバイスが含まれます。
+Gemini AI（gemini-3.8-flash）を活用し、1週間分の健康記録・天気データ・体調予測を分析して自動生成されるレポートです。今週の振り返り、傾向分析、翌週の体調予測、具体的なアドバイスが含まれます。
 
 ### 位置情報の設定
 

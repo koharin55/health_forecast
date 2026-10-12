@@ -8,7 +8,7 @@ class AiReportService
   class InsufficientDataError < Error; end
   class ConfigurationError < Error; end
 
-  GEMINI_MODEL = "gemini-2.5-flash"
+  GEMINI_MODEL = "gemini-3.8-flash"
   MINIMUM_PERIOD_RECORDS = 3
   DEFAULT_PERIOD_DAYS = 7
   MAX_PERIOD_DAYS = 31
