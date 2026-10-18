@@ -9,6 +9,13 @@ class AiReportService
   class ConfigurationError < Error; end
 
   GEMINI_MODEL = "gemini-3.8-flash"
+  # GEMINI_MODEL が混雑（503等）で利用できない場合の代替モデル
+  FALLBACK_MODEL = "gemini-3.5-flash-lite"
+  MAX_RETRIES = 2
+  RETRY_BASE_DELAY_SECONDS = 1.0
+  RETRYABLE_STATUSES = [500, 503, 504].freeze
+  REQUEST_TIMEOUT_SECONDS = 30
+  OPEN_TIMEOUT_SECONDS = 5
   MINIMUM_PERIOD_RECORDS = 3
   DEFAULT_PERIOD_DAYS = 7
   MAX_PERIOD_DAYS = 31
@@ -76,23 +83,83 @@ class AiReportService
     @api_key ||= Rails.application.credentials.dig(:gemini_api_key) || ENV["GEMINI_API_KEY"]
   end
 
-  def client
-    @client ||= Gemini.new(
+  def client(model = GEMINI_MODEL)
+    @clients ||= {}
+    @clients[model] ||= Gemini.new(
       credentials: {
         service: "generative-language-api",
         api_key: api_key
       },
-      options: { model: GEMINI_MODEL, server_sent_events: false }
+      options: {
+        model: model,
+        server_sent_events: false,
+        connection: {
+          request: { timeout: REQUEST_TIMEOUT_SECONDS, open_timeout: OPEN_TIMEOUT_SECONDS }
+        }
+      }
     )
   end
 
   def call_gemini_api(prompt)
-    client.generate_content({
+    generate_with_fallback(prompt)
+  rescue StandardError => e
+    message = mask_api_key(e.message)
+    Rails.logger.error("AiReportService API error: #{message}")
+    # 元の例外（APIキー入りのURLを含む）を cause として残さない
+    raise ApiError, "AIレポートの生成に失敗しました: #{message}", cause: nil
+  end
+
+  def generate_with_fallback(prompt)
+    generate_with_retry(GEMINI_MODEL, prompt)
+  rescue StandardError => e
+    raise unless retryable_error?(e)
+
+    Rails.logger.warn(
+      "AiReportService: #{GEMINI_MODEL} が利用できないため #{FALLBACK_MODEL} で生成します: " \
+      "#{mask_api_key(e.message)}"
+    )
+    generate_content(FALLBACK_MODEL, prompt)
+  end
+
+  def generate_with_retry(model, prompt)
+    attempts = 0
+    begin
+      generate_content(model, prompt)
+    rescue StandardError => e
+      raise unless retryable_error?(e) && attempts < MAX_RETRIES
+
+      attempts += 1
+      wait_before_retry(attempts)
+      retry
+    end
+  end
+
+  def generate_content(model, prompt)
+    client(model).generate_content({
       contents: { role: "user", parts: { text: prompt } }
     })
-  rescue StandardError => e
-    Rails.logger.error("AiReportService API error: #{e.message}")
-    raise ApiError, "AIレポートの生成に失敗しました: #{e.message}"
+  end
+
+  # タイムアウト・接続失敗はステータスを持たないため対象外
+  # （REQUEST_TIMEOUT_SECONDS 分のタイムアウトが重なって応答が長引くのを防ぐ）
+  def retryable_error?(error)
+    RETRYABLE_STATUSES.include?(response_status(error))
+  end
+
+  # gemini-ai gem は 5xx の Faraday::ServerError を Gemini::Errors::RequestError#request に包む
+  def response_status(error)
+    source = error.is_a?(Gemini::Errors::RequestError) ? error.request : error
+    source.response_status if source.respond_to?(:response_status)
+  end
+
+  # 指数バックオフ（1秒→2秒）＋ジッター
+  def wait_before_retry(attempt)
+    sleep((RETRY_BASE_DELAY_SECONDS * (2**(attempt - 1))) + rand(0.0..0.5))
+  end
+
+  # エラーメッセージのリクエストURLに含まれるAPIキーをログ・例外に残さない
+  def mask_api_key(message)
+    message.gsub(/key=[^&\s]+/, "key=[FILTERED]")
   end
 
   def parse_response(response)

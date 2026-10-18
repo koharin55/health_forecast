@@ -302,6 +302,26 @@ expect(Gemini).to have_received(:new).with(
 - 採用前に公式ドキュメント（models / pricing / deprecations）で正式版・無料枠の有無を確認する
 - 変更後は `rails runner` で実APIを1回呼び、`modelVersion` とレスポンス構造を確認する（外部API接続のため事前にユーザー確認）
 
+#### APIキーをログ・例外に残さない
+URLのクエリにAPIキーを含むAPI（Gemini等）は、例外メッセージにキーが入る。
+ログ出力・例外の再送出の前に必ずマスクし、元例外は `cause: nil` で切る。
+
+```ruby
+rescue StandardError => e
+  message = e.message.gsub(/key=[^&\s]+/, "key=[FILTERED]")
+  Rails.logger.error("XxxService API error: #{message}")
+  raise ApiError, "...: #{message}", cause: nil  # cause に元のURLが残るため
+end
+```
+- HTTPライブラリのdebugログ（Typhoeus/Ethon 等）もURLを出力するため、ロガーを info 以上に制限する（`config/initializers/ethon.rb`）
+
+#### 再試行は一時的エラーのみ・ステータスで判定する
+- 対象は 500/503/504 のみ。429（無料枠の日次上限）やタイムアウトは再試行しない
+- 判定はメッセージ文字列ではなく `response_status` で行う
+  （gemini-ai gem は 5xx の `Faraday::ServerError` を `Gemini::Errors::RequestError#request` に包む。
+  `Faraday::TimeoutError` も `ServerError` のサブクラスのため包まれる）
+- 同期リクエスト内で再試行するため、必ず timeout / open_timeout を設定し、回数は少なく保つ
+
 #### 結果ハッシュパターン（import系サービス）
 - `parse` / `build` 系メソッドが失敗した場合、**必ず `result[:errors]` にメッセージを記録**してから return すること
 - `nil` を返して呼び出し元で無言の `return` をするとユーザーにフィードバックが届かない（サイレント失敗）
@@ -365,7 +385,7 @@ end
 #### 現在のサービスクラス
 - `WeatherService`: Open-Meteo APIから天候データを取得
 - `ZipcodeService`: Zipcloud APIから郵便番号→住所変換
-- `AiReportService`: Gemini APIで週次ヘルスレポートを生成
+- `AiReportService`: Gemini APIで週次ヘルスレポートを生成（503時は再試行→`gemini-3.5-flash-lite`へ切替）
 - `HealthRecordImportService`: CSVインポート処理
 - `HealthRecordExportService`: CSVエクスポート処理
 
@@ -668,5 +688,5 @@ export RAILS_ENV=production
 
 ---
 
-**最終更新**: 2026-10-12
-**バージョン**: 1.3.0
+**最終更新**: 2026-10-18
+**バージョン**: 1.4.0

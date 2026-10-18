@@ -21,6 +21,25 @@ RSpec.describe AiReportService do
         )
       )
     end
+
+    it 'sets request timeouts on the Gemini client' do
+      allow(Gemini).to receive(:new).and_return(instance_double(Gemini::Controllers::Client))
+
+      service.send(:client)
+
+      expect(Gemini).to have_received(:new).with(
+        hash_including(
+          options: hash_including(
+            connection: {
+              request: {
+                timeout: described_class::REQUEST_TIMEOUT_SECONDS,
+                open_timeout: described_class::OPEN_TIMEOUT_SECONDS
+              }
+            }
+          )
+        )
+      )
+    end
   end
 
   describe '#initialize' do
@@ -222,6 +241,119 @@ RSpec.describe AiReportService do
         expect { service.generate_weekly_report }.to raise_error(
           AiReportService::ApiError
         )
+      end
+    end
+
+    context 'when Gemini API is temporarily unavailable' do
+      let(:primary_client) { instance_double(Gemini::Controllers::Client) }
+      let(:fallback_client) { instance_double(Gemini::Controllers::Client) }
+
+      # gemini-ai gem は Faraday::ServerError（5xx）を Gemini::Errors::RequestError で包んで送出する
+      def server_error(status)
+        faraday_error = Faraday::ServerError.new(
+          "the server responded with status #{status} for POST https://generativelanguage.googleapis.com/v1/models/m:generateContent?key=SECRET_KEY",
+          { status: status }
+        )
+        Gemini::Errors::RequestError.new(faraday_error.message, request: faraday_error)
+      end
+
+      before do
+        allow(Gemini).to receive(:new) do |args|
+          args[:options][:model] == described_class::GEMINI_MODEL ? primary_client : fallback_client
+        end
+        allow(service).to receive(:sleep)
+      end
+
+      [500, 503, 504].each do |status|
+        it "retries with the primary model on #{status} and succeeds" do
+          call_count = 0
+          allow(primary_client).to receive(:generate_content) do
+            call_count += 1
+            raise server_error(status) if call_count == 1
+
+            gemini_response
+          end
+
+          expect { service.generate_weekly_report }.to change(WeeklyReport, :count).by(1)
+          expect(primary_client).to have_received(:generate_content).twice
+          expect(service).to have_received(:sleep).once
+        end
+      end
+
+      it 'falls back to FALLBACK_MODEL after exhausting retries' do
+        allow(primary_client).to receive(:generate_content).and_raise(server_error(503))
+        allow(fallback_client).to receive(:generate_content).and_return(gemini_response)
+
+        expect { service.generate_weekly_report }.to change(WeeklyReport, :count).by(1)
+        expect(primary_client).to have_received(:generate_content)
+          .exactly(described_class::MAX_RETRIES + 1).times
+        expect(fallback_client).to have_received(:generate_content).once
+      end
+
+      it 'logs the masked cause when falling back' do
+        allow(primary_client).to receive(:generate_content).and_raise(server_error(503))
+        allow(fallback_client).to receive(:generate_content).and_return(gemini_response)
+        allow(Rails.logger).to receive(:warn)
+
+        service.generate_weekly_report
+
+        expect(Rails.logger).to have_received(:warn).with(
+          satisfy { |msg| msg.include?(described_class::FALLBACK_MODEL) && msg.include?('status 503') && msg.exclude?('SECRET_KEY') }
+        )
+      end
+
+      it 'raises ApiError without exposing the API key when fallback also fails' do
+        allow(primary_client).to receive(:generate_content).and_raise(server_error(503))
+        allow(fallback_client).to receive(:generate_content).and_raise(server_error(503))
+        allow(Rails.logger).to receive(:error)
+
+        expect { service.generate_weekly_report }.to raise_error(AiReportService::ApiError) { |e|
+          expect(e.message).to include('status 503')
+          expect(e.message).not_to include('SECRET_KEY')
+          expect(e.cause).to be_nil
+        }
+        expect(Rails.logger).to have_received(:error).with(satisfy { |msg| msg.exclude?('SECRET_KEY') })
+      end
+
+      it 'does not retry or fall back on timeout' do
+        # Faraday::TimeoutError は Faraday::ServerError のサブクラスのため gem で RequestError に包まれる
+        timeout_error = Faraday::TimeoutError.new('timeout')
+        allow(primary_client).to receive(:generate_content)
+          .and_raise(Gemini::Errors::RequestError.new(timeout_error.message, request: timeout_error))
+        allow(fallback_client).to receive(:generate_content)
+
+        expect { service.generate_weekly_report }.to raise_error(AiReportService::ApiError)
+        expect(primary_client).to have_received(:generate_content).once
+        expect(fallback_client).not_to have_received(:generate_content)
+        expect(service).not_to have_received(:sleep)
+      end
+
+      # 429 は ClientError のため gem で包まれず Faraday::TooManyRequestsError のまま送出される
+      def stub_rate_limited
+        rate_limit_error = Faraday::TooManyRequestsError.new(
+          'the server responded with status 429 for POST https://example.com/m:generateContent?key=SECRET_KEY',
+          { status: 429 }
+        )
+        allow(primary_client).to receive(:generate_content).and_raise(rate_limit_error)
+        allow(fallback_client).to receive(:generate_content)
+      end
+
+      it 'raises ApiError with the API key masked on 429' do
+        stub_rate_limited
+
+        expect { service.generate_weekly_report }.to raise_error(AiReportService::ApiError) { |e|
+          expect(e.message).to include('status 429')
+          expect(e.message).not_to include('SECRET_KEY')
+        }
+      end
+
+      it 'does not retry or fall back on 429' do
+        stub_rate_limited
+
+        expect { service.generate_weekly_report }.to raise_error(AiReportService::ApiError)
+        expect(primary_client).to have_received(:generate_content).once
+        expect(fallback_client).not_to have_received(:generate_content)
+        expect(service).not_to have_received(:sleep)
       end
     end
 
