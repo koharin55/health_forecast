@@ -316,11 +316,15 @@ end
 - HTTPライブラリのdebugログ（Typhoeus/Ethon 等）もURLを出力するため、ロガーを info 以上に制限する（`config/initializers/ethon.rb`）
 
 #### 再試行は一時的エラーのみ・ステータスで判定する
-- 対象は 500/503/504 のみ。429（無料枠の日次上限）やタイムアウトは再試行しない
+- 対象は 500/503 のみ。429（無料枠の日次上限）・タイムアウト・504 は再試行しない
+  （504 はサーバー側の処理時間切れ。再試行すると長い待ちが重なりやすい）
 - 判定はメッセージ文字列ではなく `response_status` で行う
   （gemini-ai gem は 5xx の `Faraday::ServerError` を `Gemini::Errors::RequestError#request` に包む。
   `Faraday::TimeoutError` も `ServerError` のサブクラスのため包まれる）
 - 同期リクエスト内で再試行するため、必ず timeout / open_timeout を設定し、回数は少なく保つ
+- timeout の値は実APIで計測した応答時間（思考トークン込み）を根拠に決め、根拠をコメントに残す。
+  再試行・代替モデルを含めた最悪の合計待ち時間も確認する
+  （例: gemini-3.8-flash は実測約28秒で、timeout 30秒では本番で失敗した）
 
 #### 結果ハッシュパターン（import系サービス）
 - `parse` / `build` 系メソッドが失敗した場合、**必ず `result[:errors]` にメッセージを記録**してから return すること
@@ -688,5 +692,5 @@ export RAILS_ENV=production
 
 ---
 
-**最終更新**: 2026-10-18
-**バージョン**: 1.4.0
+**最終更新**: 2026-10-25
+**バージョン**: 1.4.1
