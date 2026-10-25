@@ -170,6 +170,44 @@ RSpec.describe 'WeeklyReports', type: :request do
         end
       end
 
+      context 'タイムアウトの場合' do
+        before do
+          mock_client = instance_double(Gemini::Controllers::Client)
+          allow(Gemini).to receive(:new).and_return(mock_client)
+          # Faraday::TimeoutError は gem で Gemini::Errors::RequestError に包まれて送出される
+          timeout_error = Faraday::TimeoutError.new('Timeout was reached')
+          allow(mock_client).to receive(:generate_content)
+            .and_raise(Gemini::Errors::RequestError.new(timeout_error.message, request: timeout_error))
+        end
+
+        it_behaves_like 'レポート生成フォームにリダイレクト'
+
+        it 'タイムアウト用のエラーメッセージを表示する' do
+          post weekly_reports_path, params: { week_start: week_start.to_s, week_end: week_end.to_s }
+          follow_redirect!
+          expect(response.body).to include('AIの応答に時間がかかっています')
+        end
+      end
+
+      context 'HTTPステータス504の場合' do
+        before do
+          mock_client = instance_double(Gemini::Controllers::Client)
+          allow(Gemini).to receive(:new).and_return(mock_client)
+          # Faraday::ServerError（5xx）は gem で Gemini::Errors::RequestError に包まれて送出される
+          server_error = Faraday::ServerError.new('the server responded with status 504', { status: 504 })
+          allow(mock_client).to receive(:generate_content)
+            .and_raise(Gemini::Errors::RequestError.new(server_error.message, request: server_error))
+        end
+
+        it_behaves_like 'レポート生成フォームにリダイレクト'
+
+        it 'タイムアウト用のエラーメッセージを表示する' do
+          post weekly_reports_path, params: { week_start: week_start.to_s, week_end: week_end.to_s }
+          follow_redirect!
+          expect(response.body).to include('AIの応答に時間がかかっています')
+        end
+      end
+
       context 'finishReasonがSAFETYの場合' do
         before do
           mock_client = double('Gemini')

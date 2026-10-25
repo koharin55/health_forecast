@@ -13,8 +13,10 @@ class AiReportService
   FALLBACK_MODEL = "gemini-3.5-flash-lite"
   MAX_RETRIES = 2
   RETRY_BASE_DELAY_SECONDS = 1.0
-  RETRYABLE_STATUSES = [500, 503, 504].freeze
-  REQUEST_TIMEOUT_SECONDS = 30
+  # 504 はサーバー側の処理時間切れのため対象外（再試行しても長時間待った末に失敗しやすい）
+  RETRYABLE_STATUSES = [500, 503].freeze
+  # 思考トークンを含む応答に実測約28秒（gemini-3.8-flash, 2026-10）。余裕を持たせて90秒
+  REQUEST_TIMEOUT_SECONDS = 90
   OPEN_TIMEOUT_SECONDS = 5
   MINIMUM_PERIOD_RECORDS = 3
   DEFAULT_PERIOD_DAYS = 7
@@ -141,7 +143,8 @@ class AiReportService
   end
 
   # タイムアウト・接続失敗はステータスを持たないため対象外
-  # （REQUEST_TIMEOUT_SECONDS 分のタイムアウトが重なって応答が長引くのを防ぐ）
+  # （再試行すると REQUEST_TIMEOUT_SECONDS 分の待ちが重なり応答が長引くため）
+  # 504 は RETRYABLE_STATUSES から除外して同様に再試行しない
   def retryable_error?(error)
     RETRYABLE_STATUSES.include?(response_status(error))
   end
