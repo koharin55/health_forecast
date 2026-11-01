@@ -264,7 +264,7 @@ RSpec.describe AiReportService do
         allow(service).to receive(:sleep)
       end
 
-      [500, 503, 504].each do |status|
+      [500, 503].each do |status|
         it "retries with the primary model on #{status} and succeeds" do
           call_count = 0
           allow(primary_client).to receive(:generate_content) do
@@ -320,6 +320,17 @@ RSpec.describe AiReportService do
         timeout_error = Faraday::TimeoutError.new('timeout')
         allow(primary_client).to receive(:generate_content)
           .and_raise(Gemini::Errors::RequestError.new(timeout_error.message, request: timeout_error))
+        allow(fallback_client).to receive(:generate_content)
+
+        expect { service.generate_weekly_report }.to raise_error(AiReportService::ApiError)
+        expect(primary_client).to have_received(:generate_content).once
+        expect(fallback_client).not_to have_received(:generate_content)
+        expect(service).not_to have_received(:sleep)
+      end
+
+      # 504 はサーバー側で処理時間切れになった応答のため、再試行すると待ち時間が積み重なる
+      it 'does not retry or fall back on 504' do
+        allow(primary_client).to receive(:generate_content).and_raise(server_error(504))
         allow(fallback_client).to receive(:generate_content)
 
         expect { service.generate_weekly_report }.to raise_error(AiReportService::ApiError)

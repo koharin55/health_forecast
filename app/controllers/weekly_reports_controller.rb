@@ -148,6 +148,8 @@ class WeeklyReportsController < ApplicationController
       "APIキーが無効です。設定を確認してください。"
     when /status 429/
       "APIのリクエスト上限に達しました。しばらく経ってから再度お試しください。"
+    when /timeout/i, /status 504/
+      "AIの応答に時間がかかっています。対象期間を短くするか、時間をおいて再度お試しください。"
     when /status (\d{3})/
       "AIサービスとの通信に失敗しました（HTTP #{$1}）。しばらく経ってから再度お試しください。"
     when /reason: (\w+)/
