@@ -35,8 +35,13 @@ SOLID原則、Rails Way、およびTDD（テスト駆動開発）に従い、保
 2.  実装完了後、** `rails-reviewer` サブエージェントを呼び出し、コードレビューを実行させます。**
 3.  実装内容とレビュー結果をユーザーに報告します。
 4.  **【ユーザー承認】**: 報告書を提示し、承認を求めます。
-    -   `yes`: コミットして完了。
+    -   `yes`: コミットして Step 3.5 へ進む。
     -   `fix`: 指摘に基づき修正し、再度レビューからやり直す。
+
+## Step 3.5: マージとデプロイ確認
+1.  PRをマージし、`git log origin/main` に修正コミットが含まれることを確認する。
+2.  Render のデプロイ完了後、本番で該当機能を1回動かし、ログで修正が効いていることを確認する。
+    （マージ漏れで本番に修正が届かず、同じ障害が翌週に再発した事例あり: PR #28）
 
 ## Step 4: CLAUDE.md の更新検討
 1.  レビュー指摘事項への対応が完了したら、**今後の開発に活かせる知見がないか検討**します。
@@ -316,8 +321,10 @@ end
 - HTTPライブラリのdebugログ（Typhoeus/Ethon 等）もURLを出力するため、ロガーを info 以上に制限する（`config/initializers/ethon.rb`）
 
 #### 再試行は一時的エラーのみ・ステータスで判定する
-- 対象は 500/503 のみ。429（無料枠の日次上限）・タイムアウト・504 は再試行しない
+- 対象は 500/503 のみ。429（無料枠の日次上限）・タイムアウト・504 は同一モデルで再試行しない
   （504 はサーバー側の処理時間切れ。再試行すると長い待ちが重なりやすい）
+- タイムアウトは代替モデル（応答の速い軽量モデル）への切替で対処する。代替モデルには個別に短い timeout を設定する
+  （判定は `Faraday::TimeoutError` を unwrap して行う。Typhoeus では接続確立のタイムアウトも同じ例外になる）
 - 判定はメッセージ文字列ではなく `response_status` で行う
   （gemini-ai gem は 5xx の `Faraday::ServerError` を `Gemini::Errors::RequestError#request` に包む。
   `Faraday::TimeoutError` も `ServerError` のサブクラスのため包まれる）
@@ -325,6 +332,8 @@ end
 - timeout の値は実APIで計測した応答時間（思考トークン込み）を根拠に決め、根拠をコメントに残す。
   再試行・代替モデルを含めた最悪の合計待ち時間も確認する
   （例: gemini-3.8-flash は実測約28秒で、timeout 30秒では本番で失敗した）
+- 混雑時の遅延は裾が長い（180秒でも返らない例あり）ため、timeout を延ばすだけでは解決しない。
+  平常時の実測に少し余裕を持たせた値で打ち切り、代替モデルへ切り替える（PR #32）
 
 #### 結果ハッシュパターン（import系サービス）
 - `parse` / `build` 系メソッドが失敗した場合、**必ず `result[:errors]` にメッセージを記録**してから return すること
@@ -389,7 +398,7 @@ end
 #### 現在のサービスクラス
 - `WeatherService`: Open-Meteo APIから天候データを取得
 - `ZipcodeService`: Zipcloud APIから郵便番号→住所変換
-- `AiReportService`: Gemini APIで週次ヘルスレポートを生成（503時は再試行→`gemini-3.5-flash-lite`へ切替）
+- `AiReportService`: Gemini APIで週次ヘルスレポートを生成（503時は再試行→`gemini-3.5-flash-lite`へ切替、タイムアウト時は即切替）
 - `HealthRecordImportService`: CSVインポート処理
 - `HealthRecordExportService`: CSVエクスポート処理
 
@@ -692,5 +701,5 @@ export RAILS_ENV=production
 
 ---
 
-**最終更新**: 2026-10-25
-**バージョン**: 1.4.1
+**最終更新**: 2026-11-01
+**バージョン**: 1.5.0
