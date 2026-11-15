@@ -40,6 +40,26 @@ RSpec.describe AiReportService do
         )
       )
     end
+
+    it 'sets the fallback request timeout on the FALLBACK_MODEL client' do
+      allow(Gemini).to receive(:new).and_return(instance_double(Gemini::Controllers::Client))
+
+      service.send(:client, described_class::FALLBACK_MODEL)
+
+      expect(Gemini).to have_received(:new).with(
+        hash_including(
+          options: hash_including(
+            model: described_class::FALLBACK_MODEL,
+            connection: {
+              request: {
+                timeout: described_class::FALLBACK_REQUEST_TIMEOUT_SECONDS,
+                open_timeout: described_class::OPEN_TIMEOUT_SECONDS
+              }
+            }
+          )
+        )
+      )
+    end
   end
 
   describe '#initialize' do
@@ -315,11 +335,60 @@ RSpec.describe AiReportService do
         expect(Rails.logger).to have_received(:error).with(satisfy { |msg| msg.exclude?('SECRET_KEY') })
       end
 
-      it 'does not retry or fall back on timeout' do
-        # Faraday::TimeoutError は Faraday::ServerError のサブクラスのため gem で RequestError に包まれる
-        timeout_error = Faraday::TimeoutError.new('timeout')
+      # Faraday::TimeoutError は Faraday::ServerError のサブクラスのため gem で RequestError に包まれる
+      def timeout_error
+        faraday_error = Faraday::TimeoutError.new('Timeout was reached')
+        Gemini::Errors::RequestError.new(faraday_error.message, request: faraday_error)
+      end
+
+      it 'falls back to FALLBACK_MODEL on timeout without retrying the primary model' do
+        allow(primary_client).to receive(:generate_content).and_raise(timeout_error)
+        allow(fallback_client).to receive(:generate_content).and_return(gemini_response)
+
+        expect { service.generate_weekly_report }.to change(WeeklyReport, :count).by(1)
+        expect(primary_client).to have_received(:generate_content).once
+        expect(fallback_client).to have_received(:generate_content).once
+        expect(service).not_to have_received(:sleep)
+      end
+
+      it 'logs the cause when falling back on timeout' do
+        allow(primary_client).to receive(:generate_content).and_raise(timeout_error)
+        allow(fallback_client).to receive(:generate_content).and_return(gemini_response)
+        allow(Rails.logger).to receive(:warn)
+
+        service.generate_weekly_report
+
+        expect(Rails.logger).to have_received(:warn).with(
+          satisfy { |msg| msg.include?(described_class::FALLBACK_MODEL) && msg.include?('Timeout was reached') }
+        )
+      end
+
+      it 'raises ApiError when the fallback model also times out' do
+        allow(primary_client).to receive(:generate_content).and_raise(timeout_error)
+        allow(fallback_client).to receive(:generate_content).and_raise(timeout_error)
+
+        expect { service.generate_weekly_report }.to raise_error(AiReportService::ApiError, /Timeout was reached/)
+        expect(fallback_client).to have_received(:generate_content).once
+      end
+
+      it 'falls back to FALLBACK_MODEL when the primary model times out after a 503 retry' do
+        call_count = 0
+        allow(primary_client).to receive(:generate_content) do
+          call_count += 1
+          raise(call_count == 1 ? server_error(503) : timeout_error)
+        end
+        allow(fallback_client).to receive(:generate_content).and_return(gemini_response)
+
+        expect { service.generate_weekly_report }.to change(WeeklyReport, :count).by(1)
+        expect(primary_client).to have_received(:generate_content).twice
+        expect(service).to have_received(:sleep).once
+        expect(fallback_client).to have_received(:generate_content).once
+      end
+
+      # Faraday::ConnectionFailed は ServerError のサブクラスではないため gem で包まれずに送出される
+      it 'does not retry or fall back on connection failure' do
         allow(primary_client).to receive(:generate_content)
-          .and_raise(Gemini::Errors::RequestError.new(timeout_error.message, request: timeout_error))
+          .and_raise(Faraday::ConnectionFailed.new("Couldn't connect to server"))
         allow(fallback_client).to receive(:generate_content)
 
         expect { service.generate_weekly_report }.to raise_error(AiReportService::ApiError)
