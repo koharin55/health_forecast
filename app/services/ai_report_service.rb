@@ -15,8 +15,14 @@ class AiReportService
   RETRY_BASE_DELAY_SECONDS = 1.0
   # 504 はサーバー側の処理時間切れのため対象外（再試行しても長時間待った末に失敗しやすい）
   RETRYABLE_STATUSES = [500, 503].freeze
-  # 思考トークンを含む応答に実測約28秒（gemini-3.8-flash, 2026-10）。余裕を持たせて90秒
-  REQUEST_TIMEOUT_SECONDS = 90
+  # 思考トークンを含む応答に実測約28秒（gemini-3.8-flash, 2026-10）。余裕を持たせて40秒
+  # 混雑時は180秒待っても応答しない例があり、待ち続けても回復しにくいため、超えたら FALLBACK_MODEL に切り替える
+  # （2026-11-15 実測: gemini-3.8-flash は180秒でタイムアウト / gemini-3.5-flash-lite は約2秒）
+  REQUEST_TIMEOUT_SECONDS = 40
+  FALLBACK_REQUEST_TIMEOUT_SECONDS = 20
+  # 最悪の合計待ち時間:
+  #   503で再試行後にタイムアウト → 40 + 再試行待ち約4 + 代替20 ≒ 64秒（503は通常数秒で返る）
+  #   理論上（3回とも40秒近くかかってから503）→ 40×3 + 約4 + 20 ≒ 144秒
   OPEN_TIMEOUT_SECONDS = 5
   MINIMUM_PERIOD_RECORDS = 3
   DEFAULT_PERIOD_DAYS = 7
@@ -96,10 +102,14 @@ class AiReportService
         model: model,
         server_sent_events: false,
         connection: {
-          request: { timeout: REQUEST_TIMEOUT_SECONDS, open_timeout: OPEN_TIMEOUT_SECONDS }
+          request: { timeout: request_timeout(model), open_timeout: OPEN_TIMEOUT_SECONDS }
         }
       }
     )
+  end
+
+  def request_timeout(model)
+    model == FALLBACK_MODEL ? FALLBACK_REQUEST_TIMEOUT_SECONDS : REQUEST_TIMEOUT_SECONDS
   end
 
   def call_gemini_api(prompt)
@@ -114,7 +124,7 @@ class AiReportService
   def generate_with_fallback(prompt)
     generate_with_retry(GEMINI_MODEL, prompt)
   rescue StandardError => e
-    raise unless retryable_error?(e)
+    raise unless retryable_error?(e) || timeout_error?(e)
 
     Rails.logger.warn(
       "AiReportService: #{GEMINI_MODEL} が利用できないため #{FALLBACK_MODEL} で生成します: " \
@@ -142,17 +152,29 @@ class AiReportService
     })
   end
 
-  # タイムアウト・接続失敗はステータスを持たないため対象外
+  # タイムアウト・接続失敗はステータスを持たないため同一モデルでの再試行対象外
   # （再試行すると REQUEST_TIMEOUT_SECONDS 分の待ちが重なり応答が長引くため）
   # 504 は RETRYABLE_STATUSES から除外して同様に再試行しない
   def retryable_error?(error)
     RETRYABLE_STATUSES.include?(response_status(error))
   end
 
-  # gemini-ai gem は 5xx の Faraday::ServerError を Gemini::Errors::RequestError#request に包む
+  # タイムアウトは再試行せず、応答の速い FALLBACK_MODEL への切替のみ行う
+  # Typhoeus では接続確立のタイムアウト（OPEN_TIMEOUT_SECONDS）も Faraday::TimeoutError になるため切替対象となる。
+  # 代替モデルも同じホストのため失敗しやすいが、待ちは最大 FALLBACK_REQUEST_TIMEOUT_SECONDS の増加に収まるため許容する
+  def timeout_error?(error)
+    unwrap_error(error).is_a?(Faraday::TimeoutError)
+  end
+
   def response_status(error)
-    source = error.is_a?(Gemini::Errors::RequestError) ? error.request : error
+    source = unwrap_error(error)
     source.response_status if source.respond_to?(:response_status)
+  end
+
+  # gemini-ai gem は 5xx の Faraday::ServerError（TimeoutError を含む）を
+  # Gemini::Errors::RequestError#request に包む
+  def unwrap_error(error)
+    error.is_a?(Gemini::Errors::RequestError) ? error.request : error
   end
 
   # 指数バックオフ（1秒→2秒）＋ジッター
